@@ -19,6 +19,7 @@ export const APP_CONFIg = {
     "Next.js 15 ile yüksek hızlı kurumsal web siteleri, özel yazılım ve mobil uygulamalar. 15 yıl deneyim, 200+ proje. İstanbul merkezli — ücretsiz analiz alın.",
 } as const;
 
+export const APP_CONFIG = APP_CONFIg;
 export default APP_CONFIg;
 
 // ─── FONT ──────────────────────────────────────────────────────────────────

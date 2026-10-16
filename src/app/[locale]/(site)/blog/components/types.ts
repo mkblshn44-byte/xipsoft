@@ -1,10 +1,7 @@
 /**
- * Blog liste kartı verisi.
- *
- * `title`, `date`, `slug` opsiyoneldir: veri DB'den gelir. DB yoksa veya
- * kayıt bulunamazsa bu alanlar boş kalır — kart tasarımı (şablon) yine de
- * render edilir, yalnızca metinler görünmez.
+ * Blog Bileşenleri ve Şablonları Ortak Tipleri
  */
+
 export type BlogItem = {
   _id: string;
   title?: string;
@@ -20,4 +17,9 @@ export type BlogItem = {
   coverImageAlt?: string | null;
   /** Yazı etiketleri — kart üzerinde rozet olarak gösterilir */
   tags?: string[];
+};
+
+export type AdjacentPosts = {
+  prev: { slug: string; title: string } | null;
+  next: { slug: string; title: string } | null;
 };

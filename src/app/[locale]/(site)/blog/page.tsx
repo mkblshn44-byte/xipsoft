@@ -1,10 +1,10 @@
-import APP_CONFIg, { SITE_URL } from "@/config/brand.config";
+import { APP_CONFIG, SITE_URL } from "@/config/brand.config";
 import { Metadata } from "next";
 import BlogPageClient from "./BlogPageClient";
 import PageTransitionWrapper from "@/components/Animate/PageTransitionWrapper/PageTransitionWrapper";
 import JsonLd from "@/components/seo/JsonLd";
 import { getPublishedBlogPostsAction, getBlogCategoriesAction } from "@/app/_actions/blog-actions";
-import type { BlogItem } from "./components";
+import type { BlogItem } from "./components/types";
 import { blogListSchema, breadcrumbSchema, faqSchema } from "@/lib/schema-helpers";
 import { getPageFaqs, getPageMeta } from "@/lib/page-content";
 
@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: "tr_TR",
       url: `${SITE_URL}/blog`,
-      siteName: APP_CONFIg.title,
+      siteName: APP_CONFIG.title,
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
       images: [{ url: `${SITE_URL}/images/xipsoft-seo.png`, width: 1200, height: 630, alt: "XipSoft Blog" }],
