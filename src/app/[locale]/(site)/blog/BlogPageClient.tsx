@@ -53,8 +53,11 @@ function mapPostToBlogItem(post: {
     source: "firestore",
     authorName: post.authorName ?? undefined,
     authorPhotoURL: post.authorAvatar ?? undefined,
+    coverImage: post.coverImageURL ?? null,
     coverImageURL: post.coverImageURL ?? null,
     coverImageAlt: post.coverImageAlt ?? null,
+    category: post.tags?.[0] ?? undefined,
+    views: (post as any).viewCount ?? (post as any).views ?? 0,
     tags: post.tags ?? [],
   };
 }

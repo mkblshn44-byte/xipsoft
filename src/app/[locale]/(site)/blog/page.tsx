@@ -66,8 +66,11 @@ const BlogListPage = async () => {
     source: "firestore" as const,
     authorName: p.authorName ?? undefined,
     authorPhotoURL: p.authorAvatar ?? undefined,
+    coverImage: p.coverImageURL ?? null,
     coverImageURL: p.coverImageURL ?? null,
     coverImageAlt: p.coverImageAlt ?? null,
+    category: p.tags?.[0] ?? undefined,
+    views: (p as any).viewCount ?? (p as any).views ?? 0,
     tags: p.tags ?? [],
   }));
 
