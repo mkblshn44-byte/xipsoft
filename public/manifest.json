@@ -1,0 +1,32 @@
+{
+  "name": "XipSoft - Yazılım Teknoloji Sistemleri",
+  "short_name": "XipSoft",
+  "description": "Profesyonel web yazılım, mobil uygulama, siber Güvenlik ve dijital pazarlama hizmetleri",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050507",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/media/logo.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/xipsoft-seo.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["technology", "software", "business"],
+  "lang": "tr",
+  "dir": "ltr"
+}

@@ -1,0 +1,15 @@
+.vercel
+.env*
+node_modules
+
+# Next.js build output
+.next/
+out/
+build/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Local tooling caches
+.eslintcache
+*.log

@@ -1,0 +1,1178 @@
+{
+  "common": {
+    "lanGuaGe": {
+      "title": "Systemsprache",
+      "turkish": "Türkçe",
+      "enGlish": "English",
+      "switchToEnGlish": "Zu Englisch wechseln",
+      "switchToTurkish": "Zu Türkisch wechseln"
+    }
+  },
+  "join": {
+    "title": "Werde Teil unserer Community",
+    "description": "Verbinde dich mit XipSofts Entwickler-Community. Wissen teilen, Chancen finden und gemeinsam wachsen.",
+    "cta": "Community-Gruppe",
+    "communityTitle": "XipSoft Software Engineers Community",
+    "desc": {
+      "explore": "Entdecke unsere ",
+      "jobBoard": "Stellenbörse",
+      "techArticles": "Tech-Artikel",
+      "portfolio": "Portfolio",
+      "outro": " und tritt einer Community bei, die durch gegenseitiges Wachstum gedeiht."
+    },
+    "pill": {
+      "jobs": "Jobs",
+      "articles": "Artikel",
+      "portfolio": "Portfolio",
+      "community": "Community"
+    }
+  },
+  "platform": {
+    "badge": "Software & Technologie",
+    "title": {
+      "prefix": "Dein Zentrum für ",
+      "highlight": "Software & Technologie"
+    },
+    "description": {
+      "intro": "Diese Plattform ist dein ultimatives Ziel für Software- und Technologiediskussionen. Egal ob du dich für ",
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "cloud": "Cloud",
+      "backend": "Backend",
+      "outro": " Engineering interessierst — hier ist dein Ort zum Vernetzen, Lernen und Teilen."
+    },
+    "desktop": {
+      "label": "Desktop",
+      "description": "Native Apps, Electron, plattformübergreifend"
+    },
+    "mobile": {
+      "label": "Mobile",
+      "description": "iOS, Android, React Native, Flutter"
+    },
+    "cloud": {
+      "label": "Cloud",
+      "description": "AWS, GCP, Azure, DevOps"
+    },
+    "backend": {
+      "label": "Backend",
+      "description": "APIs, Datenbanken, Microservices"
+    },
+    "terminal": {
+      "hello": "Hallo Welt!!",
+      "from": " Von "
+    }
+  },
+  "XipSoftTypo": {
+    "subtitle": "XipSoft Software & Technologie"
+  },
+  "nav": {
+    "about": "Über uns",
+    "home": "Startseite",
+    "products": "Produkte",
+    "services": "Dienstleistungen",
+    "references": "Referenzen",
+    "contact": "Kontakt",
+    "GetQuote": "Angebot anfordern",
+    "getQuote": "Angebot anfordern",
+    "loGin": "Anmelden",
+    "siGnup": "Registrieren",
+    "loGout": "Abmelden",
+    "classes": "Kurse",
+    "books": "Bücher",
+    "howTo": "Anleitungen",
+    "Blog": "Blog",
+    "myBlogs": "Meine Blogs",
+    "writeBlog": "Beitrag schreiben",
+    "jobs": "Jobs",
+    "navigation": "Navigation",
+    "brandName": "XipSoft — Software & Technologielösungen",
+    "servicesMenu": {
+      "title": "Unsere Dienstleistungen",
+      "web": "Websoftware & Design",
+      "webDesc": "Moderne, schnelle und SEO-freundliche Next.js/React-Oberflächen",
+      "webLong": "Von Unternehmensseiten bis E-Commerce gestalten und entwickeln wir performante, barrierefreie und SEO-freundliche moderne Web-Oberflächen.",
+      "mobile": "Mobile Anwendung",
+      "mobileDesc": "Native oder plattformübergreifende Lösungen für iOS, Android und Mac",
+      "mobileLong": "Wir entwickeln schnelle, benutzerfreundliche und skalierbare Mobile-Apps für iOS und Android und begleiten den Store-Release-Prozess.",
+      "desktop": "Desktop-Software",
+      "desktopDesc": "Leistungsstarke Desktop-Anwendungen für Windows, macOS und Linux",
+      "desktopLong": "Wir entwickeln leistungsstarke, sichere Desktop-Lösungen für Windows, macOS und Linux, die Ihre Abläufe beschleunigen.",
+      "security": "Cybersicherheit",
+      "securityDesc": "Umfassende Sicherheitsprüfungen und Schutzlösungen",
+      "securityLong": "Mit Penetrationstests und Sicherheitsaudits schützen wir Ihre Infrastruktur umfassend und erkennen Risiken frühzeitig.",
+      "seo": "SEO & Digitales Marketing",
+      "seoDesc": "Suchmaschinenoptimierung und digitale Wachstumsstrategien",
+      "seoLong": "Mit datengetriebener SEO und Digital-Marketing-Strategien steigern wir Ihre Sichtbarkeit und erzielen messbares Wachstum."
+    }
+  },
+  "home": {
+    "badGe": "Software & Technologie",
+    "taGline": "Ihr vertrauenswürdiger Partner für Softwareentwicklung und Technologielösungen.",
+    "hero": {
+      "service1": "Websoftware & Design",
+      "service2": "Mobile Anwendung",
+      "service3": "Cybersicherheit",
+      "titleLine1": "SOFTWARE &",
+      "titleLine2": "TECHNOLOgY",
+      "titleLine3": "SYSTEME",
+      "subtitle": "Vertrauen in Software, Unterschied im Design, Perfektion im Ergebnis.",
+      "subtitleHiGhliGht": "Web, Mobile, Desktop und Cybersicherheit",
+      "subtitleEnd": "Lösungen mit 15 Jahren Erfahrung.",
+      "ctaPrimary": "Kostenloses Angebot anfordern",
+      "ctaSecondary": "Dienstleistungen entdecken",
+      "ctaSiGnup": "Jetzt registrieren",
+      "statYears": "Jahre Erfahrung",
+      "statProjects": "Abgeschlossene Projekte",
+      "statClients": "Zufriedene Kunden",
+      "statServices": "Servicebereiche"
+    },
+    "devProfiles": {
+      "title": "Entwicklerprofile",
+      "body": "Erstelle dein Entwicklerprofil und präsentiere deine Arbeit. Entdecke die Profile anderer Ingenieure, um dich zu vernetzen und innerhalb unserer Technologie-Community zusammenzuarbeiten."
+    },
+    "readArticles": {
+      "title": "Tech-Artikel",
+      "body": "Verfasse Artikel und Blogs über Software und Technologie. Greife auf Wissen von Experten zu, um zu lernen, zu wachsen und mit Branchentrends Schritt zu halten."
+    },
+    "": {
+      "title": "Community ",
+      "body": "Stelle Fragen, teile Erfahrungen über Software, Technologie und Entwicklung. Nimm an Diskussionen mit Tausenden von Entwicklern teil und profitiere von der Kraft der Community."
+    },
+    "Blog": {
+      "title": "Blog & Artikel",
+      "body": "Neueste Artikel, Leitfäden und Einblicke aus der Welt der Software und Technologie. Folge Branchentrends und erweitere dein Wissen von Expertenautoren."
+    },
+    "xipsoftFark": {
+      "title": "Warum XipSoft wählen?",
+      "subtitle": "Über 15 Jahre Engineering-Expertise von Cybersicherheit bis zu eingebetteten Systemen.",
+      "experience": "15+ Jahre Erfahrung",
+      "experienceDesc": "Tiefgreifende technische Expertise von Cybersicherheit bis zu eingebetteten Systemen. Jede Codezeile wird mit realer Projekterfahrung geschrieben.",
+      "Guarantee": "Qualitätsgarantie",
+      "GuaranteeDesc": "Jede Codezeile wird nach XipSoft-Qualitätsstandards geschrieben. Unit-Tests, Lasttests und Sicherheitsaudits sind Teil unseres Standardprozesses.",
+      "directComm": "Direkte Kommunikation",
+      "directCommDesc": "Du sprichst mit den Ingenieuren, die dein Projekt entwickeln, nicht mit Vertriebsmitarbeitern. Schnelle Entscheidungen, null bürokratische Verzögerungen.",
+      "sourceFiles": "Vollständiger Quellcode",
+      "sourceFilesDesc": "Alle Assets, Abhängigkeiten und Konfigurationsdateien gehören zu 100% dir. Kein Vendor-Lock-in, niemals.",
+      "identity": "Langfristige Partnerschaft",
+      "identityDesc": "Wenn dein Projekt live geht, endet unsere Arbeit nicht — die eigentliche Reise beginnt. Wir begleiten dich bei CI/CD, Wartung und Skalierung."
+    },
+    "services": {
+      "title": "End-to-End-Technologieexpertise",
+      "subtitle": "Skalierbare, nachhaltige Softwarearchitekturen für jede Plattform und jeden Bedarf.",
+      "biGTitle": "Individuelle Softwarelösungen für jeden Bedarf",
+      "biGDesc": "Von Web über Mobile, Desktop bis Cybersicherheit — mit über 15 Jahren Erfahrung entwirft, entwickelt und liefert XipSoft Projekte jeder Größenordnung von Anfang bis Ende. Du teilst deine Vision, wir kümmern uns um den Rest.",
+      "web": "Websoftware & E-Commerce",
+      "webDesc": "Next.js/React-Lösungen mit erstklassigen Core Web Vitals. SSR/SSG-Optimierung, Edge Runtime, Datenbank-Sharding und Hochtraffic-E-Commerce-Infrastruktur.",
+      "mobile": "Mobile Anwendung",
+      "mobileDesc": "Native Performance aus einer einzigen Codebasis mit Flutter/React Native. Offline-first-Architekturen, SSL-Pinning und In-App-Monitoring mit Sentry/Firebase.",
+      "desktop": "Desktop-Software",
+      "desktopDesc": "Leistungsstarke Desktop-Apps mit Electron, Qt und C++. Low-Level-Systemzugriff, Hardware-Integrationen und Windows/macOS/Linux-Plattformkompatibilität.",
+      "security": "Cybersicherheit (Pentest & Audit)",
+      "securityDesc": "OWASP-Top-10-Audits via Blackbox- und Whitebox-Testing. API-Sicherheit, Docker-Container-Isolierung und 24/7-SIEM-Monitoring.",
+      "seo": "SEO & Digitales Marketing",
+      "seoDesc": "Technisches SEO, Core-Web-Vitals-Optimierung, Google Ads und konversionsorientierte Content-Strategie für organisches Wachstum.",
+      "custom": "Individuelle Software & Geschäftsautomatisierung",
+      "customDesc": "ERP- und CRM-Lösungen mit Microservice-Architektur. Event-getriebene Designs, RabbitMQ/Kafka-Messaging, skalierbare PostgreSQL/NoSQL-Strukturen."
+    },
+    "stats": {
+      "years": "Jahre",
+      "experience": "Technologieerfahrung",
+      "projects": "Software",
+      "completed": "Gelieferte Projekte",
+      "clients": "Zufriedene",
+      "clientsLabel": "Technologiekunden"
+    },
+    "techStack": {
+      "title": "Unser Tech-Stack",
+      "subtitle": "Wir wählen und implementieren die passendsten Technologien für dein Projekt mit branchenüblichen Tools.",
+      "cta": "Für eine Architektur, die ewig hält"
+    },
+    "reviews": {
+      "title": "Kundenbewertungen",
+      "subtitle": "Als interaktive und moderne Agentur sind wir stolz darauf, der Grundstein für den Online-Erfolg unserer Kunden zu sein."
+    }
+  },
+  "about": {
+    "values": {
+      "title": "Unsere Grundwerte",
+      "subtitle": "Die Prinzipien, die uns bei jedem Projekt leiten."
+    },
+    "expertise": {
+      "title": "Was machen wir?",
+      "subtitle": "Umfassende Technologielösungen in 12 Bereichen."
+    },
+    "whyUs": {
+      "title": "Warum XipSoft?",
+      "subtitle": "Was uns mit 15 Jahren bewährter Expertise unterscheidet."
+    },
+    "mission": {
+      "title": "Mission & Vision",
+      "subtitle": "Der Zweck und die Ziele, die uns antreiben."
+    }
+  },
+  "references": {
+    "projects": {
+      "title": "Was haben wir gemacht?",
+      "subtitle": "Eine Zusammenfassung von 200+ Projekten in 12 Kategorien."
+    },
+    "sectors": {
+      "title": "Branchenverteilung",
+      "subtitle": "Wie viel Arbeit wir in welchen Bereichen geleistet haben."
+    },
+    "testimonials": {
+      "title": "Was sagen unsere Kunden?",
+      "subtitle": "Echte Kundenerfahrungen."
+    }
+  },
+  "products": {
+    "hero": {
+      "badGe": "Produkte & Softwarepakete",
+      "title": "Digitale Lösungen maßgeschneidert für dich",
+      "subtitle": "Keine vorgefertigten Templates. Jedes Projekt wird von Grund auf neu codiert und gehört vollständig dir. Von E-Commerce bis Unternehmenssoftware, mit garantierter Quellcode-Lieferung.",
+      "ctaPrimary": "Preisangebot anfordern",
+      "ctaSecondary": "Unsere Dienstleistungen",
+      "statPackages": "Softwarepakete",
+      "statSource": "Quellcode-Lieferung",
+      "statYears": "Jahre Erfahrung",
+      "statSupport": "Support"
+    },
+    "packages": {
+      "title": "Softwarepakete",
+      "subtitle": "Jedes Paket wird individuell für den Kunden angepasst. Die unten genannten Preise sind Grundpreise — tatsächliche Angebote werden basierend auf deinen Anforderungen bestimmt.",
+      "featured": "Empfohlen",
+      "discount": "Rabatt",
+      "deliveryNote": "Einmalig, Quellcode-Lieferung",
+      "getQuote": "Angebot anfordern"
+    },
+    "process": {
+      "title": "Wie arbeiten wir?",
+      "step1": {
+        "title": "Anforderungsanalyse",
+        "desc": "Wir hören auf dein Geschäftsmodell, deine Zielgruppe und technischen Erwartungen."
+      },
+      "step2": {
+        "title": "Fahrplan",
+        "desc": "Wir finalisieren Technologieauswahl, Architektur und Zeitplan."
+      },
+      "step3": {
+        "title": "Design & Genehmigung",
+        "desc": "Erst Design, dann Code. Wir codieren nichts, was du nicht genehmigt hast."
+      },
+      "step4": {
+        "title": "Entwicklung",
+        "desc": "Coding von Grund auf mit modernen Technologien, regelmäßige Demo-Präsentationen."
+      },
+      "step5": {
+        "title": "Testing & Launch",
+        "desc": "Umfassendes Testing, Performance-Optimierung und Go-Live."
+      },
+      "step6": {
+        "title": "Support & Wachstum",
+        "desc": "Support nach der Lieferung, Schulung und kontinuierliche Verbesserung."
+      }
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "items": [
+        {
+          "q": "Wird es als fertiges Produkt verkauft?",
+          "a": "Nein. Jedes Projekt wird speziell für den Kunden codiert. Was wir als 'fertig' bezeichnen, ist, dass die Basisinfrastruktur bereit ist. Design, Inhalt und Funktionen werden vollständig auf dich zugeschnitten."
+        },
+        {
+          "q": "Liefern Sie den Quellcode?",
+          "a": "Ja. In all unseren Projekten wird der Quellcode an den Kunden geliefert. Der Code ist dein Eigentum."
+        },
+        {
+          "q": "Was ist im Preis enthalten?",
+          "a": "Projektentwicklung, Testing, Deployment und grundlegendes Nutzungstraining sind im Preis inbegriffen. Hosting und Domain sind separat."
+        },
+        {
+          "q": "Wie lange dauert die Lieferung?",
+          "a": "Je nach Paketgröße variiert es zwischen 2 und 8 Wochen. Ein fester Termin wird zu Beginn des Prozesses festgelegt."
+        },
+        {
+          "q": "Gibt es Support nach dem Kauf?",
+          "a": "Ja, technischer Support ist für den angegebenen Zeitraum in allen Paketen enthalten. Nach Ablauf des Zeitraums sind monatliche Wartungspakete verfügbar."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Sollen wir anfangen?",
+      "subtitle": "Lass uns gemeinsam deine Traumlösung im digitalen Bereich aufbauen. Kontaktiere uns für eine kostenlose Beratung und ein Preisangebot.",
+      "primary": "Kostenloses Angebot anfordern",
+      "secondary": "Kontaktiere uns"
+    }
+  },
+  "profileEditor": {
+    "label": "Profil-Editor",
+    "title": "Erstelle dein Profil",
+    "subtitle": "Gib deine Daten ein, sieh dir dein Profil in der Vorschau an und ",
+    "download": "lade",
+    "subtitleMid": " die ",
+    "mdx": ".mdx",
+    "subtitleEnd": " Datei herunter, um sie als Pull Request einzureichen.",
+    "downloadBtn": ".mdx herunterladen",
+    "resetBtn": "Zurücksetzen",
+    "editorHeader": "Editor",
+    "name": "Name",
+    "description": "Beschreibung",
+    "imaGeUrl": "Bild-URL",
+    "taGs": "Tags",
+    "markdownBody": "Markdown-Inhalt",
+    "namePlaceholder": "Dein vollständiger Name",
+    "descriptionPlaceholder": "Eine kurze Bio oder ein Slogan",
+    "bodyPlaceholder": "Schreibe über dich mit Markdown...\n\n# Hallo\n\nIch bin ein Software-Ingenieur von XipSoft.\n\n- Fähigkeit 1\n- Fähigkeit 2",
+    "preview": "Vorschau",
+    "raw": "Roh",
+    "mdxLabel": "MDX",
+    "emptyPreview": "Beginne zu tippen, um deine Profilvorschau zu sehen...",
+    "cardPreview": "Kartenvorschau"
+  },
+  "howTo": {
+    "label": "Erste Schritte",
+    "title": "Wie du dein Profil hinzufügst",
+    "subtitle": "Folge diesen {count} Schritten, um dein Entwicklerprofil zur XipSoft-Community-Plattform hinzuzufügen.",
+    "step1Title": "Repository forken",
+    "step1Desc": "Gehe zum XipSoft-GitHub-Repository und klicke auf den \"Fork\"-Button, um eine eigene Kopie zu erstellen.",
+    "step2Title": "Auf deinen Rechner klonen",
+    "step2Desc": "Klone das geforkte Repository mit Git auf deinen lokalen Rechner.",
+    "step3Title": "Abhängigkeiten installieren",
+    "step3Desc": "Navigiere zum Projektverzeichnis und installiere Abhängigkeiten mit Bun.",
+    "step4Title": "Deinen Branch erstellen",
+    "step4Desc": "Erstelle einen neuen Branch mit deinem Namen. Dies hält deine Änderungen vom Haupt-Branch getrennt.",
+    "step5Title": "Entwicklung starten",
+    "step5Desc": "Starte den Entwicklungsserver, um deine Änderungen in Echtzeit zu sehen.",
+    "step6Title": "Im Browser öffnen",
+    "step6Desc": "Besuche xipsoft.net in deinem Browser, um die Seite zu sehen.",
+    "step7Title": "Dein Profil erstellen",
+    "step7Desc": "Du hast zwei Möglichkeiten: den visuellen Profil-Editor verwenden oder manuell eine MDX-Datei erstellen.",
+    "step8Title": "Dein Profil überprüfen",
+    "step8Desc": "Navigiere zur Profilseite. Deine Karte sollte erscheinen. Verwende die Suchleiste, wenn viele Profile vorhanden sind.",
+    "optionEditor": "Profil-Editor",
+    "optionManual": "Manuell",
+    "ctaComplete": "abgeschlossen",
+    "ctaStepsComplete": "Alle {count} Schritte abgeschlossen —",
+    "ctaProfileReady": "Profil bereit!",
+    "ctaReadyTo": "Bereit zum ",
+    "ctaContribute": "Beitragen?",
+    "ctaJoinPrefix": "Füge dein Profil hinzu und tritt ",
+    "ctaJoinSuffix": " XipSoft-Software-Ingenieuren auf der Plattform bei.",
+    "step7Line1": "1. Besuche xipsoft.net/profile/editor",
+    "step7Line2": "2. Daten eingeben & Vorschau ansehen",
+    "step7Line3": "3. Klicke auf  .mdx herunterladen",
+    "step7Line4": "4. Speichere die Datei unter:",
+    "step8Line1": "Deine Profilkarte erscheint im Raster!",
+    "step8Line2": "Suche durch Eingabe deines Namens, falls nötig.",
+    "step9Title": "Änderungen committen",
+    "step9Desc": "Stage deine Profildatei und verwende den interaktiven Gitmoji-Commit-Helfer, um einen gut formatierten Commit zu erstellen.",
+    "step9Sub1": "Profildatei stagen",
+    "step9Sub2": "Commit-Helfer ausführen",
+    "step9Sub3": "Gitmoji-Eingaben ausfüllen",
+    "step9Sub4": "Commit erstellt",
+    "step10Title": "Zu GitHub pushen",
+    "step10Desc": "Pushe deinen Branch in dein geforktes Repository auf GitHub.",
+    "step11Title": "Pull Request erstellen",
+    "step11Desc": "Gehe zum ursprünglichen XipSoft-Repository auf GitHub und erstelle einen Pull Request von deinem Branch.",
+    "step11Sub1": "Pull-Request-Seite öffnen",
+    "step11Sub2": "Details ausfüllen",
+    "step11Sub3": "Einreichen",
+    "step11Line1": "Pull Request öffnen",
+    "step11Line2": "Base: main  ←  Compare: dein_name",
+    "step11Line3": "Titel: dein_name Profil hinzufügen",
+    "step11Line4": "Beschreibung: Mein Entwicklerprofil hinzugefügt",
+    "step11Line5": "Klicke auf  Pull Request erstellen",
+    "ctaOpenEditor": "Profil-Editor öffnen",
+    "ctaViewProfiles": "Profile anzeigen"
+  },
+  "contact": {
+    "label": "Kontakt aufnehmen",
+    "title": "Kontaktiere uns",
+    "subtitlePrefix": "Verbinde dich mit XipSofts Entwickler-Community. Egal ob du ",
+    "collaborate": "zusammenarbeiten",
+    "subtitleMid": ", ",
+    "contribute": "beitragen",
+    "subtitleEnd": " oder einfach Hallo sagen möchtest — wir sind da.",
+    "fbLabel": "Community-Gruppe",
+    "fbDesc": "Tritt unserer Community-Gruppe bei, um dich mit anderen XipSoft-Software-Ingenieuren zu verbinden. Wissen teilen, Chancen finden und gemeinsam wachsen.",
+    "fbTaGline": "Community & Netzwerk",
+    "fbCta": "Community-Gruppe beitreten",
+    "GhLabel": "GitHub",
+    "GhDesc": "Trage zu unseren Open-Source-Projekten bei, füge dein Entwicklerprofil hinzu und arbeite an community-getriebenen Initiativen zusammen.",
+    "GhTaGline": "Open Source & Beiträge",
+    "GhCta": "Auf GitHub ansehen",
+    "openTo": "Offen für alle",
+    "allWelcome": "alle Erfahrungsstufen willkommen"
+  },
+  "Blog": {
+    "label": "Artikel & Einblicke",
+    "title": "Blog",
+    "subtitle": "Geschichten, Tutorials und Einblicke aus XipSofts Software-Engineering-Community.",
+    "article": "Artikel",
+    "articles": "Artikel",
+    "categories": "Kategorien",
+    "allCategories": "Alle",
+    "readArticle": "Artikel lesen",
+    "noPostsTitle": "Noch keine Beiträge",
+    "noPostsBody": "Spannende Artikel sind in Vorbereitung. Unsere Ingenieur-Community schreibt Geschichten, die es wert sind, gelesen zu werden.",
+    "write": "Schreiben",
+    "writeBlog": "Blog schreiben",
+    "newBlog": "Neuer Blog",
+    "myBlogs": "Meine Blogs",
+    "saveDraft": "Entwurf speichern",
+    "publish": "Veröffentlichen",
+    "unpublish": "Veröffentlichung zurückziehen",
+    "editBlog": "Blog bearbeiten",
+    "deleteBlog": "Blog löschen",
+    "communityPost": "Community",
+    "writeNewBlog": "Neuen Blog schreiben",
+    "formTitle": "Titel",
+    "formTitlePlaceholder": "Beitragstitel",
+    "formDescription": "Beschreibung",
+    "formDescriptionPlaceholder": "Kurze Zusammenfassung deines Beitrags",
+    "formCoverImaGe": "Cover-Bild-URL",
+    "formCoverImage": "Cover-Bild-URL",
+    "formCoverImaGePlaceholder": "https://example.com/image.jpg (optional)",
+    "formCoverImagePlaceholder": "https://example.com/image.jpg (optional)",
+    "formTaGs": "Tags",
+    "formTags": "Tags",
+    "formTaGsPlaceholder": "Tags hinzufügen (Enter drücken)",
+    "formTagsPlaceholder": "Tags hinzufügen (Enter drücken)",
+    "formContent": "Inhalt",
+    "formContentPlaceholder": "Beginne deinen Beitrag zu schreiben... (/ für Befehle eingeben)",
+    "savinG": "Speichern...",
+    "saving": "Speichern...",
+    "autoSaveNote": "Automatisches Speichern alle 5s",
+    "published": "Veröffentlicht",
+    "draft": "Entwurf",
+    "maxPostsPerDay": "Max. 3 Beiträge/Tag",
+    "loadMore": "Mehr laden"
+  },
+  "jobs": {
+    "label": "Stellenangebote",
+    "title": "Jobs",
+    "subtitle": "Entdecke Stellenangebote von XipSofts Software-Engineering-Community.",
+    "job": "Job",
+    "jobsCount": "Jobs",
+    "allJobs": "Alle Jobs",
+    "expired": "Abgelaufen",
+    "expires": "Läuft ab",
+    "viewDetails": "Details ansehen",
+    "noJobsTitle": "Noch keine Jobs",
+    "noJobsBody": "Stellenangebote kommen bald. Community-Mitglieder werden hier Stellen veröffentlichen.",
+    "noJobFound": "Job nicht gefunden",
+    "postJob": "Job veröffentlichen",
+    "postedBy": "Veröffentlicht von",
+    "newJob": "Neuer Job",
+    "myJobs": "Meine Jobs",
+    "saveDraft": "Entwurf speichern",
+    "publish": "Veröffentlichen",
+    "unpublish": "Veröffentlichung zurückziehen",
+    "editJob": "Job bearbeiten",
+    "deleteJob": "Job löschen",
+    "postNewJob": "Neuen Job veröffentlichen",
+    "share": "Teilen",
+    "formPosition": "Position",
+    "formPositionPlaceholder": "Berufsbezeichnung (z.B. Senior Frontend Engineer)",
+    "formTaG": "Jobtyp",
+    "formTaGPlaceholder": "z.B. Vollzeit, Remote, Vertrag",
+    "formSkills": "Fähigkeiten",
+    "formSkillsPlaceholder": "Fähigkeiten hinzufügen (Enter drücken)",
+    "formEmail": "Büro-E-Mail",
+    "formEmailPlaceholder": "hr@unternehmen.com",
+    "formExpiredAt": "Ablaufdatum",
+    "formExpiredAtPlaceholder": "Ablaufdatum auswählen",
+    "formExpiredAtHint": "Muss ein zukünftiges Datum sein. Die Stellenanzeige wird nach diesem Datum als abgelaufen markiert.",
+    "formDescription": "Beschreibung",
+    "formDescriptionPlaceholder": "Beschreibe die Rolle, Anforderungen und Vorteile... (/ für Befehle eingeben)",
+    "savinG": "Speichern...",
+    "autoSaveNote": "Automatisches Speichern alle 5s",
+    "published": "Veröffentlicht",
+    "draft": "Entwurf",
+    "maxPostsPerDay": "Max. 3 Beiträge/Tag",
+    "loadMore": "Mehr laden",
+    "loadinG": "Laden...",
+    "disclaimerLabel": "Haftungsausschluss:",
+    "disclaimerText": "Diese Stellenanzeige wurde von der Community eingereicht und wurde nicht vollständig verifiziert. Bitte besuche die offizielle Website des Unternehmens und überprüfe die angegebenen Informationen, bevor du dich bewirbst.",
+    "taGOptions": {
+      "fullTime": "Vollzeit",
+      "partTime": "Teilzeit",
+      "remote": "Remote",
+      "contract": "Vertrag",
+      "freelance": "Freiberuflich",
+      "internship": "Praktikum"
+    }
+  },
+  "teklif": {
+    "title": "Kostenloses Angebot anfordern",
+    "subtitle": "Erzähle uns von deinem Projekt und unser Expertenteam wird sich in Kürze bei dir melden.",
+    "name": "Vollständiger Name",
+    "namePlaceholder": "Dein vollständiger Name",
+    "email": "E-Mail",
+    "emailPlaceholder": "beispiel@email.com",
+    "phone": "Telefon",
+    "phonePlaceholder": "+49 XXX XXX XXXX",
+    "service": "Serviceart",
+    "servicePlaceholder": "Einen Service auswählen",
+    "serviceOptions": {
+      "web": "Webentwicklung & Design",
+      "mobile": "Mobile Anwendung",
+      "desktop": "Desktop-Software",
+      "security": "Cybersicherheit",
+      "seo": "SEO & Digitales Marketing",
+      "other": "Sonstiges"
+    },
+    "detail": "Projektdetails",
+    "detailPlaceholder": "Beschreibe dein Projekt kurz...",
+    "submit": "Angebotsanfrage senden",
+    "submitting": "Wird gesendet...",
+    "successTitle": "Angebot erhalten!",
+    "successMessaGe": "Deine Angebotsanfrage wurde erhalten. Unser Expertenteam wird sich so bald wie möglich bei dir melden.",
+    "close": "Schließen"
+  },
+  "auth": {
+    "siGnIn": "Anmelden",
+    "siGnOut": "Abmelden",
+    "siGnInRequired": "Anmeldung erforderlich",
+    "siGnInDesc": "Melde dich mit deinem Google-Konto an, um auf diese Funktion zuzugreifen.",
+    "siGnInWithGooGle": "Mit Google anmelden",
+    "accessDenied": "Zugriff verweigert",
+    "accessDeniedDesc": "Du hast keine Berechtigung, diese Seite anzusehen.",
+    "backToBlog": "Zurück zum Blog"
+  },
+  "devSetup": {
+    "label": "Entwicklungsumgebung",
+    "title": "Firebase-Einrichtungsleitfaden",
+    "subtitle": "Folge diesen {count} Schritten, um Firebase für die lokale Entwicklung einzurichten. Anfängerfreundlich — keine Vorkenntnisse erforderlich.",
+    "step1Title": "Ein Google-Konto erstellen",
+    "step1Desc": "Firebase ist ein Google-Produkt, daher benötigst du ein Google-Konto. Wenn du bereits ein Gmail-Konto hast, überspringe diesen Schritt.",
+    "step1Line1": "Gehe zu: accounts.Google.com/signup",
+    "step1Line2": "Gib deinen Namen ein und erstelle einen Benutzernamen",
+    "step1Line3": "Lege ein Passwort fest und verifiziere dein Telefon",
+    "step1Line4": "Fertig! Du hast jetzt ein Google-Konto",
+    "step2Title": "Ein Firebase-Projekt erstellen",
+    "step2Desc": "Gehe zur Firebase-Konsole und erstelle ein neues Projekt für deine Entwicklungsumgebung.",
+    "step2Line1": "Gehe zu: console.firebase.Google.com",
+    "step2Line2": "Klicke auf \"Projekt erstellen\" oder \"Projekt hinzufügen\"",
+    "step2Line3": "Projektname eingeben (z.B. XipSoft-dev)",
+    "step2Line4": "Google Analytics aktivieren oder überspringen",
+    "step2Line5": "Klicke auf \"Projekt erstellen\" und warte ~30 Sekunden",
+    "step3Title": "Eine Web-App registrieren",
+    "step3Desc": "Registriere innerhalb deines Firebase-Projekts eine Webanwendung, um deine Anmeldedaten zu erhalten.",
+    "step3Line1": "Klicke auf der Projektübersicht auf das Web-Symbol",
+    "step3Line2": "Gib einen App-Spitznamen ein (z.B. XipSoft-web)",
+    "step3Line3": "Firebase Hosting überspringen (Häkchen entfernen)",
+    "step3Line4": "Klicke auf \"App registrieren\"",
+    "step4Title": "Firebase-Konfiguration kopieren",
+    "step4Desc": "Nach der Registrierung zeigt Firebase deine Konfigurationswerte. Kopiere sie — du brauchst sie für deine .env.local-Datei.",
+    "step4Line1": "apiKey: \"AIzaSy...\"",
+    "step4Line2": "authDomain: \"dein-projekt.firebaseapp.com\"",
+    "step4Line3": "projectId: \"deine-projekt-id\"",
+    "step4Line4": "storageBucket: \"dein-projekt.firebasestorage.app\"",
+    "step4Line5": "messagingSenderId: \"123456789\"",
+    "step4Line6": "appId: \"1:123456789:web:abc123\"",
+    "step4Tip": "Diese findest du jederzeit unter: Projekteinstellungen → Allgemein → Deine Apps",
+    "step5Title": "Google-Authentifizierung aktivieren",
+    "step5Desc": "Richte die Google-Anmeldung ein, damit sich Benutzer auf der Plattform anmelden können.",
+    "step5Line1": "Seitenleiste → Erstellen → Authentifizierung → Erste Schritte",
+    "step5Line2": "Klicke auf den Tab \"Anmeldemethode\"",
+    "step5Line3": "Klicke auf \"Google\" → Aktivieren umschalten → Speichern",
+    "step5Line4": "Lege deinen Projektnamen und deine Support-E-Mail fest",
+    "step6Title": "Firestore-Datenbank erstellen",
+    "step6Desc": "Firestore speichert Blog-Beiträge, Stellenanzeigen und Benutzerdaten.",
+    "step6Line1": "Seitenleiste → Erstellen → Firestore-Datenbank",
+    "step6Line2": "Klicke auf \"Datenbank erstellen\"",
+    "step6Line3": "Standort wählen (asia-southeast1 für XipSoft)",
+    "step6Line4": "Im \"Testmodus\" für die Entwicklung starten",
+    "step6Line5": "Klicke auf \"Erstellen\"",
+    "step7Title": "Firebase-Speicher erstellen",
+    "step7Desc": "Der Speicher verwaltet Bild-Uploads für Blog-Titelfotos und Benutzeravatare.",
+    "step7Line1": "Seitenleiste → Erstellen → Speicher",
+    "step7Line2": "Klicke auf \"Erste Schritte\"",
+    "step7Line3": "Im \"Testmodus\" für die Entwicklung starten",
+    "step7Line4": "Klicke auf \"Fertig\"",
+    "step8Title": "Projekt klonen & installieren",
+    "step8Desc": "Klone das XipSoft-Repository und installiere Abhängigkeiten mit Bun. Wenn du den Code bereits geklont hast, führe einfach bun install aus und gehe zum nächsten Schritt.",
+    "step9Title": "Umgebungsvariablen einrichten",
+    "step9Desc": "Erstelle deine .env.local-Datei und füge die Firebase-Konfigurationswerte aus Schritt 4 ein.",
+    "step9Line1": "cp .env.example .env.local",
+    "step9Line2": "# Dann .env.local mit deinen Firebase-Werten bearbeiten:",
+    "step9Line3": "NEXT_PUBLIC_FIREBASE_API_KEY=dein-api-key",
+    "step9Line4": "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=dein-projekt.firebaseapp.com",
+    "step9Line5": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=deine-projekt-id",
+    "step9Line6": "NEXT_PUBLIC_FIREBASE_STORAgE_BUCKET=dein-projekt.firebasestorage.app",
+    "step9Line7": "NEXT_PUBLIC_FIREBASE_MESSAgINg_SENDER_ID=123456789",
+    "step9Line8": "NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123",
+    "step9Line9": "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX",
+    "step10Title": "Entwicklungsserver starten",
+    "step10Desc": "Starte den Entwicklungsserver und öffne die App in deinem Browser.",
+    "ctaComplete": "Einrichtung abgeschlossen!",
+    "ctaDesc": "Du bist bereit, lokal mit Firebase zu entwickeln. Melde dich mit Google an, erstelle Blog-Beiträge und teste Stellenanzeigen.",
+    "ctaOpenApp": "Entwicklungsserver öffnen",
+    "ctaViewGuide": "Anleitung ansehen"
+  },
+  "profileHero": {
+    "label": "Entwicklerverzeichnis",
+    "title": "Profile",
+    "subtitle": "Entdecke {count}+ Software-Ingenieure von XipSoft. Durchsuche nach Technologie, suche nach Namen und vernetze dich mit der Community."
+  },
+  "booksHero": {
+    "label": "Tech-Bücher & Ressourcen",
+    "title": "Bücher",
+    "subtitle": "Empfohlene Tech-Bücher und Lernressourcen, geteilt von XipSoft-Software-Ingenieuren."
+  },
+  "classesHero": {
+    "label": "Tech-Kurse & Workshops",
+    "title": "Kurse",
+    "subtitle": "Ein vertrauenswürdiges, community-kuratiertes Verzeichnis von Tech-Kursen bei XipSoft. Einträge werden vor der Veröffentlichung geprüft."
+  },
+  "footer": {
+    "taGline": {
+      "prefix": "XipSofts Software-Ingenieure befähigen zu ",
+      "innovate": "innovieren",
+      "collaborate": "zusammenarbeiten",
+      "build": "aufbauen",
+      "suffix": " — eine Codezeile nach der anderen."
+    },
+    "openSource": "Open Source",
+    "naviGate": "Navigieren",
+    "home": "Startseite",
+    "profiles": "Profile",
+    "classes": "Kurse",
+    "books": "Bücher",
+    "profileEditor": "Profil-Editor",
+    "Blog": "Blog",
+    "contactUs": "Kontaktiere uns",
+    "jobs": "Jobs",
+    "devSetup": "Entwicklungsumgebung",
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen",
+    "cookies": "Cookie-Richtlinie",
+    "community": "Community",
+    "Github": "GitHub-Organisation",
+    "facebook": "Community-Gruppe",
+    "copyriGht": "XipSoft Software Engineers",
+    "loGin": "Anmelden",
+    "siGnup": "Registrieren"
+  },
+  "": {
+    "label": "Community ",
+    "title": "Hacking & Sicherheit ",
+    "subtitle": "Tritt der ultimativen Community für Cybersicherheit, ethisches Hacking, SEO und Softwareentwicklungsdiskussionen bei.",
+    "cateGories": {
+      "cybersecurity": "Cybersicherheit",
+      "blackhat": "Black Hat & Hacking",
+      "whitehat": "White Hat & Sicherheit",
+      "Greyhat": "Grey Hat & Forschung",
+      "seo": "SEO & Digitales Marketing",
+      "development": "Softwareentwicklung",
+      "network": "Netzwerk & Systeme"
+    },
+    "newThread": "Neuer Thread",
+    "searchPlaceholder": "Threads durchsuchen...",
+    "noThreads": "Noch keine Threads",
+    "noThreadsDesc": "Sei der Erste, der eine Diskussion in dieser Kategorie startet.",
+    "threadCount": "Threads",
+    "postCount": "Beiträge",
+    "lastPost": "Letzter Beitrag",
+    "views": "Aufrufe",
+    "replies": "Antworten",
+    "sticky": "Angeheftet",
+    "locked": "Gesperrt",
+    "hot": "Beliebt"
+  },
+  "hackinG": {
+    "label": "Hacking & Sicherheit",
+    "title": "Hacking-Tutorials & Leitfäden",
+    "subtitle": "Lerne Penetrationstests, Exploit-Entwicklung und Sicherheitsforschung von unseren Community-Experten.",
+    "cateGories": {
+      "pentest": "Penetrationstests",
+      "exploits": "Exploit-Entwicklung",
+      "social": "Social Engineering",
+      "malware": "Malware-Analyse",
+      "reverse": "Reverse Engineering",
+      "wireless": "Wireless-Hacking",
+      "web": "Web-Anwendungs-Hacking"
+    },
+    "tools": {
+      "kali": "Kali Linux Tools",
+      "metasploit": "Metasploit Framework",
+      "burpsuite": "Burp Suite",
+      "nmap": "Nmap Scanner",
+      "wireshark": "Wireshark",
+      "john": "John the Ripper",
+      "hashcat": "Hashcat"
+    },
+    "disclaimer": "Alle Inhalte dienen nur zu Bildungszwecken. Unbefugtes Hacking ist illegal."
+  },
+  "security": {
+    "label": "Cybersicherheit",
+    "title": "Sicherheits-Best-Practices & Verteidigung",
+    "subtitle": "Schütze Systeme, Anwendungen und Netzwerke mit branchenführenden Sicherheitsstrategien.",
+    "cateGories": {
+      "audit": "Sicherheitsauditing",
+      "buGbounty": "Bug-Bounty-Programme",
+      "incident": "Incident Response",
+      "crypto": "Kryptographie",
+      "defense": "Defensive Sicherheit",
+      "compliance": "Compliance & Standards",
+      "threat": "Bedrohungsanalyse"
+    },
+    "Guides": {
+      "securecodinG": "Leitfaden für sicheres Coding",
+      "auth": "Best Practices für Authentifizierung",
+      "encryption": "Verschlüsselungsstandards",
+      "firewall": "Firewall-Konfiguration",
+      "monitorinG": "Sicherheitsüberwachung"
+    }
+  },
+  "seo": {
+    "label": "SEO & Marketing",
+    "title": "SEO-Strategien & Digitales Marketing",
+    "subtitle": "Meistere Suchmaschinenoptimierung, von Black-Hat-Techniken bis zu White-Hat-Best-Practices.",
+    "cateGories": {
+      "blackhat": "Black-Hat-SEO",
+      "whitehat": "White-Hat-SEO",
+      "Greyhat": "Grey-Hat-SEO",
+      "technical": "Technisches SEO",
+      "content": "Content-Marketing",
+      "linkbuildinG": "Linkaufbau",
+      "analytics": "SEO-Analytik"
+    },
+    "techniques": {
+      "onpaGe": "On-Page-Optimierung",
+      "offpaGe": "Off-Page-Strategien",
+      "keywords": "Keyword-Recherche",
+      "backlinks": "Backlink-Analyse",
+      "schema": "Schema-Markup",
+      "speed": "Seitenladezeit-Optimierung"
+    },
+    "tools": {
+      "searchConsole": "Google Search Console",
+      "analytics": "Google Analytics",
+      "ahrefs": "Ahrefs",
+      "semrush": "SEMrush",
+      "moz": "Moz Pro",
+      "screaminG": "Screaming Frog"
+    }
+  },
+  "ethical": {
+    "label": "Ethisches Hacking",
+    "title": "Ethisches Hacking & Penetrationstests",
+    "subtitle": "Lerne verantwortungsvolle Hacking-Techniken, um Sicherheitslücken zu identifizieren und zu beheben.",
+    "certifications": {
+      "ceh": "Certified Ethical Hacker (CEH)",
+      "oscp": "Offensive Security Certified Professional (OSCP)",
+      "comptia": "CompTIA Security+",
+      "cissp": "CISSP Zertifizierung",
+      "Gpwn": "GIAC Penetration Tester (GPEN)"
+    },
+    "methodoloGy": {
+      "recon": "Aufklärung",
+      "scanninG": "Scanning & Enumeration",
+      "exploitation": "Exploitation",
+      "postexploit": "Post-Exploitation",
+      "reportinG": "Berichterstattung"
+    }
+  },
+  "thread": {
+    "create": "Neuen Thread erstellen",
+    "edit": "Thread bearbeiten",
+    "delete": "Thread löschen",
+    "reply": "Antworten",
+    "quote": "Zitieren",
+    "editPost": "Beitrag bearbeiten",
+    "deletePost": "Beitrag löschen",
+    "report": "Melden",
+    "markSolution": "Als Lösung markieren",
+    "unmarkSolution": "Lösung aufheben",
+    "subscribe": "Abonnieren",
+    "unsubscribe": "Abonnement kündigen",
+    "lock": "Thread sperren",
+    "unlock": "Thread entsperren",
+    "pin": "Thread anheften",
+    "unpin": "Thread loslösen",
+    "title": "Thread-Titel",
+    "titlePlaceholder": "Einen beschreibenden Titel eingeben...",
+    "content": "Inhalt",
+    "contentPlaceholder": "Thread-Inhalt schreiben...",
+    "cateGory": "Kategorie",
+    "taGs": "Tags",
+    "taGsPlaceholder": "Tags hinzufügen (Enter drücken)",
+    "submit": "Thread erstellen",
+    "preview": "Vorschau",
+    "draft": "Entwurf speichern",
+    "published": "Veröffentlicht",
+    "views_count": "Aufrufe",
+    "created": "Erstellt",
+    "lastActivity": "Letzte Aktivität"
+  },
+  "cateGory": {
+    "all": "Alle Kategorien",
+    "popular": "Beliebt",
+    "recent": "Neueste",
+    "unanswered": "Unbeantwortet",
+    "myThreads": "Meine Threads",
+    "bookmarked": "Lesezeichen",
+    "rules": "Kategorieregeln",
+    "description": "Beschreibung",
+    "moderators": "Moderatoren",
+    "subcateGories": "Unterkategorien"
+  },
+  "user": {
+    "profile": "Benutzerprofil",
+    "threads": "Threads",
+    "posts": "Beiträge",
+    "reputation": "Reputation",
+    "memberSince": "Mitglied seit",
+    "lastSeen": "Zuletzt gesehen",
+    "role": "Rolle",
+    "admin": "Administrator",
+    "moderator": "Moderator",
+    "member": "Mitglied",
+    "banned": "Gesperrt",
+    "editProfile": "Profil bearbeiten",
+    "sendMessaGe": "Nachricht senden",
+    "follow": "Folgen",
+    "unfollow": "Entfolgen",
+    "block": "Blockieren",
+    "unblock": "Entsperren"
+  },
+  "moderation": {
+    "approve": "Genehmigen",
+    "reject": "Ablehnen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "move": "Thread verschieben",
+    "merGe": "Threads zusammenführen",
+    "split": "Thread aufteilen",
+    "warn": "Benutzer warnen",
+    "ban": "Benutzer sperren",
+    "unban": "Sperrung aufheben",
+    "reason": "Moderationsgrund",
+    "notes": "Moderatornotizen",
+    "reportQueue": "Meldungswarteschlange",
+    "pendinGApproval": "Ausstehende Genehmigung"
+  },
+  "notifications": {
+    "title": "Benachrichtigungen",
+    "all": "Alle Benachrichtigungen",
+    "mentions": "Erwähnungen",
+    "replies": "Antworten",
+    "quotes": "Zitate",
+    "likes": "Gefällt mir",
+    "follows": "Neue Follower",
+    "system": "Systemnachrichten",
+    "markRead": "Als gelesen markieren",
+    "markAllRead": "Alle als gelesen markieren",
+    "noNotifications": "Keine Benachrichtigungen",
+    "Settings": "Benachrichtigungseinstellungen"
+  },
+  "messaGes": {
+    "title": "Nachrichten",
+    "inbox": "Posteingang",
+    "sent": "Gesendet",
+    "compose": "Verfassen",
+    "reply": "Antworten",
+    "forward": "Weiterleiten",
+    "delete": "Löschen",
+    "markUnread": "Als ungelesen markieren",
+    "noMessaGes": "Keine Nachrichten",
+    "searchPlaceholder": "Nachrichten durchsuchen...",
+    "recipient": "Empfänger",
+    "subject": "Betreff",
+    "send": "Senden"
+  },
+  "privacy": {
+    "title": "Datenschutzrichtlinie",
+    "description": "Erfahre, wie XipSoft deine persönlichen Daten gemäß GDPR und Datenschutzbestimmungen erhebt, verwendet und schützt.",
+    "lastUpdated": "Zuletzt aktualisiert: 11. April 2026",
+    "backToHome": "Zurück zur Startseite",
+    "sections": {
+      "introduction": {
+        "title": "1. Einleitung",
+        "content": "XipSoft ('wir', 'unser' oder 'uns') ist bestrebt, deine Privatsphäre zu schützen. Diese Datenschutzrichtlinie erläutert, wie wir deine Daten erheben, verwenden, offenlegen und schützen, wenn du unsere Website besuchst oder unsere Dienste nutzt. Bitte lies diese Datenschutzrichtlinie sorgfältig. Durch die Nutzung unserer Dienste stimmst du der Erhebung und Verwendung von Daten gemäß dieser Richtlinie zu."
+      },
+      "information": {
+        "title": "2. Erhobene Informationen",
+        "intro": "Wir erheben Informationen, die du uns direkt mitteilst, sowie automatisch erfasste Informationen:",
+        "items": {
+          "personal": "Persönliche Daten: Name, E-Mail-Adresse, Telefonnummer und andere Kontaktdaten, die du angibst",
+          "technical": "Technische Daten: IP-Adresse, Browsertyp, Geräteinformationen, Betriebssystem und Surfverhalten",
+          "usage": "Nutzungsdaten: Besuchte Seiten, Verweildauer, Klicks und Navigationsmuster",
+          "cookies": "Cookies und Tracking: Über Cookies, Pixel und ähnliche Technologien erfasste Informationen",
+          "advertising": "Werbedaten: Von Google AdSense und Werbepartnern geteilte Informationen für zielgerichtete Werbung"
+        }
+      },
+      "usage": {
+        "title": "3. Verwendung deiner Daten",
+        "intro": "Wir verwenden die erhobenen Informationen, um:",
+        "items": {
+          "provide": "Unsere Website und Dienste bereitzustellen, zu betreiben und zu pflegen",
+          "improve": "Unsere Website-Erfahrung zu verbessern, zu personalisieren und zu erweitern",
+          "personalize": "Inhalte zu personalisieren und relevante Werbung über Google AdSense anzuzeigen",
+          "communicate": "Mit dir über Updates, Support und Marketing zu kommunizieren (mit deiner Zustimmung)",
+          "advertising": "Personalisierte Anzeigen zu schalten und die Werbewirksamkeit via Google AdSense zu messen",
+          "security": "Technische oder Sicherheitsprobleme zu erkennen, zu verhindern und zu beheben"
+        }
+      },
+      "adsense": {
+        "title": "4. Google AdSense & Werbung",
+        "content": "Wir verwenden Google AdSense, einen Drittanbieter-Werbedienst von Google LLC, um Werbung auf unserer Website anzuzeigen. Google AdSense verwendet Cookies und Web-Beacons, um Informationen über deine Besuche auf dieser und anderen Websites zu erheben und relevante Anzeigen bereitzustellen. Diese Informationen umfassen deine IP-Adresse, den Browsertyp, besuchte Seiten und Klickstreamdaten. Google kann diese Daten verwenden, um Anzeigen auf den Websites zu personalisieren, mit denen es zusammenarbeitet.",
+        "optout": "Du kannst personalisierte Werbung deaktivieren, indem du die Google Ads-Einstellungen (https://adsSettings.Google.com) besuchst oder www.aboutads.info aufrufst. Du kannst Cookie-Einstellungen auch über deine Browsereinstellungen verwalten."
+      },
+      "sharing": {
+        "title": "5. Datenweitergabe & Offenlegung",
+        "intro": "Wir verkaufen deine persönlichen Daten nicht. Wir können deine Daten weitergeben an:",
+        "items": {
+          "service": "Dienstleister: Drittunternehmen, die Dienste in unserem Auftrag erbringen (Hosting, Analytik, Werbung)",
+          "advertising": "Werbepartner: Google AdSense und andere Werbenetzwerke zur Schaltung relevanter Werbung",
+          "analytics": "Analyseanbieter: Google Analytics und ähnliche Dienste zum Verständnis der Website-Nutzung",
+          "legal": "Gesetzliche Anforderungen: Wenn dies gesetzlich, durch Vorschriften oder rechtliche Verfahren erforderlich ist"
+        }
+      },
+      "cookies": {
+        "title": "6. Cookies & Tracking-Technologien",
+        "content": "Wir verwenden Cookies und ähnliche Tracking-Technologien, um Aktivitäten auf unserer Website zu verfolgen und unsere Dienste zu verbessern. Google AdSense verwendet DoubleClick-Cookies, um relevantere Anzeigen im Web zu schalten und die Häufigkeit einzuschränken, mit der du eine Anzeige siehst.",
+        "manage": "Du kannst Cookies über deine Browsereinstellungen steuern. Das Deaktivieren von Cookies kann jedoch deine Fähigkeit beeinträchtigen, bestimmte Funktionen unserer Website zu nutzen und die Relevanz der angezeigten Werbung zu beeinflussen."
+      },
+      "security": {
+        "title": "7. Datensicherheit",
+        "content": "Wir implementieren angemessene technische und organisatorische Sicherheitsmaßnahmen zum Schutz deiner persönlichen Daten. Jedoch ist keine Übertragungsmethode über das Internet oder elektronische Speicherung zu 100% sicher. Während wir bestrebt sind, kommerziell akzeptable Mittel zum Schutz deiner persönlichen Daten einzusetzen, können wir deren absolute Sicherheit nicht garantieren."
+      },
+      "rights": {
+        "title": "8. Deine Datenschutzrechte",
+        "intro": "Je nach deinem Standort hast du möglicherweise folgende Rechte:",
+        "items": {
+          "access": "Auskunft: Anforderung einer Kopie der persönlichen Daten, die wir über dich haben",
+          "correct": "Berichtigung: Anforderung der Korrektur ungenauer oder unvollständiger Daten",
+          "delete": "Löschung: Anforderung der Löschung deiner persönlichen Daten unter bestimmten Umständen",
+          "object": "Widerspruch: Widerspruch gegen die Verarbeitung deiner persönlichen Daten für bestimmte Zwecke einschließlich Werbung",
+          "portable": "Übertragbarkeit: Anforderung der Übertragung deiner Daten an einen anderen Dienstanbieter",
+          "withdraw": "Einwilligung widerrufen: Einwilligung jederzeit widerrufen, wenn die Verarbeitung auf Einwilligung basiert"
+        }
+      },
+      "children": {
+        "title": "9. Datenschutz für Kinder",
+        "content": "Unsere Dienste sind nicht für Personen unter 16 Jahren bestimmt. Wir erheben wissentlich keine persönlichen Daten von Kindern. Wenn wir feststellen, dass wir versehentlich persönliche Daten von Kindern erhoben haben, werden wir Schritte unternehmen, diese Informationen zu löschen."
+      },
+      "changes": {
+        "title": "10. Änderungen dieser Richtlinie",
+        "content": "Wir können unsere Datenschutzrichtlinie von Zeit zu Zeit aktualisieren. Wir werden dich über Änderungen informieren, indem wir die neue Datenschutzrichtlinie auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" aktualisieren. Es wird empfohlen, diese Datenschutzrichtlinie regelmäßig auf Änderungen zu überprüfen."
+      },
+      "contact": {
+        "title": "11. Kontaktiere uns",
+        "intro": "Wenn du Fragen zu dieser Datenschutzrichtlinie hast oder deine Datenschutzrechte ausüben möchtest, kontaktiere uns bitte:",
+        "email": {
+          "label": "E-Mail:",
+          "value": "xiplarex@Gmail.com"
+        },
+        "address": {
+          "label": "Adresse:",
+          "value": "XipSoft Software & Technology Solutions"
+        }
+      }
+    }
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "description": "Bedingungen und Konditionen, die deine Nutzung von XipSofts Website, Diensten und Community-Plattform regeln.",
+    "lastUpdated": "Zuletzt aktualisiert: 11. April 2026",
+    "backToHome": "Zurück zur Startseite",
+    "sections": {
+      "acceptance": {
+        "title": "1. Annahme der Bedingungen",
+        "content": "Durch den Zugriff auf oder die Nutzung von XipSofts Website, Diensten oder Community-Plattform stimmst du zu, an diese Nutzungsbedingungen und alle geltenden Gesetze und Vorschriften gebunden zu sein. Wenn du diesen Bedingungen nicht zustimmst, ist es dir untersagt, diese Website zu nutzen oder darauf zuzugreifen."
+      },
+      "services": {
+        "title": "2. Unsere Dienste",
+        "content": "XipSoft bietet folgende Dienste an:",
+        "items": {
+          "web": "Websoftwareentwicklung und Designdienstleistungen",
+          "mobile": "Mobile App-Entwicklung für iOS, Android und plattformübergreifend",
+          "desktop": "Desktop-Softwareentwicklung für Windows, macOS und Linux",
+          "consulting": "Technologieberatung, Cybersicherheit und SEO-Dienste",
+          "community": "Community, Entwicklerprofile, Blog-Plattform und Stellenbörse"
+        }
+      },
+      "accounts": {
+        "title": "3. Benutzerkonten",
+        "intro": "Wenn du ein Konto bei uns erstellst, stimmst du zu:",
+        "items": {
+          "accurate": "Genaue, aktuelle und vollständige Informationen bei der Registrierung anzugeben",
+          "secure": "Die Sicherheit und Vertraulichkeit deiner Anmeldedaten zu wahren",
+          "responsible": "Verantwortung für alle Aktivitäten zu übernehmen, die unter deinem Konto stattfinden",
+          "notify": "Uns unverzüglich über unbefugte Nutzung deines Kontos zu informieren"
+        }
+      },
+      "intellectual": {
+        "title": "4. Rechte am geistigen Eigentum",
+        "content": "Die Website, ihr originaler Inhalt, ihre Funktionen, ihr Design und ihre Software sind und bleiben das ausschließliche Eigentum von XipSoft. Der Inhalt ist durch Urheberrecht, Markenrecht und andere Gesetze geschützt. Unsere Marken und unser Erscheinungsbild dürfen nicht ohne vorherige schriftliche Genehmigung in Verbindung mit einem Produkt oder einer Dienstleistung verwendet werden."
+      },
+      "userContent": {
+        "title": "5. Nutzergenerierte Inhalte",
+        "intro": "Du bist für die Inhalte verantwortlich, die du auf unserer Plattform veröffentlichst. Durch das Veröffentlichen von Inhalten bestätigst du, dass diese nicht:",
+        "items": {
+          "illegal": "Gegen geltendes Recht, Vorschriften oder Rechte Dritter verstoßen",
+          "harmful": "Schädliches, anstößiges oder unangemessenes Material enthalten",
+          "infringing": "Rechte am geistigen Eigentum anderer verletzen",
+          "spam": "Spam, Werbung oder Werbematerial ohne Genehmigung darstellen"
+        }
+      },
+      "prohibited": {
+        "title": "6. Verbotene Aktivitäten",
+        "intro": "Du stimmst zu, keine der folgenden Aktivitäten auszuführen:",
+        "items": {
+          "violate": "Gegen geltendes lokales, staatliches, nationales oder internationales Recht verstoßen",
+          "exploit": "Minderjährige in irgendeiner Weise ausnutzen, schädigen oder zu schädigen versuchen",
+          "interfere": "Die Integrität oder Leistung der Website stören oder unterbrechen",
+          "unauthorized": "Unbefugten Zugang zu irgendeinem Teil der Website oder anderen Systemen oder Netzwerken zu erlangen versuchen",
+          "scrape": "Roboter, Spider, Scraper oder andere automatisierte Mittel für den Zugriff auf die Website verwenden"
+        }
+      },
+      "disclaimer": {
+        "title": "7. Gewährleistungsausschluss",
+        "content": "Die Website und ihre Inhalte werden auf einer 'wie sie ist'- und 'wie verfügbar'-Basis ohne jegliche ausdrückliche oder stillschweigende Gewährleistungen bereitgestellt. XipSoft gewährleistet nicht, dass die Website ununterbrochen, sicher oder fehlerfrei ist oder dass Mängel behoben werden."
+      },
+      "limitation": {
+        "title": "8. Haftungsbeschränkung",
+        "content": "In keinem Fall haften XipSoft, seine Direktoren, Mitarbeiter oder Vertreter für indirekte, zufällige, besondere, Folge- oder Strafschadenersatzansprüche, einschließlich ohne Einschränkung Verlust von Gewinnen, Daten, Nutzung, Goodwill oder andere immaterielle Verluste, die aus deinem Zugriff auf oder der Nutzung oder Unfähigkeit zum Zugriff auf oder zur Nutzung der Website oder Dienste resultieren."
+      },
+      "termination": {
+        "title": "9. Kündigung",
+        "content": "Wir können deinen Zugang zu unseren Diensten sofort und ohne vorherige Ankündigung oder Haftung aus beliebigem Grund kündigen oder aussetzen, einschließlich ohne Einschränkung, wenn du gegen diese Bedingungen verstößt. Bei der Kündigung erlischt dein Recht zur Nutzung der Website und Dienste sofort."
+      },
+      "governing": {
+        "title": "10. Anwendbares Recht",
+        "content": "Diese Bedingungen unterliegen dem geltenden Recht und werden gemäß diesem ausgelegt, ohne Rücksicht auf seine Kollisionsnormen. Unser Versäumnis, ein Recht oder eine Bestimmung dieser Bedingungen durchzusetzen, wird nicht als Verzicht auf diese Rechte angesehen."
+      },
+      "changes": {
+        "title": "11. Änderungen der Bedingungen",
+        "content": "Wir behalten uns das Recht vor, diese Bedingungen nach eigenem Ermessen jederzeit zu ändern oder zu ersetzen. Wenn eine Änderung wesentlich ist, werden wir mindestens 30 Tage vor Inkrafttreten neuer Bedingungen eine Benachrichtigung geben. Was eine wesentliche Änderung darstellt, wird nach unserem alleinigen Ermessen bestimmt."
+      },
+      "contact": {
+        "title": "12. Kontaktinformationen",
+        "intro": "Wenn du Fragen zu diesen Bedingungen hast, kontaktiere uns bitte:",
+        "email": {
+          "label": "E-Mail:",
+          "value": "xiplarex@Gmail.com"
+        },
+        "address": {
+          "label": "Adresse:",
+          "value": "XipSoft Software & Technology Solutions"
+        }
+      }
+    }
+  },
+  "cookies": {
+    "title": "Cookie-Richtlinie",
+    "description": "Erfahre, wie XipSoft Cookies und Tracking-Technologien verwendet, einschließlich Google AdSense-Werbe-Cookies.",
+    "lastUpdated": "Zuletzt aktualisiert: 11. April 2026",
+    "backToHome": "Zurück zur Startseite",
+    "sections": {
+      "what": {
+        "title": "1. Was sind Cookies",
+        "content": "Cookies sind kleine Textdateien, die auf deinem Gerät gespeichert werden, wenn du eine Website besuchst. Sie helfen der Website, deine Einstellungen zu merken, zu verstehen, wie du die Website nutzt, und deine Erfahrung zu verbessern. Cookies können 'persistent' (für einen bestimmten Zeitraum auf deinem Gerät verbleibend) oder 'Sitzungs'-Cookies (beim Schließen des Browsers gelöscht) sein."
+      },
+      "types": {
+        "title": "2. Arten von Cookies, die wir verwenden",
+        "intro": "Wir verwenden folgende Arten von Cookies:",
+        "essential": {
+          "title": "Wesentliche Cookies",
+          "content": "Diese Cookies sind notwendig, damit die Website ordnungsgemäß funktioniert. Sie ermöglichen grundlegende Funktionen wie Sicherheit, Netzwerkverwaltung und Barrierefreiheit. Du kannst diese Cookies nicht ablehnen."
+        },
+        "analytics": {
+          "title": "Analytik-Cookies",
+          "content": "Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, indem sie Informationen anonym sammeln und melden. Wir verwenden Google Analytics zur Analyse der Website-Nutzung und Verbesserung unserer Dienste."
+        },
+        "advertising": {
+          "title": "Werbe-Cookies",
+          "content": "Diese Cookies werden verwendet, um relevante Werbung zu schalten und die Werbewirksamkeit zu messen. Wir verwenden Google AdSense, das DoubleClick-Cookies nutzt, um relevantere Anzeigen im Web zu schalten und die Anzeigenhäufigkeit einzuschränken."
+        },
+        "functional": {
+          "title": "Funktionale Cookies",
+          "content": "Diese Cookies ermöglichen erweiterte Funktionalität und Personalisierung, wie das Merken deiner Spracheinstellungen, Theme-Einstellungen und des Anmeldestatus."
+        }
+      },
+      "adsense": {
+        "title": "3. Google AdSense Cookies",
+        "content": "Wir verwenden Google AdSense, um Werbung auf unserer Website anzuzeigen. Google AdSense verwendet Cookies, um Anzeigen basierend auf früheren Besuchen der Nutzer auf unserer und anderen Websites bereitzustellen.",
+        "details": "Die Verwendung des DoubleClick-Cookies durch Google ermöglicht es Google und seinen Partnern, Anzeigen für unsere Nutzer basierend auf deren Besuch auf unserer Website und/oder anderen Websites im Internet zu schalten. Nutzer können die Verwendung des DoubleClick-Cookies für interessenbasierte Werbung durch den Besuch der Anzeigeneinstellungen (https://adsSettings.Google.com) ablehnen."
+      },
+      "thirdParty": {
+        "title": "4. Drittanbieter-Cookies",
+        "intro": "Zusätzlich zu unseren eigenen Cookies können wir auch verschiedene Drittanbieter-Cookies verwenden, um Nutzungsstatistiken zu melden, Werbung zu schalten usw. Dazu gehören:",
+        "items": {
+          "google": "Google AdSense und Google Analytics für Werbung und Website-Analytik",
+          "analytics": "Analyseanbieter zum Verständnis des Nutzerverhaltens und zur Verbesserung unserer Dienste",
+          "social": "Social-Media-Plattformen für Sharing-Funktionen (wenn du Inhalte teilst)",
+          "advertising": "Werbenetzwerke, die uns helfen, relevante Anzeigen zu schalten"
+        }
+      },
+      "manage": {
+        "title": "5. Cookie-Verwaltung",
+        "content": "Du hast das Recht, Cookies anzunehmen oder abzulehnen. Du kannst deine Cookie-Einstellungen verwalten, indem du deine Browsereinstellungen änderst, um Cookies abzulehnen oder zu signalisieren, wenn ein Cookie gesendet wird.",
+        "browser": "Die meisten Webbrowser ermöglichen eine gewisse Kontrolle über die meisten Cookies über die Browsereinstellungen. Weitere Informationen über Cookies, einschließlich der Möglichkeit zu sehen, welche Cookies gesetzt wurden, findest du unter www.aboutcookies.org oder www.allaboutcookies.org.",
+        "browsers": {
+          "chrome": "Google Chrome: Einstellungen → Datenschutz und Sicherheit → Cookies",
+          "firefox": "Mozilla Firefox: Optionen → Datenschutz & Sicherheit → Cookies",
+          "safari": "Apple Safari: Einstellungen → Datenschutz → Cookies",
+          "edge": "Microsoft Edge: Einstellungen → Cookies und Website-Berechtigungen"
+        }
+      },
+      "consent": {
+        "title": "6. Einwilligung & Cookie-Banner",
+        "content": "Wenn du unsere Website zum ersten Mal besuchst, werden wir dich um deine Einwilligung zur Setzung nicht wesentlicher Cookies bitten. Du kannst deine Einwilligung jederzeit erteilen oder zurückziehen. Der Widerruf der Einwilligung berührt nicht die Rechtmäßigkeit der Verarbeitung auf der Grundlage der Einwilligung vor ihrem Widerruf."
+      },
+      "updates": {
+        "title": "7. Aktualisierungen dieser Richtlinie",
+        "content": "Wir können diese Cookie-Richtlinie von Zeit zu Zeit aktualisieren, um Änderungen in Technologie, Vorschriften oder unseren Geschäftspraktiken widerzuspiegeln. Alle Änderungen werden auf dieser Seite mit einem aktualisierten Überarbeitungsdatum veröffentlicht."
+      },
+      "contact": {
+        "title": "8. Kontaktiere uns",
+        "intro": "Wenn du Fragen zu unserer Verwendung von Cookies hast, kontaktiere uns bitte:",
+        "email": {
+          "label": "E-Mail:",
+          "value": "xiplarex@Gmail.com"
+        },
+        "address": {
+          "label": "Adresse:",
+          "value": "XipSoft Software & Technology Solutions"
+        }
+      }
+    }
+  },
+  "consent": {
+    "title": "Cookie- & Werbeeinwilligung",
+    "description": "Wir verwenden Cookies und Google AdSense, um Inhalte und Anzeigen zu personalisieren, Social-Media-Funktionen bereitzustellen und unseren Datenverkehr zu analysieren. Klicke auf 'Akzeptieren', um der Verwendung aller Cookies zuzustimmen, oder auf 'Ablehnen', um nur wesentliche Cookies zu verwenden.",
+    "showDetails": "Details anzeigen",
+    "hideDetails": "Details ausblenden",
+    "accept": "Alle Cookies akzeptieren",
+    "decline": "Nicht wesentliche ablehnen",
+    "details": {
+      "cookies": {
+        "title": "Cookies & Tracking",
+        "content": "Wir verwenden wesentliche Cookies für die Website-Funktionalität und optionale Cookies für Analytik und personalisierte Werbung über Google AdSense."
+      },
+      "data": {
+        "title": "Datenerhebung",
+        "content": "Google AdSense kann deine IP-Adresse, den Browsertyp, besuchte Seiten und das Surfverhalten erfassen, um relevante Werbung zu schalten."
+      },
+      "control": {
+        "title": "Deine Kontrolle",
+        "content": "Du kannst deine Cookie-Einstellungen jederzeit ändern. Besuche unsere Datenschutzrichtlinie und Cookie-Richtlinie für weitere Informationen."
+      }
+    },
+    "links": {
+      "privacy": "Datenschutzrichtlinie",
+      "cookies": "Cookie-Richtlinie",
+      "terms": "Nutzungsbedingungen"
+    }
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite wurde möglicherweise gelöscht, umbenannt oder ist vorübergehend nicht verfügbar.",
+    "backHome": "Zurück zur Startseite",
+    "viewServices": "Unsere Dienste ansehen"
+  }
+}

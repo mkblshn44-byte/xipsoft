@@ -1,0 +1,662 @@
+/* Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── SAFE AREA (iPhone notch / Dynamic Island) ─────────── */
+:root {
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left);
+  --safe-right:  env(safe-area-inset-right);
+}
+
+/* ─── MOBIL TAsMA KORUMASI ───────────────────────────────── */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* iOS Safari momentum scroll */
+body {
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  padding-left:  env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ─── FONT ───────────────────────────────────────────────── */
+body {
+  font-family: var(--font-body), sans-serif;
+}
+
+/* Tipografi yardımcı sınıfları (LCP hero dahil) */
+.-display,
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}
+.-body,
+.font-body {
+  font-family: var(--font-body), sans-serif;
+}
+.-mono,
+.font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+/* ─── BAŞLIKLAR — TitleText variantları glass efekti ─────── */
+.glass-heading {
+  display: inline-block;
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: transparent !important;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f1f5f9 30%,
+    #e2e8f0 50%,
+    #f1f5f9 70%,
+    #ffffff 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  text-shadow: 0 0 24px rgba(255,255,255,0.18), 0 0 28px rgba(148,163,184,0.10);
+}
+
+.navbar, .-navbar {
+  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── BASE BODY — Koyu (Varsayılan) ─────────────────────── */
+body {
+  background-color: #04050d;
+  background-image:
+    radial-gradient(circle at 15% 12%, rgba(255,255,255,0.18), transparent 18%),
+    radial-gradient(circle at 80% 20%, rgba(167,139,250,0.16), transparent 15%),
+    radial-gradient(circle at 25% 75%, rgba(34,211,238,0.12), transparent 12%),
+    radial-gradient(circle at 70% 80%, rgba(245,158,11,0.10), transparent 16%),
+    radial-gradient(circle at 50% 40%, rgba(255,255,255,0.08), transparent 8%),
+    radial-gradient(circle at 85% 50%, rgba(255,255,255,0.06), transparent 5%),
+    linear-gradient(180deg, #02030a 0%, #050611 30%, #020209 100%);
+  background-attachment: scroll; /* fixed mobilde iOS'ta paint sorununa yol açar */
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: var(--color-text-primary);
+  position: relative;
+  isolation: isolate;
+  font-family: var(--font-body), sans-serif;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.22) 0%, transparent 1.15%),
+    radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 1.5%),
+    radial-gradient(circle, rgba(255,255,255,0.14) 0%, transparent 2px);
+  background-size: 160px 160px, 120px 120px, 260px 260px;
+  opacity: 0.24;
+}
+
+/* ─── /blog TEMA DEGİŞKENLERİ ────────────────────────────── */
+:root,
+html[class="dark"],
+html.dark {
+  ---bg:             #05071a;
+  ---text:           #e4e4e7;
+  --blob-1: rgba(251, 191, 36,  0.22);
+  --blob-2: rgba(251, 113, 133, 0.16);
+  --blob-3: rgba(167, 139, 250, 0.14);
+  --blob-4: rgba(99,  60,  180, 0.10);
+  --blob-5: rgba(34,  211, 238, 0.06);
+  background-color: var(---bg);
+  color: var(---text);
+}
+
+
+/* ─── NAVBAR ─────────────────────────────────────────────── */
+nav:not(footer nav), .navbar {
+  backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 8px -1px rgba(0, 0, 0, 0.15),
+    0 2px 4px -1px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+nav .-navbar {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Navbar hover — ates gradyan metin efekti (korundu) */
+nav [data-nav-link] a,
+nav [data-nav-link] a span,
+nav [data-nav-link] a.-navbar,
+nav button.-navbar,
+nav button.-navbar span {
+  transition: all 0.25s ease;
+}
+
+nav [data-nav-link]:hover a,
+nav [data-nav-link]:hover a span,
+nav [data-nav-link]:hover a.-navbar,
+nav button.-navbar:hover,
+nav button.-navbar:hover span {
+  background: linear-gradient(135deg, #a78bfa, #ddd6fe) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.55));
+  text-shadow: none;
+}
+
+
+/* ─── SCROLLBAR ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+
+:root::-webkit-scrollbar-track,
+html.dark::-webkit-scrollbar-track { background: #09090b; }
+:root::-webkit-scrollbar-thumb,
+html.dark::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+:root::-webkit-scrollbar-thumb:hover,
+html.dark::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+/* ─── PRISM BORDER HOVER ─────────────────────────────────── */
+.prism-border-gradient {
+  position: relative;
+}
+.prism-border-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #ddd6fe 0%, #a78bfa 50%, #fb7185 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.prism-border-gradient:hover::before { opacity: 0.8; }
+
+/* ─── PROFILE CARD ───────────────────────────────────────── */
+.profile-card {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+.profile-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(167,139,250,0.08) 50%, rgba(34,211,238,0.06) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.profile-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(34,211,238,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(251,113,133,0.02) 0%, transparent 50%);
+  pointer-events: none;
+}
+.profile-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.profile-card:hover::before { opacity: 1; }
+.profile-card:hover::after  { opacity: 1; }
+
+/* ─── Blog CARD gLASS — Liquid glass ───────────────── */
+.Blog-card-glass {
+  background: var(--color-card-bg);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--color-border);
+}
+
+/* ─── ORTAK BÖLÜM BAŞLIK STİLİ ───────────────────────────── */
+.section-title-glow {
+  display: inline-block;
+  /* Solid (dolu) color by default, overridable with --section-title-color */
+  color: var(--section-title-color, #8b5cf6);
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  /* Stronger, colored glow to emphasize the filled color */
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 28px rgba(139, 92, 246, 0.18);
+  letter-spacing: 0.01em;
+}
+
+/* ─── ANIMASYONLAR ───────────────────────────────────────── */
+@keyframes card-icon-float {
+  0%, 100% { transform: var(--icon-rotate) translateY(0px); }
+  50%       { transform: var(--icon-rotate) translateY(-4px); }
+}
+.card-float-icon { animation: card-icon-float 6s ease-in-out infinite; will-change: transform; }
+
+/* ─── MOUSE PARALLAX GRADIENT — kaldırıldı (dead code) ─── */
+
+/* ─── NOISE OVERLAY — kaldırıldı (dead code) ──────────────── */
+
+/* ─── PRINT — boş blok kaldırıldı ────────────────────────── */
+
+/* ─── BÖLÜM AYIRICI ÇİZgİLER — Beyaz/Cyan LED ─────────── */
+.section-divider,
+hr.section-divider,
+.led-section-divider {
+  border: none;
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 163, 184, 0.20) 25%,
+    rgba(200, 220, 240, 0.40) 50%,
+    rgba(148, 163, 184, 0.20) 75%,
+    transparent
+  );
+  box-shadow: 0 0 4px rgba(200, 220, 240, 0.08);
+  margin: 2rem 0;
+}
+
+/* ─── KART LED BORDER gLOW ───────────────────────────── */
+/* Kart ve kutularda LED/gradient border efekti */
+.card-led-border {
+  position: relative;
+}
+.card-led-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(249, 115, 22, 0.25) 0%,
+    rgba(167, 139, 250, 0.20) 50%,
+    rgba(34, 211, 238, 0.15) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.card-led-border:hover::before {
+  opacity: 1;
+}
+
+/* ─── ADMIN INPUT UTILITY ──────────────────────────────────── */
+.input {
+  @apply w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-violet-500 transition-colors;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CORE WEB VITALS — Hero CSS Animasyonları
+   LCP: h1 hemen görünür, alt elementler CSS ile fade-in
+   INP:  motion.div yerine compositor-only CSS animasyon
+   CLS:  will-change sadece animasyon süresince, sonra auto
+   ═══════════════════════════════════════════════════════════ */
+
+/* Hero fade-in — opacity only (compositor-only, layout shift yok) */
+@keyframes heroFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Hero fade-up — opacity + transform (compositor-only) */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stat card fade-up — stagger delay CSS custom property ile */
+@keyframes heroStatIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-fade-in {
+  opacity: 0;
+  animation: heroFadeIn 0.55s ease forwards;
+  animation-delay: var(--fade-delay, 0s);
+  will-change: opacity;
+  /* Animasyon bittikten sonra will-change serbest bırak */
+  animation-fill-mode: forwards;
+}
+
+.hero-fade-up {
+  opacity: 0;
+  animation: heroFadeUp 0.55s ease forwards;
+  animation-delay: var(--fade-delay, 0s);
+  will-change: opacity, transform;
+  animation-fill-mode: forwards;
+}
+
+/* prefers-reduced-motion: animasyonu kapat, hemen görünür yap */
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-in,
+  .hero-fade-up,
+  .hero-stat-card {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+}
+
+.hero-stat-card {
+  opacity: 0;
+  animation: heroStatIn 0.45s ease forwards;
+  animation-delay: var(--stat-delay, 0.7s);
+  will-change: opacity, transform;
+  animation-fill-mode: forwards;
+}
+
+/* ── ScanLine: motion.div'den dönüştürüldü ──────────────────────────────────
+   translateY compositor'da çalışır, main thread'i meşgul etmez (INP/TBT iyileştirme)
+   --scanline-delay CSS custom property ile her çizgiye farklı başlangıç gecikmesi */
+@keyframes heroScanline {
+  0%   { transform: translateY(0);      opacity: 0; }
+  4%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(-210%);  opacity: 0; }
+}
+
+.hero-scanline {
+  will-change: transform, opacity;
+  animation: heroScanline 4.5s linear var(--scanline-delay, 0s) infinite;
+  animation-delay: var(--scanline-delay, 0s);
+}
+
+/* ── CornerDiamond: motion.div'den dönüştürüldü ─────────────────────────────
+   scale + opacity — compositor-only, JS animasyon engine yükü yok */
+@keyframes heroCornerIn {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.hero-corner-diamond {
+  opacity: 0;
+  animation: heroCornerIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s forwards;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scanline       { animation: none !important; opacity: 0 !important; }
+  .hero-corner-diamond { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO — UZAY DERİNLİK / PARALLAX PORTAL EFEKTİ
+   Scroll aşağı indikçe genişleyen perspektif tüneli.
+   Compositor-only (transform + opacity) — INP/TBT dostu.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Nebula halkası: ışıklı daire büyüyüp solar alır ──────── */
+@keyframes nebulaRingPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.18; }
+  50%       { transform: scale(1.06); opacity: 0.28; }
+}
+
+/* ── Tünel parçacıkları: merkezden dışa fışkırır ──────────── */
+@keyframes tunnelParticle {
+  0%   { transform: translate(var(--px, 0), var(--py, 0)) scale(0.3); opacity: 0; }
+  15%  { opacity: var(--pop, 0.9); }
+  85%  { opacity: var(--pop, 0.6); }
+  100% { transform: translate(calc(var(--px, 0) * 3.5), calc(var(--py, 0) * 3.5)) scale(1.8); opacity: 0; }
+}
+
+/* ── Portal ışık halkası: nefes alır ─────────────────────── */
+@keyframes portalGlow {
+  0%, 100% { box-shadow: 0 0 60px 12px var(--pg-color, rgba(167,139,250,0.15)),
+                          0 0 120px 30px var(--pg-color2, rgba(34,211,238,0.08)); }
+  50%       { box-shadow: 0 0 90px 24px var(--pg-color, rgba(167,139,250,0.28)),
+                          0 0 180px 60px var(--pg-color2, rgba(34,211,238,0.14)); }
+}
+
+/* ── Yatay ışık taraması: hero içinden geçer ─────────────── */
+@keyframes lightSweep {
+  0%   { transform: translateX(-100%) skewX(-12deg); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateX(200%) skewX(-12deg); opacity: 0; }
+}
+
+/* ── Derinlik vignette: scroll ile yoğunlaşır ──────────────
+   JS ile --scroll-progress (0→1) enjekte edilir           */
+.hero-depth-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 50%,
+    transparent 20%,
+    rgba(2, 3, 10, calc(0.55 + var(--scroll-progress, 0) * 0.35)) 100%
+  );
+  z-index: 1;
+  transition: background 0.1s linear;
+}
+
+/* ── Nebula halkaları ──────────────────────────────────────── */
+.hero-nebula-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px solid var(--ring-color, rgba(167,139,250,0.12));
+  animation: nebulaRingPulse var(--ring-dur, 6s) ease-in-out var(--ring-delay, 0s) infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Portal merkez ışığı ───────────────────────────────────── */
+.hero-portal-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: portalGlow 5s ease-in-out infinite;
+  will-change: box-shadow;
+  --pg-color: rgba(167,139,250,0.15);
+  --pg-color2: rgba(34,211,238,0.08);
+}
+
+/* ── Işık tarama çizgisi ───────────────────────────────────── */
+.hero-light-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.025) 40%,
+    rgba(255,255,255,0.055) 50%,
+    rgba(255,255,255,0.025) 60%,
+    transparent 100%
+  );
+  pointer-events: none;
+  animation: lightSweep 8s ease-in-out var(--sweep-delay, 3s) infinite;
+  will-change: transform, opacity;
+}
+
+/* ── Paralaks container: scroll'a göre scale ──────────────────
+   JS ile --scroll-scale (1→1.06) ve --scroll-y enjekte edilir */
+.hero-parallax-bg {
+  transition: transform 0.05s linear;
+  transform: scale(var(--scroll-scale, 1)) translateY(calc(var(--scroll-y, 0) * -0.18px));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-nebula-ring,
+  .hero-portal-glow,
+  .hero-light-sweep,
+  .hero-parallax-bg { animation: none !important; transform: none !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NEON LANDING (neonblack-main) — Hero giriş animasyonları
+   Animasyonlar tailwind.config.ts içinde tanımlı; erişilebilirlik
+   için prefers-reduced-motion altında devre dışı bırakılır.
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-rise,
+  .animate-hero-fade,
+  .animate-scroll-line {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBİL OPTİMİZASYON — Max 768px
+   Tüm animasyon, geçiş ve ağır GPU efektleri kapatılır.
+   Masaüstü/tablet animasyonları korunur.
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    will-change: auto !important;
+  }
+
+  /* Çok katmanlı box-shadow'ları kaldır */
+  .card,
+  .card--elevated,
+  .card--interactive,
+  .site-cta-primary,
+  .site-cta-secondary,
+  .card-led-border,
+  .prism-border-gradient,
+  .profile-card,
+  .Blog-card-glass,
+  .hero-portal-glow {
+    box-shadow: none !important;
+  }
+
+  /* Navbar'da backdrop-filter yerine opak arka plan */
+  nav:not(footer nav),
+  .navbar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(4, 5, 13, 0.97) !important;
+  }
+
+  /* Hero animasyonları — hemen görünür */
+  .hero-fade-in,
+  .hero-fade-up,
+  .hero-stat-card,
+  .hero-corner-diamond {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  /* Scanline ve parallax efektleri gizle */
+  .hero-scanline,
+  .hero-light-sweep,
+  .hero-nebula-ring,
+  .hero-portal-glow {
+    display: none !important;
+  }
+
+  /* Parallax arka plan — scroll transform kaldır */
+  .hero-parallax-bg {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Body arka plan gradyanını sadeleştir */
+  body {
+    background-image: none !important;
+    background-color: #04050d !important;
+  }
+
+  body::before {
+    display: none !important;
+  }
+
+  /* Float animasyonlu ikonlar */
+  .card-float-icon {
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  /* Prism border hover efekti devre dışı */
+  .prism-border-gradient::before,
+  .card-led-border::before,
+  .profile-card::before,
+  .profile-card::after,
+  .card::before,
+  .card::after {
+    opacity: 0 !important;
+    transition: none !important;
+  }
+
+  /* card hover transform kaldır */
+  .card:hover,
+  .card--interactive:hover {
+    transform: none !important;
+  }
+
+  /* card-glow / liquid-glow kaydır */
+  .card-glow,
+  .liquid-glow {
+    display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   prefers-reduced-motion — Evrensel Erişilebilirlik
+   ═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

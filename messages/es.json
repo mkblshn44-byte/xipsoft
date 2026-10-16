@@ -1,0 +1,1178 @@
+{
+  "common": {
+    "lanGuaGe": {
+      "title": "Idioma del sistema",
+      "turkish": "Türkçe",
+      "enGlish": "English",
+      "switchToEnGlish": "Cambiar a inglés",
+      "switchToTurkish": "Cambiar a turco"
+    }
+  },
+  "join": {
+    "title": "Únete a nuestra comunidad",
+    "description": "Conéctate con la comunidad de desarrolladores de XipSoft. Comparte conocimiento, encuentra oportunidades y crece junto a nosotros.",
+    "cta": "Grupo comunitario",
+    "communityTitle": "Comunidad de ingenieros de software de XipSoft",
+    "desc": {
+      "explore": "Explora nuestro ",
+      "jobBoard": "Tablero de empleos",
+      "techArticles": "Artículos tecnológicos",
+      "portfolio": "Portafolio",
+      "outro": ", y únete a una comunidad que prospera gracias al crecimiento mutuo."
+    },
+    "pill": {
+      "jobs": "Empleos",
+      "articles": "Artículos",
+      "portfolio": "Portafolio",
+      "community": "Comunidad"
+    }
+  },
+  "platform": {
+    "badge": "Software y tecnología",
+    "title": {
+      "prefix": "Tu centro para ",
+      "highlight": "Software y tecnología"
+    },
+    "description": {
+      "intro": "Esta plataforma es tu destino definitivo para debates sobre software y tecnología. Ya sea que te interese la ingeniería ",
+      "desktop": "de escritorio",
+      "mobile": "móvil",
+      "cloud": "en la nube",
+      "backend": "de backend",
+      "outro": " — este es tu espacio para conectarte, aprender y compartir."
+    },
+    "desktop": {
+      "label": "Escritorio",
+      "description": "Aplicaciones nativas, Electron, multiplataforma"
+    },
+    "mobile": {
+      "label": "Móvil",
+      "description": "iOS, Android, React Native, Flutter"
+    },
+    "cloud": {
+      "label": "Nube",
+      "description": "AWS, GCP, Azure, DevOps"
+    },
+    "backend": {
+      "label": "Backend",
+      "description": "APIs, bases de datos, microservicios"
+    },
+    "terminal": {
+      "hello": "¡Hola Mundo!!",
+      "from": " Desde "
+    }
+  },
+  "XipSoftTypo": {
+    "subtitle": "XipSoft Software y Tecnología"
+  },
+  "nav": {
+    "about": "Sobre nosotros",
+    "home": "Inicio",
+    "products": "Productos",
+    "services": "Servicios",
+    "references": "Referencias",
+    "contact": "Contacto",
+    "GetQuote": "Obtener presupuesto",
+    "getQuote": "Obtener presupuesto",
+    "loGin": "Iniciar sesión",
+    "siGnup": "Registrarse",
+    "loGout": "Cerrar sesión",
+    "classes": "Clases",
+    "books": "Libros",
+    "howTo": "Cómo hacerlo",
+    "Blog": "Blog",
+    "myBlogs": "Mis blogs",
+    "writeBlog": "Escribir entrada",
+    "jobs": "Empleos",
+    "navigation": "Navegación",
+    "brandName": "XipSoft — Soluciones de software y tecnología",
+    "servicesMenu": {
+      "title": "Nuestros servicios",
+      "web": "Software web y diseño",
+      "webDesc": "Interfaces modernas, rápidas y optimizadas para SEO con Next.js/React",
+      "webLong": "Desde webs corporativas hasta e-commerce, diseñamos y desarrollamos interfaces web modernas, rápidas, accesibles y optimizadas para SEO.",
+      "mobile": "Aplicación móvil",
+      "mobileDesc": "Soluciones nativas o multiplataforma para iOS, Android y Mac",
+      "mobileLong": "Desarrollamos aplicaciones móviles rápidas, intuitivas y escalables para iOS y Android, gestionando también la publicación en las tiendas.",
+      "desktop": "Software de escritorio",
+      "desktopDesc": "Potentes aplicaciones de escritorio para Windows, macOS y Linux",
+      "desktopLong": "Desarrollamos soluciones de escritorio potentes y seguras para Windows, macOS y Linux que aceleran tus procesos.",
+      "security": "Ciberseguridad",
+      "securityDesc": "Soluciones de auditoría y protección de seguridad de extremo a extremo",
+      "securityLong": "Protegemos tu infraestructura de principio a fin con pruebas de intrusión y auditorías de seguridad, detectando riesgos a tiempo.",
+      "seo": "SEO y marketing digital",
+      "seoDesc": "Optimización para motores de búsqueda y estrategias de crecimiento digital",
+      "seoLong": "Aumentamos tu visibilidad y generamos un crecimiento medible con estrategias de SEO y marketing digital basadas en datos."
+    }
+  },
+  "home": {
+    "badGe": "Software y tecnología",
+    "taGline": "Tu socio de confianza en desarrollo de software y soluciones tecnológicas.",
+    "hero": {
+      "service1": "Software web y diseño",
+      "service2": "Aplicación móvil",
+      "service3": "Ciberseguridad",
+      "titleLine1": "SOFTWARE Y",
+      "titleLine2": "TECNOLOGÍA",
+      "titleLine3": "SISTEMAS",
+      "subtitle": "Confianza en el software, diferencia en el diseño, perfección en el resultado.",
+      "subtitleHiGhliGht": "Web, móvil, escritorio y ciberseguridad",
+      "subtitleEnd": "soluciones con 15 años de experiencia.",
+      "ctaPrimary": "Obtener presupuesto gratuito",
+      "ctaSecondary": "Explorar servicios",
+      "ctaSiGnup": "Regístrate ahora",
+      "statYears": "Años de experiencia",
+      "statProjects": "Proyectos completados",
+      "statClients": "Clientes satisfechos",
+      "statServices": "Áreas de servicio"
+    },
+    "devProfiles": {
+      "title": "Perfiles de desarrolladores",
+      "body": "Crea tu perfil de desarrollador y muestra tu trabajo. Explora los perfiles de otros ingenieros para conectarte y colaborar dentro de nuestra comunidad tecnológica."
+    },
+    "readArticles": {
+      "title": "Artículos tecnológicos",
+      "body": "Contribuye con artículos y blogs sobre software y tecnología. Accede al conocimiento compartido por expertos para aprender, crecer y mantenerte al día con las tendencias del sector."
+    },
+    "": {
+      "title": "Comunidad ",
+      "body": "Haz preguntas, comparte experiencias sobre software, tecnología y desarrollo. Únete a debates con miles de desarrolladores y aprovecha el poder de la comunidad."
+    },
+    "Blog": {
+      "title": "Blog y artículos",
+      "body": "Últimos artículos, guías e ideas del mundo del software y la tecnología. Sigue las tendencias del sector y amplía tu conocimiento con autores expertos."
+    },
+    "xipsoftFark": {
+      "title": "¿Por qué elegir XipSoft?",
+      "subtitle": "Más de 15 años de experiencia en ingeniería que abarca desde ciberseguridad hasta sistemas embebidos.",
+      "experience": "Más de 15 años de experiencia",
+      "experienceDesc": "Profunda experiencia técnica que abarca desde ciberseguridad hasta sistemas embebidos. Cada línea de código está respaldada por experiencia en proyectos reales.",
+      "Guarantee": "Garantía de calidad",
+      "GuaranteeDesc": "Cada línea de código se escribe según los estándares de calidad de XipSoft. Las pruebas unitarias, las pruebas de carga y las auditorías de seguridad forman parte de nuestro proceso estándar.",
+      "directComm": "Comunicación directa",
+      "directCommDesc": "Hablas directamente con los ingenieros que construyen tu proyecto, no con representantes de ventas. Decisiones rápidas, cero retrasos burocráticos.",
+      "sourceFiles": "Código fuente completo",
+      "sourceFilesDesc": "Todos los activos, dependencias y archivos de configuración son 100% tuyos. Sin dependencia de proveedores, nunca.",
+      "identity": "Asociación a largo plazo",
+      "identityDesc": "Cuando tu proyecto se lanza, nuestro trabajo no termina — el verdadero viaje comienza. Estamos contigo a través del CI/CD, el mantenimiento y el escalado."
+    },
+    "services": {
+      "title": "Experiencia técnica de extremo a extremo",
+      "subtitle": "Arquitecturas de software escalables y sostenibles para cada plataforma y necesidad.",
+      "biGTitle": "Soluciones de software personalizadas para cada necesidad",
+      "biGDesc": "De la web al móvil, del escritorio a la ciberseguridad — con más de 15 años de experiencia, XipSoft diseña, desarrolla y entrega proyectos de cualquier escala de extremo a extremo. Comparte tu visión, nosotros nos encargamos del resto.",
+      "web": "Software web y comercio electrónico",
+      "webDesc": "Soluciones Next.js/React orientadas a los mejores Core Web Vitals. Optimización SSR/SSG, Edge Runtime, particionamiento de bases de datos e infraestructura de comercio electrónico de alto tráfico.",
+      "mobile": "Aplicación móvil",
+      "mobileDesc": "Rendimiento nativo desde una única base de código con Flutter/React Native. Arquitecturas offline-first, SSL Pinning y monitoreo in-app con Sentry/Firebase.",
+      "desktop": "Software de escritorio",
+      "desktopDesc": "Potentes aplicaciones de escritorio construidas con Electron, Qt y C++. Acceso de bajo nivel al sistema, integraciones de hardware y compatibilidad multiplataforma con Windows/macOS/Linux.",
+      "security": "Ciberseguridad (Pentest y auditoría)",
+      "securityDesc": "Auditorías OWASP Top 10 mediante pruebas Blackbox y Whitebox. Seguridad de API, aislamiento de contenedores Docker y monitoreo SIEM 24/7.",
+      "seo": "SEO y marketing digital",
+      "seoDesc": "SEO técnico, optimización de Core Web Vitals, Google Ads y estrategia de contenido orientada a la conversión para el crecimiento orgánico.",
+      "custom": "Software personalizado y automatización empresarial",
+      "customDesc": "Soluciones ERP y CRM construidas con arquitectura de microservicios. Diseños orientados a eventos, mensajería RabbitMQ/Kafka, estructuras PostgreSQL/NoSQL escalables."
+    },
+    "stats": {
+      "years": "Años",
+      "experience": "Experiencia en tecnología",
+      "projects": "Software",
+      "completed": "Proyectos entregados",
+      "clients": "Satisfechos",
+      "clientsLabel": "Clientes tecnológicos"
+    },
+    "techStack": {
+      "title": "Nuestra pila tecnológica",
+      "subtitle": "Seleccionamos e implementamos las tecnologías más adecuadas para tu proyecto con herramientas estándar del sector.",
+      "cta": "Para una arquitectura que dure para siempre"
+    },
+    "reviews": {
+      "title": "Opiniones de clientes",
+      "subtitle": "Como agencia interactiva y moderna, nos enorgullece ser el trampolín hacia el éxito en línea de nuestros clientes."
+    }
+  },
+  "about": {
+    "values": {
+      "title": "Nuestros valores fundamentales",
+      "subtitle": "Los principios que nos guían en cada proyecto."
+    },
+    "expertise": {
+      "title": "¿Qué hacemos?",
+      "subtitle": "Soluciones tecnológicas integrales en 12 dominios."
+    },
+    "whyUs": {
+      "title": "¿Por qué XipSoft?",
+      "subtitle": "Lo que nos diferencia con 15 años de experiencia probada."
+    },
+    "mission": {
+      "title": "Misión y visión",
+      "subtitle": "El propósito y los objetivos que nos impulsan hacia adelante."
+    }
+  },
+  "references": {
+    "projects": {
+      "title": "¿Qué hemos hecho?",
+      "subtitle": "Un resumen de más de 200 proyectos en 12 categorías."
+    },
+    "sectors": {
+      "title": "Distribución por sectores",
+      "subtitle": "Cuánto trabajo hemos realizado en cada área."
+    },
+    "testimonials": {
+      "title": "¿Qué dicen nuestros clientes?",
+      "subtitle": "Experiencias reales de clientes."
+    }
+  },
+  "products": {
+    "hero": {
+      "badGe": "Productos y paquetes de software",
+      "title": "Soluciones digitales adaptadas a ti",
+      "subtitle": "Sin plantillas prefabricadas. Cada proyecto se codifica desde cero, completamente tuyo. Desde el comercio electrónico hasta el software empresarial, con entrega garantizada del código fuente.",
+      "ctaPrimary": "Obtener presupuesto",
+      "ctaSecondary": "Nuestros servicios",
+      "statPackages": "Paquetes de software",
+      "statSource": "Entrega de código fuente",
+      "statYears": "Años de experiencia",
+      "statSupport": "Soporte"
+    },
+    "packages": {
+      "title": "Paquetes de software",
+      "subtitle": "Cada paquete se personaliza para el cliente. Los precios a continuación son precios base — los presupuestos reales se determinan según tus necesidades.",
+      "featured": "Destacado",
+      "discount": "Descuento",
+      "deliveryNote": "Entrega única del código fuente",
+      "getQuote": "Obtener presupuesto"
+    },
+    "process": {
+      "title": "¿Cómo trabajamos?",
+      "step1": {
+        "title": "Análisis de requisitos",
+        "desc": "Escuchamos tu modelo de negocio, público objetivo y expectativas técnicas."
+      },
+      "step2": {
+        "title": "Hoja de ruta",
+        "desc": "Finalizamos la selección de tecnología, la arquitectura y el plan de programación."
+      },
+      "step3": {
+        "title": "Diseño y aprobación",
+        "desc": "Primero el diseño, luego el código. No codificamos lo que no has aprobado."
+      },
+      "step4": {
+        "title": "Desarrollo",
+        "desc": "Codificación desde cero con tecnologías modernas, presentaciones de demostración periódicas."
+      },
+      "step5": {
+        "title": "Pruebas y lanzamiento",
+        "desc": "Pruebas exhaustivas, optimización del rendimiento y puesta en marcha."
+      },
+      "step6": {
+        "title": "Soporte y crecimiento",
+        "desc": "Soporte post-entrega, capacitación y mejora continua."
+      }
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "items": [
+        {
+          "q": "¿Se vende como producto listo para usar?",
+          "a": "No. Cada proyecto se codifica específicamente para el cliente. Lo que llamamos 'listo' es que la infraestructura base está preparada. El diseño, el contenido y las funcionalidades se adaptan completamente a ti."
+        },
+        {
+          "q": "¿Entregan el código fuente?",
+          "a": "Sí. En todos nuestros proyectos, el código fuente se entrega al cliente. El código es de tu propiedad."
+        },
+        {
+          "q": "¿Qué incluye el precio?",
+          "a": "El desarrollo del proyecto, las pruebas, el despliegue y la capacitación básica de uso están incluidos en el precio. El alojamiento y el dominio son independientes."
+        },
+        {
+          "q": "¿Cuánto tiempo tarda la entrega?",
+          "a": "Varía entre 2 y 8 semanas dependiendo del tamaño del paquete. Se determina una fecha firme al inicio del proceso."
+        },
+        {
+          "q": "¿Hay soporte post-venta?",
+          "a": "Sí, el soporte técnico está incluido durante el período especificado en todos los paquetes. Hay opciones de paquetes de mantenimiento mensual disponibles después de que finalice el período."
+        }
+      ]
+    },
+    "cta": {
+      "title": "¿Empezamos?",
+      "subtitle": "Construyamos juntos tu solución digital soñada. Contáctanos para una consulta gratuita y un presupuesto.",
+      "primary": "Obtener presupuesto gratuito",
+      "secondary": "Contáctanos"
+    }
+  },
+  "profileEditor": {
+    "label": "Editor de perfil",
+    "title": "Crea tu perfil",
+    "subtitle": "Completa tus datos, previsualiza tu perfil y ",
+    "download": "descarga",
+    "subtitleMid": " el ",
+    "mdx": ".mdx",
+    "subtitleEnd": " archivo para enviarlo como pull request.",
+    "downloadBtn": "Descargar .mdx",
+    "resetBtn": "Restablecer",
+    "editorHeader": "Editor",
+    "name": "Nombre",
+    "description": "Descripción",
+    "imaGeUrl": "URL de imagen",
+    "taGs": "Etiquetas",
+    "markdownBody": "Cuerpo en Markdown",
+    "namePlaceholder": "Tu nombre completo",
+    "descriptionPlaceholder": "Una breve biografía o eslogan",
+    "bodyPlaceholder": "Escribe sobre ti mismo usando Markdown...\n\n# Hola\n\nSoy un ingeniero de software de XipSoft.\n\n- Habilidad 1\n- Habilidad 2",
+    "preview": "Vista previa",
+    "raw": "Sin formato",
+    "mdxLabel": "MDX",
+    "emptyPreview": "Empieza a escribir para ver la vista previa de tu perfil...",
+    "cardPreview": "Vista previa de tarjeta"
+  },
+  "howTo": {
+    "label": "Primeros pasos",
+    "title": "Cómo añadir tu perfil",
+    "subtitle": "Sigue estos {count} pasos para añadir tu perfil de desarrollador a la plataforma comunitaria de XipSoft.",
+    "step1Title": "Bifurca el repositorio",
+    "step1Desc": "Ve al repositorio de XipSoft en GitHub y haz clic en el botón \"Fork\" para crear tu propia copia.",
+    "step2Title": "Clona en tu máquina",
+    "step2Desc": "Clona el repositorio bifurcado en tu máquina local usando Git.",
+    "step3Title": "Instala las dependencias",
+    "step3Desc": "Navega al directorio del proyecto e instala las dependencias usando Bun.",
+    "step4Title": "Crea tu rama",
+    "step4Desc": "Crea una nueva rama usando tu nombre. Esto mantiene tus cambios separados de la rama principal.",
+    "step5Title": "Inicia el desarrollo",
+    "step5Desc": "Ejecuta el servidor de desarrollo para ver tus cambios en tiempo real.",
+    "step6Title": "Abre en el navegador",
+    "step6Desc": "Visita xipsoft.net en tu navegador para ver el sitio.",
+    "step7Title": "Crea tu perfil",
+    "step7Desc": "Tienes dos opciones: usa el editor visual de perfil o crea manualmente un archivo MDX.",
+    "step8Title": "Verifica tu perfil",
+    "step8Desc": "Navega a la página de perfiles. Tu tarjeta debería aparecer. Usa la barra de búsqueda si hay muchos perfiles.",
+    "optionEditor": "Editor de perfil",
+    "optionManual": "Manual",
+    "ctaComplete": "completado",
+    "ctaStepsComplete": "Los {count} pasos completados —",
+    "ctaProfileReady": "¡perfil listo!",
+    "ctaReadyTo": "¿Listo para ",
+    "ctaContribute": "contribuir?",
+    "ctaJoinPrefix": "Añade tu perfil y únete a ",
+    "ctaJoinSuffix": " ingenieros de software de XipSoft en la plataforma.",
+    "step7Line1": "1. Visita  xipsoft.net/profile/editor",
+    "step7Line2": "2. Completa tus datos y previsualiza",
+    "step7Line3": "3. Haz clic en  Descargar .mdx",
+    "step7Line4": "4. Guarda el archivo en:",
+    "step8Line1": "¡Tu tarjeta de perfil aparece en la cuadrícula!",
+    "step8Line2": "Busca escribiendo tu nombre si es necesario.",
+    "step9Title": "Confirma tus cambios",
+    "step9Desc": "Prepara tu archivo de perfil y usa el asistente interactivo de confirmación Gitmoji para crear un commit bien formateado.",
+    "step9Sub1": "Prepara tu archivo de perfil",
+    "step9Sub2": "Ejecuta el asistente de commit",
+    "step9Sub3": "Completa los campos de Gitmoji",
+    "step9Sub4": "Commit creado",
+    "step10Title": "Sube a GitHub",
+    "step10Desc": "Sube tu rama a tu repositorio bifurcado en GitHub.",
+    "step11Title": "Crea una pull request",
+    "step11Desc": "Ve al repositorio original de XipSoft en GitHub y crea una pull request desde tu rama.",
+    "step11Sub1": "Abre la página de pull request",
+    "step11Sub2": "Completa los detalles",
+    "step11Sub3": "Enviar",
+    "step11Line1": "Abrir pull request",
+    "step11Line2": "Base: main  ←  Comparar: tu_nombre",
+    "step11Line3": "Título: añadir perfil de tu_nombre",
+    "step11Line4": "Descripción: Añadí mi perfil de desarrollador",
+    "step11Line5": "Haz clic en  Crear pull request",
+    "ctaOpenEditor": "Abrir editor de perfil",
+    "ctaViewProfiles": "Ver perfiles"
+  },
+  "contact": {
+    "label": "Ponte en contacto",
+    "title": "Contáctanos",
+    "subtitlePrefix": "Conéctate con la comunidad de desarrolladores de XipSoft. Ya sea que quieras ",
+    "collaborate": "colaborar",
+    "subtitleMid": ", ",
+    "contribute": "contribuir",
+    "subtitleEnd": ", o simplemente saludar — estamos aquí.",
+    "fbLabel": "Grupo comunitario",
+    "fbDesc": "Únete a nuestro grupo comunitario para conectarte con otros ingenieros de software de XipSoft. Comparte conocimiento, encuentra oportunidades y crece junto a nosotros.",
+    "fbTaGline": "Comunidad y redes",
+    "fbCta": "Unirse al grupo comunitario",
+    "GhLabel": "GitHub",
+    "GhDesc": "Contribuye a nuestros proyectos de código abierto, añade tu perfil de desarrollador y colabora en iniciativas impulsadas por la comunidad.",
+    "GhTaGline": "Código abierto y contribuciones",
+    "GhCta": "Ver en GitHub",
+    "openTo": "Abierto a todos",
+    "allWelcome": "todos los niveles de habilidad son bienvenidos"
+  },
+  "Blog": {
+    "label": "Artículos e ideas",
+    "title": "Blog",
+    "subtitle": "Historias, tutoriales e ideas de la comunidad de ingeniería de software de XipSoft.",
+    "article": "Artículo",
+    "articles": "Artículos",
+    "categories": "Categorías",
+    "allCategories": "Todas",
+    "readArticle": "Leer artículo",
+    "noPostsTitle": "Aún no hay publicaciones",
+    "noPostsBody": "Artículos emocionantes están en camino. Nuestra comunidad de ingenieros está creando historias que vale la pena leer.",
+    "write": "Escribir",
+    "writeBlog": "Escribir blog",
+    "newBlog": "Nuevo blog",
+    "myBlogs": "Mis blogs",
+    "saveDraft": "Guardar borrador",
+    "publish": "Publicar",
+    "unpublish": "Despublicar",
+    "editBlog": "Editar blog",
+    "deleteBlog": "Eliminar blog",
+    "communityPost": "Comunidad",
+    "writeNewBlog": "Escribir nuevo blog",
+    "formTitle": "Título",
+    "formTitlePlaceholder": "Título de la publicación",
+    "formDescription": "Descripción",
+    "formDescriptionPlaceholder": "Breve resumen de tu publicación",
+    "formCoverImaGe": "URL de imagen de portada",
+    "formCoverImage": "URL de imagen de portada",
+    "formCoverImaGePlaceholder": "https://example.com/image.jpg (opcional)",
+    "formCoverImagePlaceholder": "https://example.com/image.jpg (opcional)",
+    "formTaGs": "Etiquetas",
+    "formTags": "Etiquetas",
+    "formTaGsPlaceholder": "Añadir etiquetas (pulsa Enter)",
+    "formTagsPlaceholder": "Añadir etiquetas (pulsa Enter)",
+    "formContent": "Contenido",
+    "formContentPlaceholder": "Empieza a escribir tu publicación... (escribe / para comandos)",
+    "savinG": "Guardando...",
+    "saving": "Guardando...",
+    "autoSaveNote": "Se guarda automáticamente cada 5 s",
+    "published": "Publicado",
+    "draft": "Borrador",
+    "maxPostsPerDay": "Máx. 3 publicaciones/día",
+    "loadMore": "Cargar más"
+  },
+  "jobs": {
+    "label": "Oportunidades de empleo",
+    "title": "Empleos",
+    "subtitle": "Descubre oportunidades de empleo publicadas por la comunidad de ingenieros de software de XipSoft.",
+    "job": "Empleo",
+    "jobsCount": "Empleos",
+    "allJobs": "Todos los empleos",
+    "expired": "Expirado",
+    "expires": "Expira",
+    "viewDetails": "Ver detalles",
+    "noJobsTitle": "Aún no hay empleos",
+    "noJobsBody": "Las oportunidades de empleo llegarán pronto. Los miembros de la comunidad publicarán puestos aquí.",
+    "noJobFound": "Empleo no encontrado",
+    "postJob": "Publicar empleo",
+    "postedBy": "Publicado por",
+    "newJob": "Nuevo empleo",
+    "myJobs": "Mis empleos",
+    "saveDraft": "Guardar borrador",
+    "publish": "Publicar",
+    "unpublish": "Despublicar",
+    "editJob": "Editar empleo",
+    "deleteJob": "Eliminar empleo",
+    "postNewJob": "Publicar nuevo empleo",
+    "share": "Compartir",
+    "formPosition": "Puesto",
+    "formPositionPlaceholder": "Título del empleo (p. ej. Ingeniero frontend senior)",
+    "formTaG": "Tipo de empleo",
+    "formTaGPlaceholder": "p. ej. Tiempo completo, Remoto, Contrato",
+    "formSkills": "Habilidades",
+    "formSkillsPlaceholder": "Añadir habilidades (pulsa Enter)",
+    "formEmail": "Correo electrónico de la empresa",
+    "formEmailPlaceholder": "rrhh@empresa.com",
+    "formExpiredAt": "Fecha de vencimiento",
+    "formExpiredAtPlaceholder": "Seleccionar fecha de vencimiento",
+    "formExpiredAtHint": "Debe ser una fecha futura. La oferta de empleo se marcará como expirada después de esta fecha.",
+    "formDescription": "Descripción",
+    "formDescriptionPlaceholder": "Describe el puesto, los requisitos y los beneficios... (escribe / para comandos)",
+    "savinG": "Guardando...",
+    "autoSaveNote": "Se guarda automáticamente cada 5 s",
+    "published": "Publicado",
+    "draft": "Borrador",
+    "maxPostsPerDay": "Máx. 3 publicaciones/día",
+    "loadMore": "Cargar más",
+    "loadinG": "Cargando...",
+    "disclaimerLabel": "Aviso:",
+    "disclaimerText": "Esta oferta de empleo fue enviada por la comunidad y no ha sido completamente verificada. Por favor, visita el sitio web oficial de la empresa y verifica la información proporcionada antes de aplicar.",
+    "taGOptions": {
+      "fullTime": "Tiempo completo",
+      "partTime": "Medio tiempo",
+      "remote": "Remoto",
+      "contract": "Contrato",
+      "freelance": "Freelance",
+      "internship": "Pasantía"
+    }
+  },
+  "teklif": {
+    "title": "Obtener presupuesto gratuito",
+    "subtitle": "Cuéntanos sobre tu proyecto y nuestro equipo de expertos te responderá en breve.",
+    "name": "Nombre completo",
+    "namePlaceholder": "Tu nombre completo",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "ejemplo@correo.com",
+    "phone": "Teléfono",
+    "phonePlaceholder": "+1 XXX XXX XXXX",
+    "service": "Tipo de servicio",
+    "servicePlaceholder": "Seleccionar un servicio",
+    "serviceOptions": {
+      "web": "Desarrollo web y diseño",
+      "mobile": "Aplicación móvil",
+      "desktop": "Software de escritorio",
+      "security": "Ciberseguridad",
+      "seo": "SEO y marketing digital",
+      "other": "Otro"
+    },
+    "detail": "Detalles del proyecto",
+    "detailPlaceholder": "Describe brevemente tu proyecto...",
+    "submit": "Enviar solicitud de presupuesto",
+    "submitting": "Enviando...",
+    "successTitle": "¡Presupuesto recibido!",
+    "successMessaGe": "Tu solicitud de presupuesto ha sido recibida. Nuestro equipo de expertos se pondrá en contacto contigo lo antes posible.",
+    "close": "Cerrar"
+  },
+  "auth": {
+    "siGnIn": "Iniciar sesión",
+    "siGnOut": "Cerrar sesión",
+    "siGnInRequired": "Inicio de sesión requerido",
+    "siGnInDesc": "Inicia sesión con tu cuenta de Google para acceder a esta función.",
+    "siGnInWithGooGle": "Iniciar sesión con Google",
+    "accessDenied": "Acceso denegado",
+    "accessDeniedDesc": "No tienes permiso para ver esta página.",
+    "backToBlog": "Volver al blog"
+  },
+  "devSetup": {
+    "label": "Configuración de desarrollo",
+    "title": "Guía de configuración de Firebase",
+    "subtitle": "Sigue estos {count} pasos para configurar Firebase para el desarrollo local. Amigable para principiantes — sin experiencia previa necesaria.",
+    "step1Title": "Crea una cuenta de Google",
+    "step1Desc": "Firebase es un producto de Google, por lo que necesitas una cuenta de Google. Si ya tienes una cuenta de Gmail, omite este paso.",
+    "step1Line1": "Ve a: accounts.Google.com/signup",
+    "step1Line2": "Completa tu nombre y crea un nombre de usuario",
+    "step1Line3": "Establece una contraseña y verifica tu teléfono",
+    "step1Line4": "¡Listo! Ahora tienes una cuenta de Google",
+    "step2Title": "Crea un proyecto en Firebase",
+    "step2Desc": "Ve a la consola de Firebase y crea un nuevo proyecto para tu entorno de desarrollo.",
+    "step2Line1": "Ve a: console.firebase.Google.com",
+    "step2Line2": "Haz clic en \"Crear un proyecto\" o \"Agregar proyecto\"",
+    "step2Line3": "Ingresa el nombre del proyecto (p. ej. XipSoft-dev)",
+    "step2Line4": "Habilita u omite Google Analytics",
+    "step2Line5": "Haz clic en \"Crear proyecto\" y espera ~30 segundos",
+    "step3Title": "Registra una aplicación web",
+    "step3Desc": "Dentro de tu proyecto de Firebase, registra una aplicación web para obtener tus credenciales.",
+    "step3Line1": "En la descripción general del proyecto, haz clic en el icono Web",
+    "step3Line2": "Ingresa un apodo para la app (p. ej. XipSoft-web)",
+    "step3Line3": "Omite Firebase Hosting (desmárcalo)",
+    "step3Line4": "Haz clic en \"Registrar app\"",
+    "step4Title": "Copia la configuración de Firebase",
+    "step4Desc": "Después del registro, Firebase muestra los valores de configuración. Cópialos — los necesitarás para tu archivo .env.local.",
+    "step4Line1": "apiKey: \"AIzaSy...\"",
+    "step4Line2": "authDomain: \"tu-proyecto.firebaseapp.com\"",
+    "step4Line3": "projectId: \"tu-id-de-proyecto\"",
+    "step4Line4": "storageBucket: \"tu-proyecto.firebasestorage.app\"",
+    "step4Line5": "messagingSenderId: \"123456789\"",
+    "step4Line6": "appId: \"1:123456789:web:abc123\"",
+    "step4Tip": "Puedes encontrar estos valores en cualquier momento en: Configuración del proyecto → General → Tus aplicaciones",
+    "step5Title": "Habilitar autenticación con Google",
+    "step5Desc": "Configura el inicio de sesión con Google para que los usuarios puedan acceder a la plataforma.",
+    "step5Line1": "Barra lateral → Compilación → Authentication → Comenzar",
+    "step5Line2": "Haz clic en la pestaña \"Método de inicio de sesión\"",
+    "step5Line3": "Haz clic en \"Google\" → Activar → Guardar",
+    "step5Line4": "Establece el nombre de tu proyecto y el correo electrónico de soporte",
+    "step6Title": "Crear base de datos Firestore",
+    "step6Desc": "Firestore almacena publicaciones del blog, ofertas de empleo y datos de usuarios.",
+    "step6Line1": "Barra lateral → Compilación → Firestore Database",
+    "step6Line2": "Haz clic en \"Crear base de datos\"",
+    "step6Line3": "Elige la ubicación (asia-southeast1 para XipSoft)",
+    "step6Line4": "Comenzar en \"modo de prueba\" para desarrollo",
+    "step6Line5": "Haz clic en \"Crear\"",
+    "step7Title": "Crear almacenamiento de Firebase",
+    "step7Desc": "El almacenamiento gestiona las cargas de imágenes para las fotos de portada del blog y los avatares de usuario.",
+    "step7Line1": "Barra lateral → Compilación → Storage",
+    "step7Line2": "Haz clic en \"Comenzar\"",
+    "step7Line3": "Comenzar en \"modo de prueba\" para desarrollo",
+    "step7Line4": "Haz clic en \"Listo\"",
+    "step8Title": "Clona e instala el proyecto",
+    "step8Desc": "Clona el repositorio de XipSoft e instala las dependencias usando Bun. Si ya tienes el código clonado, simplemente ejecuta bun install y pasa al siguiente paso.",
+    "step9Title": "Configura las variables de entorno",
+    "step9Desc": "Crea tu archivo .env.local y pega los valores de configuración de Firebase del Paso 4.",
+    "step9Line1": "cp .env.example .env.local",
+    "step9Line2": "# Luego edita .env.local con tus valores de Firebase:",
+    "step9Line3": "NEXT_PUBLIC_FIREBASE_API_KEY=tu-api-key",
+    "step9Line4": "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tu-proyecto.firebaseapp.com",
+    "step9Line5": "NEXT_PUBLIC_FIREBASE_PROJECT_ID=tu-id-de-proyecto",
+    "step9Line6": "NEXT_PUBLIC_FIREBASE_STORAgE_BUCKET=tu-proyecto.firebasestorage.app",
+    "step9Line7": "NEXT_PUBLIC_FIREBASE_MESSAgINg_SENDER_ID=123456789",
+    "step9Line8": "NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123",
+    "step9Line9": "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX",
+    "step10Title": "Ejecuta el servidor de desarrollo",
+    "step10Desc": "Inicia el servidor de desarrollo y abre la aplicación en tu navegador.",
+    "ctaComplete": "¡Configuración completa!",
+    "ctaDesc": "Estás listo para desarrollar localmente con Firebase. Inicia sesión con Google, crea publicaciones en el blog y prueba las ofertas de empleo.",
+    "ctaOpenApp": "Abrir servidor de desarrollo",
+    "ctaViewGuide": "Ver guía de cómo hacerlo"
+  },
+  "profileHero": {
+    "label": "Directorio de desarrolladores",
+    "title": "Perfiles",
+    "subtitle": "Descubre {count}+ ingenieros de software de XipSoft. Navega por tecnología, busca por nombre y conéctate con la comunidad."
+  },
+  "booksHero": {
+    "label": "Libros y recursos tecnológicos",
+    "title": "Libros",
+    "subtitle": "Libros técnicos y recursos de aprendizaje recomendados compartidos por los ingenieros de software de XipSoft."
+  },
+  "classesHero": {
+    "label": "Clases y talleres tecnológicos",
+    "title": "Clases",
+    "subtitle": "Un directorio de clases tecnológicas curado por la comunidad con criterio de confianza en XipSoft. Las publicaciones se revisan antes de su publicación."
+  },
+  "footer": {
+    "taGline": {
+      "prefix": "Potenciando a los ingenieros de software de XipSoft para ",
+      "innovate": "innovar",
+      "collaborate": "colaborar",
+      "build": "construir",
+      "suffix": " — una línea de código a la vez."
+    },
+    "openSource": "Código abierto",
+    "naviGate": "Navegar",
+    "home": "Inicio",
+    "profiles": "Perfiles",
+    "classes": "Clases",
+    "books": "Libros",
+    "profileEditor": "Editor de perfil",
+    "Blog": "Blog",
+    "contactUs": "Contáctanos",
+    "jobs": "Empleos",
+    "devSetup": "Configuración de desarrollo",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "cookies": "Política de cookies",
+    "community": "Comunidad",
+    "Github": "Organización GitHub",
+    "facebook": "Grupo comunitario",
+    "copyriGht": "XipSoft Ingenieros de software",
+    "loGin": "Iniciar sesión",
+    "siGnup": "Registrarse"
+  },
+  "": {
+    "label": "Comunidad ",
+    "title": "Hacking y seguridad ",
+    "subtitle": "Únete a la comunidad definitiva para debates sobre ciberseguridad, hacking ético, SEO y desarrollo de software.",
+    "cateGories": {
+      "cybersecurity": "Ciberseguridad",
+      "blackhat": "Black Hat y hacking",
+      "whitehat": "White Hat y seguridad",
+      "Greyhat": "Grey Hat e investigación",
+      "seo": "SEO y marketing digital",
+      "development": "Desarrollo de software",
+      "network": "Redes y sistemas"
+    },
+    "newThread": "Nuevo hilo",
+    "searchPlaceholder": "Buscar hilos...",
+    "noThreads": "Aún no hay hilos",
+    "noThreadsDesc": "Sé el primero en iniciar una discusión en esta categoría.",
+    "threadCount": "Hilos",
+    "postCount": "Publicaciones",
+    "lastPost": "Última publicación",
+    "views": "Vistas",
+    "replies": "Respuestas",
+    "sticky": "Fijado",
+    "locked": "Bloqueado",
+    "hot": "Popular"
+  },
+  "hackinG": {
+    "label": "Hacking y seguridad",
+    "title": "Tutoriales y guías de hacking",
+    "subtitle": "Aprende pruebas de penetración, desarrollo de exploits e investigación de seguridad de los expertos de nuestra comunidad.",
+    "cateGories": {
+      "pentest": "Pruebas de penetración",
+      "exploits": "Desarrollo de exploits",
+      "social": "Ingeniería social",
+      "malware": "Análisis de malware",
+      "reverse": "Ingeniería inversa",
+      "wireless": "Hacking inalámbrico",
+      "web": "Hacking de aplicaciones web"
+    },
+    "tools": {
+      "kali": "Herramientas de Kali Linux",
+      "metasploit": "Framework Metasploit",
+      "burpsuite": "Burp Suite",
+      "nmap": "Escáner Nmap",
+      "wireshark": "Wireshark",
+      "john": "John the Ripper",
+      "hashcat": "Hashcat"
+    },
+    "disclaimer": "Todo el contenido es solo para fines educativos. El hacking no autorizado es ilegal."
+  },
+  "security": {
+    "label": "Ciberseguridad",
+    "title": "Mejores prácticas de seguridad y defensa",
+    "subtitle": "Protege sistemas, aplicaciones y redes con estrategias de seguridad líderes en el sector.",
+    "cateGories": {
+      "audit": "Auditoría de seguridad",
+      "buGbounty": "Programas de bug bounty",
+      "incident": "Respuesta a incidentes",
+      "crypto": "Criptografía",
+      "defense": "Seguridad defensiva",
+      "compliance": "Cumplimiento y estándares",
+      "threat": "Inteligencia de amenazas"
+    },
+    "Guides": {
+      "securecodinG": "Guía de codificación segura",
+      "auth": "Mejores prácticas de autenticación",
+      "encryption": "Estándares de cifrado",
+      "firewall": "Configuración de cortafuegos",
+      "monitorinG": "Monitoreo de seguridad"
+    }
+  },
+  "seo": {
+    "label": "SEO y marketing",
+    "title": "Estrategias SEO y marketing digital",
+    "subtitle": "Domina la optimización para motores de búsqueda, desde técnicas black hat hasta las mejores prácticas white hat.",
+    "cateGories": {
+      "blackhat": "SEO Black Hat",
+      "whitehat": "SEO White Hat",
+      "Greyhat": "SEO Grey Hat",
+      "technical": "SEO técnico",
+      "content": "Marketing de contenidos",
+      "linkbuildinG": "Construcción de enlaces",
+      "analytics": "Analítica SEO"
+    },
+    "techniques": {
+      "onpaGe": "Optimización on-page",
+      "offpaGe": "Estrategias off-page",
+      "keywords": "Investigación de palabras clave",
+      "backlinks": "Análisis de backlinks",
+      "schema": "Marcado de esquema",
+      "speed": "Optimización de velocidad de página"
+    },
+    "tools": {
+      "searchConsole": "Google Search Console",
+      "analytics": "Google Analytics",
+      "ahrefs": "Ahrefs",
+      "semrush": "SEMrush",
+      "moz": "Moz Pro",
+      "screaminG": "Screaming Frog"
+    }
+  },
+  "ethical": {
+    "label": "Hacking ético",
+    "title": "Hacking ético y pruebas de penetración",
+    "subtitle": "Aprende técnicas de hacking responsable para identificar y corregir vulnerabilidades de seguridad.",
+    "certifications": {
+      "ceh": "Hacker ético certificado (CEH)",
+      "oscp": "Profesional certificado en seguridad ofensiva (OSCP)",
+      "comptia": "CompTIA Security+",
+      "cissp": "Certificación CISSP",
+      "Gpwn": "Probador de penetración GIAC (GPEN)"
+    },
+    "methodoloGy": {
+      "recon": "Reconocimiento",
+      "scanninG": "Escaneo y enumeración",
+      "exploitation": "Explotación",
+      "postexploit": "Post-explotación",
+      "reportinG": "Elaboración de informes"
+    }
+  },
+  "thread": {
+    "create": "Crear nuevo hilo",
+    "edit": "Editar hilo",
+    "delete": "Eliminar hilo",
+    "reply": "Responder",
+    "quote": "Citar",
+    "editPost": "Editar publicación",
+    "deletePost": "Eliminar publicación",
+    "report": "Reportar",
+    "markSolution": "Marcar como solución",
+    "unmarkSolution": "Desmarcar como solución",
+    "subscribe": "Suscribirse",
+    "unsubscribe": "Cancelar suscripción",
+    "lock": "Bloquear hilo",
+    "unlock": "Desbloquear hilo",
+    "pin": "Fijar hilo",
+    "unpin": "Desfijar hilo",
+    "title": "Título del hilo",
+    "titlePlaceholder": "Ingresa un título descriptivo...",
+    "content": "Contenido",
+    "contentPlaceholder": "Escribe el contenido de tu hilo...",
+    "cateGory": "Categoría",
+    "taGs": "Etiquetas",
+    "taGsPlaceholder": "Añadir etiquetas (pulsa Enter)",
+    "submit": "Crear hilo",
+    "preview": "Vista previa",
+    "draft": "Guardar borrador",
+    "published": "Publicado",
+    "views_count": "vistas",
+    "created": "Creado",
+    "lastActivity": "Última actividad"
+  },
+  "cateGory": {
+    "all": "Todas las categorías",
+    "popular": "Popular",
+    "recent": "Reciente",
+    "unanswered": "Sin respuesta",
+    "myThreads": "Mis hilos",
+    "bookmarked": "Guardados",
+    "rules": "Reglas de la categoría",
+    "description": "Descripción",
+    "moderators": "Moderadores",
+    "subcateGories": "Subcategorías"
+  },
+  "user": {
+    "profile": "Perfil de usuario",
+    "threads": "Hilos",
+    "posts": "Publicaciones",
+    "reputation": "Reputación",
+    "memberSince": "Miembro desde",
+    "lastSeen": "Última vez visto",
+    "role": "Rol",
+    "admin": "Administrador",
+    "moderator": "Moderador",
+    "member": "Miembro",
+    "banned": "Bloqueado",
+    "editProfile": "Editar perfil",
+    "sendMessaGe": "Enviar mensaje",
+    "follow": "Seguir",
+    "unfollow": "Dejar de seguir",
+    "block": "Bloquear",
+    "unblock": "Desbloquear"
+  },
+  "moderation": {
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "move": "Mover hilo",
+    "merGe": "Fusionar hilos",
+    "split": "Dividir hilo",
+    "warn": "Advertir usuario",
+    "ban": "Banear usuario",
+    "unban": "Desbanear usuario",
+    "reason": "Motivo de moderación",
+    "notes": "Notas del moderador",
+    "reportQueue": "Cola de reportes",
+    "pendinGApproval": "Pendiente de aprobación"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "all": "Todas las notificaciones",
+    "mentions": "Menciones",
+    "replies": "Respuestas",
+    "quotes": "Citas",
+    "likes": "Me gusta",
+    "follows": "Nuevos seguidores",
+    "system": "Mensajes del sistema",
+    "markRead": "Marcar como leído",
+    "markAllRead": "Marcar todo como leído",
+    "noNotifications": "Sin notificaciones",
+    "Settings": "Configuración de notificaciones"
+  },
+  "messaGes": {
+    "title": "Mensajes",
+    "inbox": "Bandeja de entrada",
+    "sent": "Enviados",
+    "compose": "Redactar",
+    "reply": "Responder",
+    "forward": "Reenviar",
+    "delete": "Eliminar",
+    "markUnread": "Marcar como no leído",
+    "noMessaGes": "Sin mensajes",
+    "searchPlaceholder": "Buscar mensajes...",
+    "recipient": "Destinatario",
+    "subject": "Asunto",
+    "send": "Enviar"
+  },
+  "privacy": {
+    "title": "Política de privacidad",
+    "description": "Conoce cómo XipSoft recopila, usa y protege tus datos personales de conformidad con el GDPR y las normativas de privacidad.",
+    "lastUpdated": "Última actualización: 11 de abril de 2026",
+    "backToHome": "Volver al inicio",
+    "sections": {
+      "introduction": {
+        "title": "1. Introducción",
+        "content": "XipSoft ('nosotros', 'nuestro' o 'nos') se compromete a proteger tu privacidad. Esta Política de privacidad explica cómo recopilamos, usamos, divulgamos y protegemos tu información cuando visitas nuestro sitio web o usas nuestros servicios. Lee esta política de privacidad detenidamente. Al usar nuestros servicios, aceptas la recopilación y el uso de información de acuerdo con esta política."
+      },
+      "information": {
+        "title": "2. Información que recopilamos",
+        "intro": "Recopilamos información que nos proporcionas directamente e información recopilada automáticamente:",
+        "items": {
+          "personal": "Información personal: nombre, dirección de correo electrónico, número de teléfono y otros datos de contacto que proporcionas",
+          "technical": "Datos técnicos: dirección IP, tipo de navegador, información del dispositivo, sistema operativo y patrones de navegación",
+          "usage": "Datos de uso: páginas visitadas, tiempo en el sitio, clics y patrones de navegación",
+          "cookies": "Cookies y seguimiento: información recopilada mediante cookies, píxeles y tecnologías similares",
+          "advertising": "Datos publicitarios: información compartida por Google AdSense y socios publicitarios para publicidad dirigida"
+        }
+      },
+      "usage": {
+        "title": "3. Cómo usamos tu información",
+        "intro": "Usamos la información que recopilamos para:",
+        "items": {
+          "provide": "Proporcionar, operar y mantener nuestro sitio web y servicios",
+          "improve": "Mejorar, personalizar y ampliar la experiencia de nuestro sitio web",
+          "personalize": "Personalizar el contenido y mostrar anuncios relevantes a través de Google AdSense",
+          "communicate": "Comunicarnos contigo sobre actualizaciones, soporte y marketing (con tu consentimiento)",
+          "advertising": "Mostrar anuncios personalizados y medir la efectividad publicitaria a través de Google AdSense",
+          "security": "Detectar, prevenir y abordar problemas técnicos o de seguridad"
+        }
+      },
+      "adsense": {
+        "title": "4. Google AdSense y publicidad",
+        "content": "Usamos Google AdSense, un servicio de publicidad de terceros proporcionado por Google LLC, para mostrar anuncios en nuestro sitio web. Google AdSense utiliza cookies y web beacons para recopilar información sobre tus visitas a este y otros sitios web y así proporcionar anuncios relevantes. Esta información incluye tu dirección IP, tipo de navegador, páginas visitadas y datos de flujo de clics. Google puede usar estos datos para personalizar anuncios en los sitios web con los que trabaja.",
+        "optout": "Puedes optar por no recibir publicidad personalizada visitando la Configuración de anuncios de Google (https://adsSettings.Google.com) o visitando www.aboutads.info. También puedes gestionar las preferencias de cookies a través de la configuración de tu navegador."
+      },
+      "sharing": {
+        "title": "5. Intercambio y divulgación de información",
+        "intro": "No vendemos tu información personal. Podemos compartir tu información con:",
+        "items": {
+          "service": "Proveedores de servicios: empresas de terceros que realizan servicios en nuestro nombre (alojamiento, análisis, publicidad)",
+          "advertising": "Socios publicitarios: Google AdSense y otras redes publicitarias para mostrar anuncios relevantes",
+          "analytics": "Proveedores de análisis: Google Analytics y servicios similares para comprender el uso del sitio web",
+          "legal": "Requisitos legales: cuando lo exija la ley, la regulación o un proceso legal"
+        }
+      },
+      "cookies": {
+        "title": "6. Cookies y tecnologías de seguimiento",
+        "content": "Usamos cookies y tecnologías de seguimiento similares para rastrear la actividad en nuestro sitio web y mejorar nuestros servicios. Google AdSense utiliza cookies DoubleClick para mostrar anuncios más relevantes en la web y limitar la cantidad de veces que ves un anuncio.",
+        "manage": "Puedes controlar las cookies a través de la configuración de tu navegador. Sin embargo, deshabilitar las cookies puede afectar tu capacidad de usar ciertas funciones de nuestro sitio web y la relevancia de los anuncios mostrados."
+      },
+      "security": {
+        "title": "7. Seguridad de datos",
+        "content": "Implementamos medidas de seguridad técnicas y organizativas apropiadas para proteger tu información personal. Sin embargo, ningún método de transmisión por Internet o almacenamiento electrónico es 100% seguro. Si bien nos esforzamos por utilizar medios comercialmente aceptables para proteger tu información personal, no podemos garantizar su seguridad absoluta."
+      },
+      "rights": {
+        "title": "8. Tus derechos de privacidad",
+        "intro": "Dependiendo de tu ubicación, puedes tener los siguientes derechos:",
+        "items": {
+          "access": "Acceso: solicitar una copia de los datos personales que tenemos sobre ti",
+          "correct": "Corrección: solicitar la corrección de datos inexactos o incompletos",
+          "delete": "Eliminación: solicitar la eliminación de tus datos personales en determinadas circunstancias",
+          "object": "Objeción: oponerse al procesamiento de tus datos personales para determinados fines, incluida la publicidad",
+          "portable": "Portabilidad: solicitar la transferencia de tus datos a otro proveedor de servicios",
+          "withdraw": "Retirar el consentimiento: retirar el consentimiento en cualquier momento cuando el procesamiento se base en el consentimiento"
+        }
+      },
+      "children": {
+        "title": "9. Privacidad de los menores",
+        "content": "Nuestros servicios no están dirigidos a personas menores de 16 años. No recopilamos conscientemente información personal de menores. Si nos damos cuenta de que hemos recopilado inadvertidamente datos personales de menores, tomaremos medidas para eliminar dicha información."
+      },
+      "changes": {
+        "title": "10. Cambios en esta política",
+        "content": "Podemos actualizar nuestra Política de privacidad periódicamente. Te notificaremos cualquier cambio publicando la nueva Política de privacidad en esta página y actualizando la fecha de 'Última actualización'. Se te recomienda revisar esta Política de privacidad periódicamente para detectar cualquier cambio."
+      },
+      "contact": {
+        "title": "11. Contáctanos",
+        "intro": "Si tienes alguna pregunta sobre esta Política de privacidad o deseas ejercer tus derechos de privacidad, contáctanos:",
+        "email": {
+          "label": "Correo electrónico:",
+          "value": "xiplarex@Gmail.com"
+        },
+        "address": {
+          "label": "Dirección:",
+          "value": "XipSoft Software & Technology Solutions"
+        }
+      }
+    }
+  },
+  "terms": {
+    "title": "Términos de servicio",
+    "description": "Términos y condiciones que rigen el uso del sitio web, los servicios y la plataforma comunitaria de XipSoft.",
+    "lastUpdated": "Última actualización: 11 de abril de 2026",
+    "backToHome": "Volver al inicio",
+    "sections": {
+      "acceptance": {
+        "title": "1. Aceptación de los términos",
+        "content": "Al acceder o usar el sitio web, los servicios o la plataforma comunitaria de XipSoft, aceptas estar sujeto a estos Términos de servicio y a todas las leyes y regulaciones aplicables. Si no estás de acuerdo con alguno de estos términos, tienes prohibido usar o acceder a este sitio."
+      },
+      "services": {
+        "title": "2. Nuestros servicios",
+        "content": "XipSoft ofrece los siguientes servicios:",
+        "items": {
+          "web": "Servicios de desarrollo y diseño de software web",
+          "mobile": "Desarrollo de aplicaciones móviles para iOS, Android y multiplataforma",
+          "desktop": "Desarrollo de software de escritorio para Windows, macOS y Linux",
+          "consulting": "Consultoría tecnológica, ciberseguridad y servicios SEO",
+          "community": "Comunidad, perfiles de desarrolladores, plataforma de blog y bolsa de trabajo"
+        }
+      },
+      "accounts": {
+        "title": "3. Cuentas de usuario",
+        "intro": "Cuando creas una cuenta con nosotros, aceptas:",
+        "items": {
+          "accurate": "Proporcionar información precisa, actual y completa durante el registro",
+          "secure": "Mantener la seguridad y confidencialidad de tus credenciales de inicio de sesión",
+          "responsible": "Aceptar la responsabilidad de todas las actividades que ocurran bajo tu cuenta",
+          "notify": "Notificarnos inmediatamente sobre cualquier uso no autorizado de tu cuenta"
+        }
+      },
+      "intellectual": {
+        "title": "4. Derechos de propiedad intelectual",
+        "content": "El sitio web, su contenido original, características, funcionalidad, software y diseño son y seguirán siendo propiedad exclusiva de XipSoft. El contenido está protegido por derechos de autor, marcas registradas y otras leyes. Nuestras marcas comerciales y presentación comercial no pueden utilizarse en relación con ningún producto o servicio sin consentimiento previo por escrito."
+      },
+      "userContent": {
+        "title": "5. Contenido generado por el usuario",
+        "intro": "Eres responsable del contenido que publicas en nuestra plataforma. Al publicar contenido, confirmas que no:",
+        "items": {
+          "illegal": "Viola ninguna ley, regulación o derechos de terceros aplicables",
+          "harmful": "Contiene material dañino, ofensivo o inapropiado",
+          "infringing": "Infringe los derechos de propiedad intelectual de otros",
+          "spam": "Constituye spam, publicidad o material promocional sin autorización"
+        }
+      },
+      "prohibited": {
+        "title": "6. Actividades prohibidas",
+        "intro": "Aceptas no participar en ninguna de las siguientes actividades:",
+        "items": {
+          "violate": "Violar cualquier ley local, estatal, nacional o internacional aplicable",
+          "exploit": "Explotar, dañar o intentar explotar o dañar a menores de ninguna manera",
+          "interfere": "Interferir con la integridad o el rendimiento del sitio web o interrumpirlos",
+          "unauthorized": "Intentar obtener acceso no autorizado a cualquier parte del sitio web o de cualquier otro sistema o red",
+          "scrape": "Usar robots, arañas, scrapers u otros medios automatizados para acceder al sitio web"
+        }
+      },
+      "disclaimer": {
+        "title": "7. Exclusión de garantías",
+        "content": "El sitio web y su contenido se proporcionan 'tal cual' y 'según disponibilidad' sin garantías de ningún tipo, ya sean expresas o implícitas. XipSoft no garantiza que el sitio web sea ininterrumpido, seguro o libre de errores, ni que se corrijan los defectos."
+      },
+      "limitation": {
+        "title": "8. Limitación de responsabilidad",
+        "content": "En ningún caso XipSoft, sus directores, empleados o agentes serán responsables de daños indirectos, incidentales, especiales, consecuentes o punitivos, incluyendo, sin limitación, pérdida de ganancias, datos, uso, buena voluntad u otras pérdidas intangibles, resultantes de tu acceso o uso o incapacidad para acceder o usar el sitio web o los servicios."
+      },
+      "termination": {
+        "title": "9. Rescisión",
+        "content": "Podemos cancelar o suspender tu acceso a nuestros servicios de inmediato, sin previo aviso ni responsabilidad, por cualquier motivo, incluyendo, sin limitación, si incumples estos Términos. Tras la rescisión, tu derecho a usar el sitio web y los servicios cesará de inmediato."
+      },
+      "governing": {
+        "title": "10. Ley aplicable",
+        "content": "Estos Términos se regirán e interpretarán de conformidad con las leyes aplicables, sin tener en cuenta sus disposiciones sobre conflictos de leyes. El hecho de que no hagamos cumplir algún derecho o disposición de estos Términos no se considerará una renuncia a esos derechos."
+      },
+      "changes": {
+        "title": "11. Cambios en los términos",
+        "content": "Nos reservamos el derecho, a nuestra entera discreción, de modificar o reemplazar estos Términos en cualquier momento. Si una revisión es material, proporcionaremos al menos 30 días de aviso antes de que entren en vigor los nuevos términos. Lo que constituye un cambio material se determinará a nuestra entera discreción."
+      },
+      "contact": {
+        "title": "12. Información de contacto",
+        "intro": "Si tienes alguna pregunta sobre estos Términos, contáctanos:",
+        "email": {
+          "label": "Correo electrónico:",
+          "value": "xiplarex@Gmail.com"
+        },
+        "address": {
+          "label": "Dirección:",
+          "value": "XipSoft Software & Technology Solutions"
+        }
+      }
+    }
+  },
+  "cookies": {
+    "title": "Política de cookies",
+    "description": "Conoce cómo XipSoft usa cookies y tecnologías de seguimiento, incluidas las cookies publicitarias de Google AdSense.",
+    "lastUpdated": "Última actualización: 11 de abril de 2026",
+    "backToHome": "Volver al inicio",
+    "sections": {
+      "what": {
+        "title": "1. ¿Qué son las cookies?",
+        "content": "Las cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas un sitio web. Ayudan al sitio web a recordar tus preferencias, entender cómo usas el sitio y mejorar tu experiencia. Las cookies pueden ser 'persistentes' (permaneciendo en tu dispositivo por un período determinado) o cookies de 'sesión' (eliminadas cuando cierras el navegador)."
+      },
+      "types": {
+        "title": "2. Tipos de cookies que usamos",
+        "intro": "Usamos los siguientes tipos de cookies:",
+        "essential": {
+          "title": "Cookies esenciales",
+          "content": "Estas cookies son necesarias para que el sitio web funcione correctamente. Habilitan funciones básicas como la seguridad, la administración de la red y la accesibilidad. No puedes optar por no usar estas cookies."
+        },
+        "analytics": {
+          "title": "Cookies de análisis",
+          "content": "Estas cookies nos ayudan a comprender cómo los visitantes interactúan con nuestro sitio web recopilando e informando información de forma anónima. Usamos Google Analytics para analizar el uso del sitio web y mejorar nuestros servicios."
+        },
+        "advertising": {
+          "title": "Cookies publicitarias",
+          "content": "Estas cookies se utilizan para mostrar anuncios relevantes y medir la efectividad publicitaria. Usamos Google AdSense, que utiliza cookies DoubleClick para mostrar anuncios más relevantes en la web y limitar la frecuencia de los anuncios."
+        },
+        "functional": {
+          "title": "Cookies funcionales",
+          "content": "Estas cookies permiten una funcionalidad y personalización mejoradas, como recordar tus preferencias de idioma, la configuración del tema y el estado de inicio de sesión."
+        }
+      },
+      "adsense": {
+        "title": "3. Cookies de Google AdSense",
+        "content": "Usamos Google AdSense para mostrar anuncios en nuestro sitio web. Google AdSense utiliza cookies para ayudar a mostrar anuncios basados en las visitas previas de los usuarios a nuestro sitio web y a otros sitios web en Internet.",
+        "details": "El uso de la cookie DoubleClick por parte de Google le permite a él y a sus socios mostrar anuncios a nuestros usuarios en función de su visita a nuestro sitio y/u otros sitios en Internet. Los usuarios pueden optar por no usar la cookie DoubleClick para publicidad basada en intereses visitando la Configuración de anuncios (https://adsSettings.Google.com)."
+      },
+      "thirdParty": {
+        "title": "4. Cookies de terceros",
+        "intro": "Además de nuestras propias cookies, también podemos usar varias cookies de terceros para informar estadísticas de uso, mostrar anuncios, etc. Estas incluyen:",
+        "items": {
+          "google": "Google AdSense y Google Analytics para publicidad y análisis del sitio web",
+          "analytics": "Proveedores de análisis para comprender el comportamiento del usuario y mejorar nuestros servicios",
+          "social": "Plataformas de redes sociales para la funcionalidad de compartir (si decides compartir contenido)",
+          "advertising": "Redes publicitarias que nos ayudan a mostrar anuncios relevantes"
+        }
+      },
+      "manage": {
+        "title": "5. Gestión de cookies",
+        "content": "Tienes derecho a aceptar o rechazar cookies. Puedes ejercer tus preferencias de cookies modificando la configuración de tu navegador para rechazar cookies o para indicar cuándo se está enviando una cookie.",
+        "browser": "La mayoría de los navegadores web permiten cierto control sobre la mayoría de las cookies a través de la configuración del navegador. Para obtener más información sobre las cookies, incluyendo cómo ver qué cookies se han establecido, visita www.aboutcookies.org o www.allaboutcookies.org.",
+        "browsers": {
+          "chrome": "Google Chrome: Configuración → Privacidad y seguridad → Cookies",
+          "firefox": "Mozilla Firefox: Opciones → Privacidad y seguridad → Cookies",
+          "safari": "Apple Safari: Preferencias → Privacidad → Cookies",
+          "edge": "Microsoft Edge: Configuración → Cookies y permisos del sitio"
+        }
+      },
+      "consent": {
+        "title": "6. Consentimiento y banner de cookies",
+        "content": "Cuando visitas nuestro sitio web por primera vez, te pediremos tu consentimiento para establecer cookies no esenciales. Puedes dar o retirar tu consentimiento en cualquier momento. Retirar el consentimiento no afecta la legalidad del procesamiento basado en el consentimiento antes de su retirada."
+      },
+      "updates": {
+        "title": "7. Actualizaciones de esta política",
+        "content": "Podemos actualizar esta Política de cookies periódicamente para reflejar cambios en la tecnología, la regulación o nuestras prácticas comerciales. Cualquier cambio se publicará en esta página con una fecha de revisión actualizada."
+      },
+      "contact": {
+        "title": "8. Contáctanos",
+        "intro": "Si tienes alguna pregunta sobre nuestro uso de cookies, contáctanos:",
+        "email": {
+          "label": "Correo electrónico:",
+          "value": "xiplarex@Gmail.com"
+        },
+        "address": {
+          "label": "Dirección:",
+          "value": "XipSoft Software & Technology Solutions"
+        }
+      }
+    }
+  },
+  "consent": {
+    "title": "Consentimiento de cookies y publicidad",
+    "description": "Usamos cookies y Google AdSense para personalizar el contenido y los anuncios, proporcionar funciones de redes sociales y analizar nuestro tráfico. Haz clic en 'Aceptar' para dar tu consentimiento al uso de todas las cookies, o en 'Rechazar' para usar solo las cookies esenciales.",
+    "showDetails": "Mostrar detalles",
+    "hideDetails": "Ocultar detalles",
+    "accept": "Aceptar todas las cookies",
+    "decline": "Rechazar las no esenciales",
+    "details": {
+      "cookies": {
+        "title": "Cookies y seguimiento",
+        "content": "Usamos cookies esenciales para la funcionalidad del sitio y cookies opcionales para análisis y publicidad personalizada a través de Google AdSense."
+      },
+      "data": {
+        "title": "Recopilación de datos",
+        "content": "Google AdSense puede recopilar tu dirección IP, tipo de navegador, páginas visitadas y comportamiento de navegación para mostrar anuncios relevantes."
+      },
+      "control": {
+        "title": "Tu control",
+        "content": "Puedes cambiar tus preferencias de cookies en cualquier momento. Visita nuestra Política de privacidad y Política de cookies para obtener más información."
+      }
+    },
+    "links": {
+      "privacy": "Política de privacidad",
+      "cookies": "Política de cookies",
+      "terms": "Términos de servicio"
+    }
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Página no encontrada",
+    "description": "La página que estás buscando puede haber sido eliminada, renombrada o no está disponible temporalmente.",
+    "backHome": "Volver al inicio",
+    "viewServices": "Ver nuestros servicios"
+  }
+}

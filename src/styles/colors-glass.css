@@ -1,0 +1,643 @@
+/*
+   XipSoft — Renk Sistemi (Minified)
+   Tüm dekoratif efektler kaldırıldı.
+*/
+
+:root {
+  /* ═══════════════════════════════════════════════════════════════════
+     XipSoft merkezi palet — TEK KAYNAK: src/config/palette.ts
+     (CSS, TS import edemediği için bu değerler orayla senkron tutulur)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* Uzay zeminleri */
+  --space-950: #050811;
+  --space-900: #070b16;
+  --space-800: #0b0f19;
+  --space-700: #121826;
+
+  /* Neon mor (ana vurgu) */
+  --neon-300: #c4b0ff;
+  --neon-400: #b794ff;
+  --neon-500: #9d72ff;
+  --neon-600: #8b5cf6;
+  --neon-700: #7c3aed;
+
+  /* İkincil aksanlar */
+  --accent-cyan: #ddd6fe;
+  --accent-rose: #a78bfa;
+  --accent-gold: #a78bfa;
+  --accent-emerald: #ddd6fe;
+
+  /* Zemin */
+  --color-bg:            var(--space-950);
+  --color-surface-1:     rgba(12, 13, 18, 0.50);
+  --color-surface-2:     rgba(18, 20, 28, 0.65);
+  --color-surface-3:     rgba(25, 28, 40, 0.80);
+
+  /* Kart zeminleri — yarı şeffaf liquid glass */
+  --color-card-bg:       rgba(255, 255, 255, 0.02);
+  --color-card-bg-hover: rgba(255, 255, 255, 0.04);
+  --color-tag-bg:        rgba(255, 255, 255, 0.04);
+
+  /* Kenarlık — ince, zarif */
+  --color-border:        rgba(255, 255, 255, 0.06);
+  --color-border-hover:  rgba(255, 255, 255, 0.12);
+
+  /* Metin */
+  --color-text-primary:   #ffffff;   /* palette.text.heading */
+  --color-text-secondary: #cbd5e1;   /* palette.text.body */
+  --color-text-muted:     #94a3b8;   /* palette.text.muted */
+  --color-text-dim:       #64748b;   /* palette.text.dim */
+
+  /* Prism/Aksan — geriye dönük uyumlu alias'lar (merkezi paletten türetilir) */
+  --prism-violet: var(--neon-500);
+  --prism-cyan:   var(--accent-cyan);
+  --prism-rose:   var(--accent-rose);
+  --prism-purple: var(--neon-400);
+  --prism-emerald:var(--accent-emerald);
+  --prism-blue:   #ddd6fe;
+
+  /* glassmorphism */
+  --glass-blur:   blur(28px) saturate(130%);
+  --glass-blur-sm: blur(16px) saturate(120%);
+}
+
+html.light, [data-theme="light"] {
+  --color-bg:            #f0f2f5;
+  --color-surface-1:     rgba(255, 255, 255, 0.82);
+  --color-surface-2:     rgba(248, 249, 251, 0.90);
+  --color-surface-3:     rgba(238, 240, 244, 0.95);
+
+  --color-border:        rgba(71, 85, 105, 0.10);
+  --color-border-hover:  rgba(71, 85, 105, 0.22);
+
+  --color-text-primary:   #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted:     #64748b;
+}
+
+html.light body {
+  background-color: #f0f2f5 !important;
+  color: #0f172a !important;
+}
+
+/* ─── METIN UTILITY ──────────────────────────────────────── */
+.text-primary   { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-muted     { color: var(--color-text-muted); }
+
+/* ─── TITLE TEXT — tek kaynak başlık stili ──────────────── */
+.title-text-glass {
+  display: inline-block;
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  text-shadow: 0 0 0 transparent;
+  position: relative;
+}
+
+.title-text-glass::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -0.2em 0;
+  height: 0.06em;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), rgba(255,255,255,0.16), transparent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* glass variant — buz gümüş cam gradient */
+.title-text-glass--prism {
+  color: transparent !important;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f1f5f9 30%,
+    #e2e8f0 50%,
+    #f1f5f9 70%,
+    #ffffff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 24px rgba(255,255,255,0.18), 0 0 28px rgba(148,163,184,0.10);
+}
+
+/* Section variant — buz gümüş cam gradient */
+.title-text-glass--section {
+  color: transparent !important;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f1f5f9 30%,
+    #e2e8f0 50%,
+    #f1f5f9 70%,
+    #ffffff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 24px rgba(255,255,255,0.16), 0 0 28px rgba(148,163,184,0.10);
+}
+
+/* Hero variant — buz gümüş cam gradient */
+.title-text-glass--hero {
+  color: transparent !important;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f1f5f9 30%,
+    #e2e8f0 50%,
+    #f1f5f9 70%,
+    #ffffff 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 32px rgba(255,255,255,0.20), 0 0 36px rgba(148,163,184,0.12);
+}
+
+/* Silver variant — gümüş tonları */
+.title-text-glass--silver {
+  color: transparent !important;
+  background: linear-gradient(
+    168deg,
+    #f1f5f9 0%,
+    #e2e8f0 10%,
+    #cbd5e1 24%,
+    #f8fafc 38%,
+    #e2e8f0 52%,
+    #94a3b8 66%,
+    #e2e8f0 80%,
+    #f1f5f9 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 18px rgba(255,255,255,0.10), 0 0 28px rgba(148,163,184,0.14);
+}
+
+/* Admin variant — düz renk, glass efekti yok */
+.title-text-admin {
+  display: inline-block;
+  color: #111827;
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+/* Content variant — düz içerik başlığı, glass efekti yok */
+.title-text-content {
+  display: block;
+  color: var(--color-text-primary);
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+/* ─── KART SISTEMI — tek kaynak ──────────────────────────────────────────── */
+
+/*
+  Kullanim:
+    class="card"              → varsayilan liquid glass (dark theme)
+    class="card card--flat"   → duz yuzey, blur yok
+    class="card card--outline"→ sadece border
+    class="card card--elevated">yukseltilmis, guclu golge
+    class="card card--admin"  → light theme admin kartlari
+    class="card card--interactive" → hover'da scale + glow
+*/
+
+.card,
+.card::before {
+  box-sizing: border-box;
+}
+
+/* ── Temel kart — liquid glass ───────────────────────────────────────────── */
+.card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid var(--color-border);
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018));
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(2,6,23,0.12);
+  transition: transform 0.4s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.4s ease,
+              border-color 0.4s ease;
+}
+
+/* Kenar gradyan çizgisi */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(157,114,255,0.28), rgba(255,255,255,0.05), rgba(139,92,246,0.14));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.7;
+  transition: opacity 0.4s ease, background 0.4s ease;
+}
+
+/* Ust cam yansi */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent 40%, transparent 60%, rgba(255,255,255,0.02));
+  opacity: 0.9;
+  transition: opacity 0.4s ease, background 0.4s ease;
+}
+
+/* ── Hover — varsayilan ──────────────────────────────────────────────────── */
+.card:hover {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 8px 40px rgba(2,6,23,0.22), 0 0 0 1px rgba(255,255,255,0.04);
+  transform: translateY(-2px) scale(1.005);
+}
+.card:hover::before {
+  background: linear-gradient(135deg, rgba(183,148,255,0.55), rgba(255,255,255,0.10), rgba(157,114,255,0.30));
+  opacity: 1;
+}
+.card:hover::after {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 30%, transparent 70%, rgba(255,255,255,0.03));
+  opacity: 1;
+}
+
+/* ── Varyant: flat ──────────────────────────────────────────────────────── */
+.card--flat {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(255,255,255,0.03);
+}
+.card--flat::before,
+.card--flat::after {
+  display: none;
+}
+.card--flat:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--color-border-hover);
+  transform: none;
+}
+
+/* ── Varyant: outline ───────────────────────────────────────────────────── */
+.card--outline {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.card--outline::before,
+.card--outline::after {
+  display: none;
+}
+.card--outline:hover {
+  border-color: var(--color-border-hover);
+  transform: none;
+}
+
+/* ── Varyant: elevated ──────────────────────────────────────────────────── */
+.card--elevated {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 48px rgba(2,6,23,0.25), 0 0 0 1px rgba(255,255,255,0.06);
+}
+.card--elevated:hover {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 64px rgba(2,6,23,0.35), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* ── Varyant: interactive (guclu hover scale + glow) ─────────────────────── */
+.card--interactive {
+  cursor: pointer;
+}
+.card--interactive:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 16px 56px rgba(2,6,23,0.3), 0 0 0 1px rgba(255,255,255,0.08);
+}
+
+/* ── Varyant: admin (light theme) ────────────────────────────────────────── */
+.card--admin {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+.card--admin::before,
+.card--admin::after {
+  display: none;
+}
+.card--admin:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  transform: translateY(-1px);
+}
+
+/* ── glow child utility ─────────────────────────────────────────────────── */
+.card-glow,
+.liquid-glow {
+  position: absolute;
+  pointer-events: none;
+  inset: auto -16% -30% auto;
+  width: 68%;
+  height: 68%;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 72%);
+  filter: blur(26px);
+  opacity: 0;
+  transform: translateY(10px) scale(0.9);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.card:hover .card-glow,
+.card:hover .liquid-glow {
+  opacity: 0.95;
+  transform: translateY(0) scale(1.04);
+}
+
+/* ── TAg UTILITY ──────────────────────────────────────── */
+.tag-bg {
+  background: var(--color-tag-bg);
+  border: 1px solid var(--color-border);
+}
+
+/* ─── BIRINCIL CTA — merkezî glass button (neon mor) ──────────────────── */
+.site-cta-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  border: 1px solid var(--neon-500);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(157, 114, 255, 0.85), rgba(124, 58, 237, 0.78));
+  color: #f5f3ff;
+  box-shadow:
+    0 8px 28px rgba(124, 58, 237, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.12);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.site-cta-primary:hover {
+  border-color: var(--neon-300);
+  background: linear-gradient(135deg, rgba(183, 148, 255, 0.95), rgba(139, 92, 246, 0.88));
+  box-shadow:
+    0 12px 34px rgba(124, 58, 237, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.1);
+}
+
+.site-cta-primary:focus-visible {
+  outline: 2px solid var(--neon-300);
+  outline-offset: 3px;
+}
+
+.site-cta-primary:active {
+  transform: scale(0.98);
+}
+
+.site-cta-primary:disabled,
+.site-cta-primary[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ─── İKİNCİL CTA — merkezî glass button (neon outline) ───────────────── */
+.site-cta-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  border: 1px solid rgba(157, 114, 255, 0.25);
+  border-radius: 1rem;
+  background: rgba(157, 114, 255, 0.08);
+  color: var(--neon-400);
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.site-cta-secondary:hover {
+  border-color: rgba(157, 114, 255, 0.45);
+  background: rgba(157, 114, 255, 0.14);
+  color: var(--neon-300);
+}
+
+.site-cta-secondary:focus-visible {
+  outline: 2px solid var(--neon-300);
+  outline-offset: 3px;
+}
+
+.site-cta-secondary:active {
+  transform: scale(0.98);
+}
+
+/* ─── AKSAN YARDIMCILARI — dinamik vurgu rengi (inline stil yerine) ───── */
+/*
+  Kullanım: `class="accent-neon"` aksan değişkenlerini set eder; ardından
+  Tailwind arbitrary value'ları ile tüketilir:
+    bg-[var(--accent-soft)] text-[color:var(--accent)]
+    border-[color:var(--accent-border)]
+    via-[color:var(--accent-line)]  (gradient orta durağı)
+  Böylece kartlar bileşen içinde renk kodu barındırmaz.
+*/
+.accent-neon {
+  --accent:        var(--neon-500);
+  --accent-strong: var(--neon-300);
+  --accent-soft:   rgba(157, 114, 255, 0.10);
+  --accent-line:   rgba(157, 114, 255, 0.75);
+  --accent-border: rgba(157, 114, 255, 0.30);
+}
+
+.accent-cyan {
+  --accent:        var(--accent-cyan);
+  --accent-strong: #67e8f9;
+  --accent-soft:   rgba(34, 211, 238, 0.10);
+  --accent-line:   rgba(34, 211, 238, 0.75);
+  --accent-border: rgba(34, 211, 238, 0.30);
+}
+
+.accent-rose {
+  --accent:        var(--accent-rose);
+  --accent-strong: #c4b5fd;
+  --accent-soft:   rgba(167, 139, 250, 0.10);
+  --accent-line:   rgba(167, 139, 250, 0.75);
+  --accent-border: rgba(167, 139, 250, 0.30);
+}
+
+.accent-gold {
+  --accent:        var(--accent-gold);
+  --accent-strong: #c4b5fd;
+  --accent-soft:   rgba(167, 139, 250, 0.10);
+  --accent-line:   rgba(167, 139, 250, 0.75);
+  --accent-border: rgba(167, 139, 250, 0.30);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-cta-primary,
+  .site-cta-secondary {
+    transition: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   AKSAN YARDIMCI SINIFLARI — Tek kaynak CSS değişken seti
+   ════════════════════════════════════════════════════════════
+   Kullanım: className="accent-neon" → içerideki tüm var(--accent*)
+   değişkenleri otomatik set edilir. Bileşenler ham renk YAZMAZ.
+
+   Alanlar:
+     --accent        → tam renk (ikon, başlık, nokta, vb.)
+     --accent-line   → divider çizgisi için (biraz daha parlak)
+     --accent-soft   → %8 opaklıklı glow / hover bg
+     --accent-border → %30 opaklıklı kart border
+*/
+
+.accent-neon {
+  --accent:        var(--neon-500);          /* #9d72ff */
+  --accent-line:   var(--neon-400);          /* #b794ff */
+  --accent-soft:   rgba(157, 114, 255, 0.08);
+  --accent-border: rgba(157, 114, 255, 0.30);
+}
+
+.accent-cyan {
+  --accent:        var(--accent-cyan);       /* #ddd6fe */
+  --accent-line:   var(--accent-cyan);
+  --accent-soft:   rgba(34, 211, 238, 0.08);
+  --accent-border: rgba(34, 211, 238, 0.30);
+}
+
+.accent-rose {
+  --accent:        var(--accent-rose);       /* artık mor (#a78bfa) */
+  --accent-line:   var(--neon-400);
+  --accent-soft:   rgba(167, 139, 250, 0.08);
+  --accent-border: rgba(167, 139, 250, 0.30);
+}
+
+.accent-gold {
+  --accent:        var(--accent-gold);       /* artık mor (#a78bfa) */
+  --accent-line:   var(--neon-400);
+  --accent-soft:   rgba(167, 139, 250, 0.08);
+  --accent-border: rgba(167, 139, 250, 0.30);
+}
+
+.accent-emerald {
+  --accent:        var(--accent-emerald);    /* artık cyan (#ddd6fe) */
+  --accent-line:   var(--accent-cyan);
+  --accent-soft:   rgba(34, 211, 238, 0.08);
+  --accent-border: rgba(34, 211, 238, 0.30);
+}
+
+/* ── İKİNCİL CTA butonu — site-cta-primary'nin eşi ─────── */
+.site-cta-secondary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.25rem;
+  border: 1px solid var(--color-border-neon, rgba(157, 114, 255, 0.30));
+  border-radius: 1rem;
+  background: rgba(157, 114, 255, 0.08);
+  color: var(--neon-400, #b794ff);
+  box-shadow: 0 0 18px rgba(157, 114, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.site-cta-secondary:hover {
+  border-color: rgba(157, 114, 255, 0.55);
+  background: rgba(157, 114, 255, 0.14);
+  box-shadow: 0 0 28px rgba(157, 114, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.site-cta-secondary:focus-visible {
+  outline: 2px solid var(--neon-400, #b794ff);
+  outline-offset: 3px;
+}
+
+.site-cta-secondary:active { transform: scale(0.98); }
+
+.site-cta-secondary:disabled,
+.site-cta-secondary[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-cta-secondary { transition: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBİL — Glassmorphism Sadeleştirmesi (max-width: 768px)
+   backdrop-filter, blur, çok katmanlı box-shadow kaldırılır.
+   Opak/yarı-opak düz renk arka planlar kullanılır.
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Temel kart — glass efektsiz opak yüzey */
+  .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(11, 15, 25, 0.98) !important;
+    box-shadow: none !important;
+    transition: none !important;
+  }
+
+  .card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Blog card glass */
+  .Blog-card-glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(11, 15, 25, 0.98) !important;
+  }
+
+  /* Site CTA butonları — backdrop kaldır, hafif opak */
+  .site-cta-primary {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+  }
+
+  .site-cta-secondary {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    transition: none !important;
+  }
+
+  /* Kart glow efekti kaldır */
+  .card-glow,
+  .liquid-glow {
+    display: none !important;
+  }
+}

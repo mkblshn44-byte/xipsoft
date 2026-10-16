@@ -1,0 +1,5 @@
+/* Keep below-the-fold sections from competing with the hero during first paint. */
+.home-below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 520px;
+}
