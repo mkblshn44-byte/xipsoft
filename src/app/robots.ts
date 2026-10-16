@@ -18,7 +18,7 @@ export const TRACKING_QUERY_PARAMS = [
   "preview",
 ] as const;
 
-const BLOCKED_BOTS = ["AhrefsBot", "SemrushBot", "DotBot", "MJ12bot", "BLEXBot"] as const;
+const BLOCKED_BOTS = ["AhrefsBot", "SemrushBot", "DotBot", "MJ12bot", "BLEXBot"];
 const AI_BOTS = [
   "GPTBot",
   "CCBot",
@@ -27,7 +27,7 @@ const AI_BOTS = [
   "Google-Extended",
   "FacebookBot",
   "Bytespider",
-] as const;
+];
 
 const BLOCKED_PATHS = [
   "/admin",
@@ -38,12 +38,9 @@ const BLOCKED_PATHS = [
   "/login",
   "/register",
   "/x/edit",
-  "/blog/write",
-  "/blog/edit",
-  "/blog/my-posts",
   "/maintenance",
   ...TRACKING_QUERY_PARAMS.map((param) => `/*?${param}=`),
-] as const;
+];
 
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -25,6 +25,7 @@
     "seo:location-status": "tsx --env-file=.env.local src/scripts/manage-location-status.ts",
     "seo:redirects:bulk": "tsx --env-file=.env.local src/scripts/bulk-create-redirects.ts",
     "test:redirect": "tsx --test src/lib/redirect-handler.test.ts",
+    "test:seo": "tsx --test src/app/seo-config.test.ts",
     "test:redirect-integration": "tsx src/scripts/verify-redirect-flow.ts"
   },
   "commitlint": {
