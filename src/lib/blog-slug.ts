@@ -2,8 +2,8 @@
  * blog-slug.ts — Blog slug normalizasyonu (client + server ortak).
  *
  * Bu modül **bilinçli olarak bağımlılıksızdır**: hem sunucu tarafı
- * (`blog-post-page.ts`) hem de `"use client"` bileşenleri (`BlogPostClient.tsx`)
- * aynı davranışı paylaşsın diye ayrı tutulur. Sunucu modülü (pool, unstable_cache)
+ * (`blog-post-page.ts`) hem de `"use client"` bileşenleri aynı davranışı
+ * paylaşsın diye ayrı tutulur. Sunucu modülü (pool, unstable_cache)
  * buradan import edilmez; aksi halde client paketine sızar (D2).
  */
 
