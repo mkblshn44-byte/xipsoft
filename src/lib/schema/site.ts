@@ -65,7 +65,7 @@ export function organizationSchema() {
     url: SITE_URL,
     logo: {
       "@type": "ImageObject",
-      url: `${SITE_URL}/images/xipsoft-seo.png`,
+      url: `${SITE_URL}/media/xipsoft-seo.webp`,
       width: 1200,
       height: 630,
     },

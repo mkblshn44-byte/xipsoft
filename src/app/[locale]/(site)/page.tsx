@@ -42,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     other: {
       // LCP kritik görsellerin ön yüklemesi: tarayıcıya önce bunları almasını söylüyoruz
-      "image": `${SITE_URL}/images/xipsoft-seo.png`,
+      "image": `${SITE_URL}/media/xipsoft-seo.webp`,
     },
   };
 }

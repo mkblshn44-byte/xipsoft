@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "tr_TR",
       images: [
         {
-          url: `${SITE_URL}/images/xipsoft-seo.png`,
+          url: `${SITE_URL}/media/xipsoft-seo.webp`,
           width: 1200,
           height: 630,
           alt: "XipSoft Teknoloji & Yazılım Hizmetleri",
@@ -60,7 +60,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
-      images: [`${SITE_URL}/images/xipsoft-seo.png`],
+      images: [`${SITE_URL}/media/xipsoft-seo.webp`],
     },
   };
 }

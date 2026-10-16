@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
     bio ||
     `${displayName} — XipSoft topluluğu profili. Yazılım, teknoloji ve dijital ürünler üzerine paylaşımlar.`
   ).slice(0, 160);
-  const image = profile.photo_url || `${SITE_URL}/images/xipsoft-seo.png`;
+  const image = profile.photo_url || `${SITE_URL}/media/xipsoft-seo.webp`;
   const canonical = `${SITE_URL}/x/${handle}`;
 
   return {

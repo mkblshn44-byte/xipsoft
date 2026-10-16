@@ -35,13 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: APP_CONFIg.title,
       locale: "tr_TR",
       alternateLocale: ["en_US"],
-      images: [{ url: `${SITE_URL}/images/xipsoft-seo.png`, width: 1200, height: 630, alt: "XipSoft Hakkımızda" }],
+      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: "XipSoft Hakkımızda" }],
     },
     twitter: {
       card: "summary_large_image",
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
-      images: [`${SITE_URL}/images/xipsoft-seo.png`],
+      images: [`${SITE_URL}/media/xipsoft-seo.webp`],
     },
   };
 }

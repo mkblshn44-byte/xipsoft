@@ -30,8 +30,8 @@ export function localBusinessSchema(opts?: {
     telephone: BRAND_COMPANY.phone,
     email: BRAND_COMPANY.email,
     foundingDate: String(BRAND_COMPANY.foundingYear),
-    image: `${SITE_URL}/images/xipsoft-seo.png`,
-    logo: `${SITE_URL}/images/xipsoft-seo.png`,
+    image: `${SITE_URL}/media/xipsoft-seo.webp`,
+    logo: `${SITE_URL}/media/xipsoft-seo.webp`,
     address: {
       "@type": "PostalAddress",
       streetAddress: BRAND_COMPANY.address,

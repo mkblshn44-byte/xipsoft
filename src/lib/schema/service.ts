@@ -41,7 +41,7 @@ export interface ServiceSchemaInput {
 
 export function serviceSchema(input: ServiceSchemaInput) {
   const url = input.url.startsWith("http") ? input.url : `${SITE_URL}${input.url}`;
-  const image = input.image ?? `${SITE_URL}/images/xipsoft-seo.png`;
+  const image = input.image ?? `${SITE_URL}/media/xipsoft-seo.webp`;
   const area = input.areaServed ?? { type: "Country" as const, name: "Turkey" };
 
   return {

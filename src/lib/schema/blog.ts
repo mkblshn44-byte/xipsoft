@@ -74,14 +74,14 @@ export function BlogSchemaFromDb(post: {
           }),
         }
       : undefined,
-    image: post.image || `${SITE_URL}/images/xipsoft-seo.png`,
+    image: post.image || `${SITE_URL}/media/xipsoft-seo.webp`,
     mainEntityOfPage: { "@type": "WebPage", "@id": `${pageUrl}#webpage` },
     publisher: {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: "XipSoft Yazılım ve Teknoloji Sistemleri",
       url: SITE_URL,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/images/xipsoft-seo.png` },
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/media/xipsoft-seo.webp` },
     },
     isPartOf: { "@id": `${SITE_URL}/blog#blog` },
     // Task 13: E-E-A-T citations — her bir dış kaynak CreativeWork olarak şemaya eklenir

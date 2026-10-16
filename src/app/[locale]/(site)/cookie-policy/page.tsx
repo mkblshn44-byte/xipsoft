@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description: meta?.ogDescription || description,
       locale: "tr_TR",
       siteName: "XipSoft",
-      images: [{ url: `${SITE_URL}/images/xipsoft-seo.png`, width: 1200, height: 630, alt: title }],
+      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: title }],
     },
   };
 }

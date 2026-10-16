@@ -56,12 +56,12 @@ export const BRAND_COLORS = {
 // ─── IKONLAR & LOgO ───────────────────────────────────────────────────────
 
 export const BRAND_ICONS = {
-  favicon: "/images/favicon.ico",
+  favicon: "/media/favicon.ico",
   appleTouchIcon: "/media/logo.webp",
-  safariPinnedTab: "/images/favicon.ico",
+  safariPinnedTab: "/media/favicon.ico",
   logo: "/media/logo.webp",
   homebar: "/media/homebar.webp",
-  ogImage: "/images/xipsoft-seo.png",
+  ogImage: "/media/xipsoft-seo.webp",
   // PWA ikonlari
   icon192: "/media/logo.webp",
   icon384: "/media/logo.webp",

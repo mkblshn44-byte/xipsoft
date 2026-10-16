@@ -22,7 +22,7 @@ type OpenGraphInput = Partial<NonNullable<Metadata["openGraph"]>>;
 
 /** Tüm sayfalarda kullanılan varsayılan OG görseli (1200×630). */
 export const DEFAULT_OG_IMAGE = {
-  url: `${SITE_URL}/images/xipsoft-seo.png`,
+  url: `${SITE_URL}/media/xipsoft-seo.webp`,
   width: 1200,
   height: 630,
   type: "image/png",

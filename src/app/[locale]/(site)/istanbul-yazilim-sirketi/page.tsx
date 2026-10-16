@@ -29,13 +29,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: meta?.ogDescription || APP_CONFIg.description,
       locale: "tr_TR",
       siteName: "XipSoft Yazılım ve Teknoloji Sistemleri",
-      images: [{ url: `${SITE_URL}/images/xipsoft-seo.png`, width: 1200, height: 630, alt: "XipSoft - İstanbul Yazılım Şirketi" }],
+      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: "XipSoft - İstanbul Yazılım Şirketi" }],
     },
     twitter: {
       card: "summary_large_image",
       title: meta?.ogTitle || APP_CONFIg.title,
       description: meta?.ogDescription || APP_CONFIg.description,
-      images: [`${SITE_URL}/images/xipsoft-seo.png`],
+      images: [`${SITE_URL}/media/xipsoft-seo.webp`],
     },
   };
 }

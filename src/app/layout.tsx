@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 };
 
 const Og_IMAgE = {
-  url: `${SITE_URL}/images/xipsoft-seo.png`,
+  url: `${SITE_URL}/media/xipsoft-seo.webp`,
   width: 1200,
   height: 630,
   alt: BRAND.name,
@@ -38,7 +38,7 @@ const localBusinessSchema = {
   "@id": `${SITE_URL}/#localbusiness`,
   name: BRAND.name,
   url: SITE_URL,
-  image: `${SITE_URL}/images/xipsoft-seo.png`,
+  image: `${SITE_URL}/media/xipsoft-seo.webp`,
   description: APP_CONFIg.description,
   telephone: BRAND_COMPANY.phone,
   email: BRAND_COMPANY.email,
@@ -108,7 +108,7 @@ const organizationSchema = {
   url: SITE_URL,
   logo: {
     "@type": "ImageObject",
-    url: `${SITE_URL}/images/xipsoft-seo.png`,
+    url: `${SITE_URL}/media/xipsoft-seo.webp`,
     width: 1200,
     height: 630,
   },
