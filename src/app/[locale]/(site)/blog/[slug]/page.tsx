@@ -26,10 +26,7 @@ import {
   Share2,
 } from "lucide-react";
 import { SITE_URL } from "@/config/brand.config";
-import {
-  getDbBlogBySlug,
-  resolvePublishedBlogPost,
-} from "@/lib/blog-post-page";
+import { getDbBlogBySlug } from "@/lib/blog-post-page";
 import { normalizeBlogSlug } from "@/lib/blog-slug";
 import { getAllActiveServices } from "@/lib/database";
 import {
@@ -38,11 +35,10 @@ import {
 } from "@/app/_actions/blog-actions";
 import {
   estimateReadingMinutes,
-  extractBlogFaqs,
 } from "@/lib/blog-content";
 import { lexicalStateToHtml } from "@/utils/lexical-to-html";
 import { injectInternalLinks } from "@/lib/seo/internal-linking";
-import { breadcrumbSchema, faqSchema } from "@/lib/schema-helpers";
+import { breadcrumbSchema } from "@/lib/schema-helpers";
 import JsonLd from "@/components/seo/JsonLd";
 import RelatedPosts from "@/components/Blog/RelatedPosts";
 import RelatedServices from "@/components/Blog/RelatedServices";
@@ -104,15 +100,14 @@ export async function generateMetadata({
     dbBlog.description ||
     `${dbBlog.title} hakkında detaylı bilgi ve teknik rehber.`;
   const canonicalUrl = `${SITE_URL}/blog/${normalizedSlug}`;
-  const coverImage =
-    dbBlog.cover_image_url || `${SITE_URL}/images/xipsoft-seo.png`;
+  const coverImage = dbBlog.cover_image_url || `${SITE_URL}/media/blogseo.webp`;
   const coverImageAlt = dbBlog.cover_image_alt || dbBlog.title;
   const publishedTime = (dbBlog.published_at ?? dbBlog.created_at)?.toISOString();
   const modifiedTime = getRealDateModified(
     dbBlog.published_at ?? dbBlog.created_at,
     dbBlog.updated_at
   );
-  const authorName = dbBlog.author_name || "XipSoft";
+  const authorName = dbBlog.author_name;
   const tags = Array.isArray(dbBlog.tags) ? dbBlog.tags : [];
 
   return {
@@ -143,7 +138,7 @@ export async function generateMetadata({
       description,
       publishedTime,
       modifiedTime,
-      authors: [authorName],
+      authors: authorName ? [authorName] : undefined,
       tags,
       images: [
         {
@@ -212,14 +207,9 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
   }
 
   const dbBlog = await getDbBlogBySlug(normalizedSlug);
-
-  // DB'de yoksa eski WordPress varyantı kontrol et, bulunamazsa 404
-  if (!dbBlog) {
-    const resolved = await resolvePublishedBlogPost(normalizedSlug);
-    if (resolved && resolved.slug !== normalizedSlug) {
-      permanentRedirect(`/blog/${resolved.slug}`);
-    }
-    notFound();
+  if (!dbBlog) notFound();
+  if (dbBlog.slug !== normalizedSlug) {
+    permanentRedirect(`/blog/${dbBlog.slug}`);
   }
 
   // Komşu yazıları, ilgili yazıları ve ilgili hizmetleri paralel yükle
@@ -235,6 +225,13 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
     dbBlog.published_at ?? dbBlog.created_at,
     dbBlog.updated_at
   );
+  const modifiedLabel = modifiedIso
+    ? new Date(modifiedIso).toLocaleDateString("tr-TR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : undefined;
 
   const formattedDate = (dbBlog.published_at ?? dbBlog.created_at)
     ? new Date(dbBlog.published_at ?? dbBlog.created_at!).toLocaleDateString(
@@ -251,13 +248,13 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
   const rawHtml = dbBlog.content ? lexicalStateToHtml(dbBlog.content) : "";
   const contentHtml = injectInternalLinks(rawHtml, { currentSlug: normalizedSlug });
 
-  // ── JSON-LD: BlogPosting + BreadcrumbList + FAQPage ──────────────────────
+  // ── JSON-LD: BlogPosting + BreadcrumbList ───────────────────────────────
   const blogPostingSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "@id": `${pageUrl}#blogposting`,
     headline: dbBlog.title,
-    description: dbBlog.description || dbBlog.title,
+    ...(dbBlog.description ? { description: dbBlog.description } : {}),
     url: pageUrl,
     mainEntityOfPage: {
       "@type": "WebPage",
@@ -265,31 +262,18 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
     },
     datePublished: publishedIso,
     ...(modifiedIso ? { dateModified: modifiedIso } : {}),
-    author: {
-      "@type": "Person",
-      "@id": dbBlog.author_nick
-        ? `${SITE_URL}/x/${dbBlog.author_nick}#person`
-        : `${pageUrl}#author`,
-      name: dbBlog.author_name || "XipSoft",
-      ...(dbBlog.author_bio ? { description: dbBlog.author_bio } : {}),
-      ...(dbBlog.author_nick
-        ? { url: `${SITE_URL}/x/${dbBlog.author_nick}` }
-        : {}),
-      ...(dbBlog.author_linkedin_url
-        ? { sameAs: [dbBlog.author_linkedin_url] }
-        : {}),
-    },
-    publisher: {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: "XipSoft",
-      url: SITE_URL,
-      logo: {
-        "@type": "ImageObject",
-        url: `${SITE_URL}/images/xipsoft-seo.png`,
-      },
-    },
-    image: dbBlog.cover_image_url || `${SITE_URL}/images/xipsoft-seo.png`,
+    ...(dbBlog.author_name
+      ? {
+          author: {
+            "@type": "Person",
+            name: dbBlog.author_name,
+            ...(dbBlog.author_nick
+              ? { url: `${SITE_URL}/x/${dbBlog.author_nick}` }
+              : {}),
+          },
+        }
+      : {}),
+    ...(dbBlog.cover_image_url ? { image: dbBlog.cover_image_url } : {}),
     ...(Array.isArray(dbBlog.tags) && dbBlog.tags.length > 0
       ? { keywords: dbBlog.tags }
       : {}),
@@ -301,12 +285,7 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
     { name: dbBlog.title, url: `/blog/${normalizedSlug}` },
   ]);
 
-  const faqs = extractBlogFaqs(dbBlog.content);
-  const jsonLd = [
-    blogPostingSchema,
-    breadcrumbs,
-    faqs.length > 0 ? faqSchema(faqs) : null,
-  ].filter(Boolean);
+  const jsonLd = [blogPostingSchema, breadcrumbs];
 
   // Paylaşım URL'leri
   const shareTitle = encodeURIComponent(dbBlog.title);
@@ -322,6 +301,15 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
       <div className="min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative blog-post-page">
         <article className="max-w-4xl mx-auto relative z-10">
           {/* Top Bar / Geri Dönüş Linki */}
+          <nav aria-label="Sayfa yolu" className="mb-4 text-xs text-zinc-500">
+            <ol className="flex flex-wrap items-center gap-2">
+              <li><Link href="/">Ana Sayfa</Link></li>
+              <li aria-hidden="true">/</li>
+              <li><Link href="/blog">Blog</Link></li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="text-zinc-300">{dbBlog.title}</li>
+            </ol>
+          </nav>
           <div className="flex items-center justify-between mb-8">
             <Link
               href="/blog"
@@ -376,7 +364,7 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
               </span>
               {modifiedIso && (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 px-2.5 py-0.5 text-[10px] font-mono text-violet-300">
-                  Güncellendi
+                  Güncellendi {modifiedLabel}
                 </span>
               )}
             </div>
@@ -409,13 +397,14 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
             )}
 
             {/* Yazar Bilgisi */}
+            {dbBlog.author_name && (
             <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
               <div className="flex items-center gap-3">
                 {dbBlog.author_avatar ? (
                   <div className="relative w-9 h-9 rounded-full overflow-hidden border border-white/10">
                     <Image
                       src={dbBlog.author_avatar}
-                      alt={dbBlog.author_name || "Yazar"}
+                      alt={dbBlog.author_name}
                       fill
                       unoptimized={!isConfiguredRemoteDomain(dbBlog.author_avatar)}
                       className="object-cover"
@@ -423,7 +412,7 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
                   </div>
                 ) : (
                   <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-mono font-bold text-white bg-gradient-to-br from-violet-500/20 to-cyan-500/20 border border-white/10">
-                    {(dbBlog.author_name || "X")[0]?.toUpperCase()}
+                    {dbBlog.author_name[0]?.toUpperCase()}
                   </div>
                 )}
                 <div>
@@ -432,19 +421,17 @@ const BlogDetailPage: FC<TBlogDetailPageProps> = async (props) => {
                       href={`/x/${dbBlog.author_nick}`}
                       className="text-xs font-medium text-white hover:text-cyan-400 transition-colors"
                     >
-                      {dbBlog.author_name || "XipSoft"}
+                      {dbBlog.author_name}
                     </Link>
                   ) : (
                     <p className="text-xs font-medium text-white">
-                      {dbBlog.author_name || "XipSoft"}
+                      {dbBlog.author_name}
                     </p>
                   )}
-                  <p className="text-[11px] text-zinc-500 font-mono">
-                    Teknoloji Yazarı
-                  </p>
                 </div>
               </div>
             </div>
+            )}
           </header>
 
           {/* Ana Makale İçeriği (SSR Doğal HTML Render) */}
