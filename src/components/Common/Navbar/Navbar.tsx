@@ -256,16 +256,6 @@ const UserNavMenu = ({ mm = "", t }: { mm?: string; t: (k: string) => string }) 
 
       {open && (
           <div className="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-xl border border-white/[0.08] bg-zinc-950">
-            <div className="p-1">
-              <Link href="/blog/my-posts" onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-zinc-300">
-                <span>📄</span> <span className={mm}>{navLabel(t("myBlogs"))}</span>
-              </Link>
-              <Link href="/blog/write" onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-zinc-300">
-                <span>✏️</span> <span className={mm}>{navLabel(t("writeBlog"))}</span>
-              </Link>
-            </div>
             <div className="border-t border-white/[0.05] p-1">
               <button type="button" onClick={() => { setOpen(false); signOut(); }}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-zinc-500">
@@ -312,12 +302,6 @@ const DesktopNav = ({ path, t, tServices, mm, isAuthenticated }: {
 
   const rightItems = [
     { type: "link" as const, href: "/contact-us", labelKey: "contact", isActive: path === "/contact-us", widthClass: "w-[5.5rem]", index: 5 },
-    ...(isAuthenticated
-      ? [
-          { type: "link" as const, href: "/blog/write", labelKey: "writeBlog", isActive: path === "/blog/write", widthClass: "w-[6.5rem]", index: 6 },
-          { type: "link" as const, href: "/blog/my-posts", labelKey: "myBlogs", isActive: path === "/blog/my-posts", widthClass: "w-[6rem]", index: 7 },
-        ]
-      : []),
   ];
 
   return (
@@ -470,28 +454,6 @@ const Navbar = () => {
                   <MobileNavLink key={link.key} href={link.href} label={t(link.key)}
                     isActive={path === link.href} index={i} onClick={closeMobile} mm={mm} />
                 ))}
-
-                {isAuthenticated && (
-                  <MobileNavLink
-                    href="/blog/write"
-                    label={t("writeBlog")}
-                    isActive={path === "/blog/write"}
-                    index={linkKeys.length}
-                    onClick={closeMobile}
-                    mm={mm}
-                  />
-                )}
-
-                {isAuthenticated && (
-                  <MobileNavLink
-                    href="/blog/my-posts"
-                    label={t("myBlogs")}
-                    isActive={path === "/blog/my-posts"}
-                    index={linkKeys.length + 1}
-                    onClick={closeMobile}
-                    mm={mm}
-                  />
-                )}
 
                 <div>
                   <button className="relative flex w-full items-center gap-4 py-1.5 sm:py-3"
