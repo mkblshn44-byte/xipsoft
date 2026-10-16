@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, Calendar, Clock3, Eye } from "lucide-react";
 import type { BlogItem } from "./types";
+import { isConfiguredRemoteDomain } from "@/lib/image-utils";
 
 /** Normal kartlarda sırayla dönen vurgu tonları (mor / cyan). */
 const ACCENTS = ["#22d3ee", "#a78bfa", "#22d3ee", "#a78bfa"];
@@ -15,20 +16,6 @@ function normalizeBlogHrefValue(value?: string) {
   if (!raw) return "/blog";
   const normalized = raw.replace(/^\/+/, "").replace(/^blog\//i, "");
   return `/blog/${normalized}`;
-}
-
-function isConfiguredRemoteDomain(url?: string | null): boolean {
-  if (!url) return false;
-  try {
-    const host = new URL(url).hostname;
-    return (
-      host === "res.cloudinary.com" ||
-      host.endsWith("xipsoft.net") ||
-      url.startsWith("/")
-    );
-  } catch {
-    return false;
-  }
 }
 
 export const BlogCard = ({

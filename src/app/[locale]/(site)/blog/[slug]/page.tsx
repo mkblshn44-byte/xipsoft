@@ -28,6 +28,7 @@ import {
 import { SITE_URL } from "@/config/brand.config";
 import { getDbBlogBySlug } from "@/lib/blog-post-page";
 import { normalizeBlogSlug } from "@/lib/blog-slug";
+import { isConfiguredRemoteDomain } from "@/lib/image-utils";
 import { getAllActiveServices } from "@/lib/database";
 import {
   getBlogAdjacentPostsAction,
@@ -64,19 +65,6 @@ function getRealDateModified(
     return new Date(updated).toISOString();
   }
   return undefined;
-}
-
-function isConfiguredRemoteDomain(url: string): boolean {
-  try {
-    const host = new URL(url).hostname;
-    return (
-      host === "res.cloudinary.com" ||
-      host.endsWith("xipsoft.net") ||
-      url.startsWith("/")
-    );
-  } catch {
-    return false;
-  }
 }
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
