@@ -28,12 +28,27 @@ const ROUTE_LIMITED_ENDPOINTS = new Set([
 ]);
 
 /**
+ * `/api/track` siteenin en yüksek hacimli yolu (her sayfa görüntülemesi +
+ * ayrılma beacon'ı). Ona paylaşımlı kovada özel limit tanımlamak `endpointSpecific`
+ * true yaptığı için yerel ön-eşiği atlar ve her isteği Redis'e taşır — kota
+ * düzeltmesinin tersi. Bu yüzden eşik süreç içinde tutulur.
+ */
+const TRACK_WINDOW_MS = 10 * 60 * 1000;
+const TRACK_MAX_REQUESTS = 30;
+
+/**
  * Yerel ön-eşik: bir IP'nin Redis'e dokunmadan götürebileceği istek sayısı
  * (limitin %10'u, taban 10). Karar instance başına verilir, o yüzden eşik
  * limitin küçük bir kesri olarak tutulur — paylaşım doğruyu Redis'te.
  */
 function freeLocalRequests(config: RateLimitConfig): number {
   return Math.max(10, Math.ceil(config.maxRequests * 0.1));
+}
+
+/** Aşan IP'nin beacon'ı sessiz düşer: 429 konsol hatası yazıp Lighthouse'u düşürür. */
+function gateTrackBeacon(ip: string): NextResponse | null {
+  const local = bumpLocalWindow(`middleware:track:${ip}`, TRACK_WINDOW_MS);
+  return local.count > TRACK_MAX_REQUESTS ? new NextResponse(null, { status: 204 }) : null;
 }
 
 export function checkPayloadSize(
@@ -47,14 +62,17 @@ export async function checkRateLimit(
   req: NextRequest,
   pathname: string
 ): Promise<NextResponse | null> {
-  if (ROUTE_LIMITED_ENDPOINTS.has(pathname)) return null;
-
   const ip = getClientIp(req);
 
   // IP tanımlanamıyorsa (`next dev`'de XFF header'ı yok → "unknown") ya da
   // yerelse limit uygulamak anlamsız: bütün trafik tek kovada toplanır ve
   // geliştirici kendini 429'lar. `xip-guard` da aynı ilkeyle ikisini düşürür.
   if (ip === "unknown" || isLoopbackIp(ip)) return null;
+
+  if (pathname === "/api/track" || pathname.startsWith("/api/track/")) {
+    return gateTrackBeacon(ip);
+  }
+  if (ROUTE_LIMITED_ENDPOINTS.has(pathname)) return null;
 
   const { config, keyPrefix, endpointSpecific } = getRateLimitBucket(pathname);
 
@@ -67,20 +85,10 @@ export async function checkRateLimit(
 
   const result = await checkSharedRateLimit(ip, {
     ...config,
-    failClosed: config.failClosed || pathname === "/api" || pathname.startsWith("/api/"),
+    failClosed: false,
     keyPrefix,
   });
   if (result.success) return null;
-
-  // NOT (PERF/UX): `/api/track` bir telemetri (sendBeacon) endpoint'i. Redis
-  // yokken/erişilemezken fail-closed davranıp 503 dönmek:
-  //   1) tarayıcı konsoluna "Failed to load resource: 503" hatası yazıyor
-  //      (Lighthouse best-practices: errors-in-console),
-  //   2) ziyaretçi verisini tamamen kaybediyor.
-  // Bu endpoint için sessiz 204 dönüyoruz: hata yok, DB yazımı da yok.
-  if (result.unavailable && pathname === "/api/track") {
-    return new NextResponse(null, { status: 204 });
-  }
 
   return createRateLimitResponse(result, config);
 }

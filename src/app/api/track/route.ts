@@ -72,6 +72,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Geçersiz ziyaret kimliği" }, { status: 400 });
     }
 
+    // Bot trafiği DB'ye hiç yazılmaz: tarama başına 1 SELECT + 1 INSERT, kotayı
+    // yiyen de şişen tablo da bu. Admin tarafı artık bot kaynaklı satır görmez.
+    const ua = req.headers.get("user-agent");
+    const { is_bot, device_type, browser, os } = parseUA(ua);
+    if (is_bot) return new NextResponse(null, { status: 204 });
+
     const duration = Number.isSafeInteger(duration_seconds)
       ? Math.min(Math.max(Number(duration_seconds), 0), 86_400)
       : 0;
@@ -88,8 +94,6 @@ export async function POST(req: NextRequest) {
     const cf_ipcountry = req.headers.get("cf-ipcountry");
     const city         = req.headers.get("cf-ipcity") || req.headers.get("x-vercel-ip-city") || null;
     const asn          = req.headers.get("cf-asn") || null;
-    const ua           = req.headers.get("user-agent");
-    const { is_bot, device_type, browser, os } = parseUA(ua);
 
     // Ülke bloğu kontrolü
     if (country) {
