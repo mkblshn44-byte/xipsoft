@@ -1,12 +1,15 @@
 /**
- * Database pool — dual pool, load balanced + failover
- * Primary: Neon (DATABASE_URL)
- * Secondary: Supabase (DATABASE_URL_SECONDARY)
+ * Database pool — tek havuz + mock fallback
+ * Primary: Neon PostgreSQL (`DATABASE_URL`), `ssl: verify-full`.
  *
  * Bu dosya YALNIZCA bağlantı havuzu yönetiminden sorumludur:
  *   - Pool oluşturma / health-check / retry
- *   - Read/write routing (primary + secondary)
  *   - `pool` proxy (drop-in replacement) + query/queryOne/transaction yardımcıları
+ *
+ * Eskiden ikinci bir havuz (`DATABASE_URL_SECONDARY`, yorumda "Supabase" diye
+ * geçiyordu) round-robin okuma + failover yapıyordu. Bu kurulumda o env
+ * tanımsız, kod yolunda Supabase'e özgü hiçbir şey yok ve ağırlıkça tek
+ * instance'a bağlı — ölü dallar kaldırıldı.
  *
  * Domain sorguları ayrı dosyalardadır (services, service-city, references, …).
  */
@@ -206,12 +209,24 @@ class MockPool {
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 let primary: DBPool | MockPool;
-let secondary: DBPool | null = null;
 let initialized = false;
 let initError: Error | null = null;
 let healthInterval: NodeJS.Timeout | null = null;
-let readCounter = 0;
-let _primaryConnectedLogged = false; // ✅ Connected sadece bir kez bassın
+
+/**
+ * Dev/HMR: Next, her yeniden derlemede bu modülü tekrar çalıştırır. Havuzu
+ * `globalThis`'te taşımazsak her yeniden yükleme yeni bir `pg.Pool` (min 2
+ * bağlantı + Neon SSL el sıkışması) açar — tekrarlayan "✅ Connected" logları
+ * ve ilk istekteki yüzlerce ms buradan geliyordu.
+ */
+type DbInitHandle = {
+  readonly primary: DBPool | MockPool;
+  readonly initError: Error | null;
+  promise: Promise<void>;
+  connectedLogged: boolean;
+};
+const globalDb = globalThis as typeof globalThis & { __xipsoftDbInit?: DbInitHandle };
+const previousInit = globalDb.__xipsoftDbInit;
 
 const initPromise = (() => {
   if (process.env.NEXT_PHASE === 'phase-production-build') {
@@ -219,7 +234,28 @@ const initPromise = (() => {
     initialized = true;
     return Promise.resolve();
   }
-  return (async () => {
+
+  if (previousInit) {
+    return previousInit.promise.then(() => {
+      primary = previousInit.primary;
+      initError = previousInit.initError;
+      initialized = true;
+    });
+  }
+
+  const handle: DbInitHandle = {
+    get primary() {
+      return primary;
+    },
+    get initError() {
+      return initError;
+    },
+    promise: Promise.resolve(),
+    connectedLogged: false,
+  };
+  globalDb.__xipsoftDbInit = handle;
+
+  handle.promise = (async () => {
     try {
       const url = process.env.DATABASE_URL;
       if (!url) {
@@ -232,41 +268,28 @@ const initPromise = (() => {
         if (!ok) {
           initError = new Error('Primary DB connection failed health check');
           console.warn('[DB:primary] ⚠️ No database connection on startup — running without DB');
-        } else {
-          if (!_primaryConnectedLogged) {
-            if (process.env.NODE_ENV !== 'production') console.log('[DB:primary] ✅ Connected');
-            _primaryConnectedLogged = true;
-          }
-        }
-
-        const url2 = process.env.DATABASE_URL_SECONDARY;
-        if (url2) {
-          secondary = new DBPool(url2, 'secondary');
-          const ok2 = await secondary.testConnection();
-          if (ok2) {
-            if (process.env.NODE_ENV !== 'production') console.log('[DB:secondary] ✅ Connected');
-          } else {
-            console.warn('[DB:secondary] ⚠️ Unhealthy on startup, will retry');
-          }
+        } else if (process.env.NODE_ENV !== 'production' && !handle.connectedLogged) {
+          console.log('[DB:primary] ✅ Connected');
+          handle.connectedLogged = true;
         }
 
         healthInterval = setInterval(async () => {
-          for (const db of [primary, secondary].filter(Boolean) as DBPool[]) {
-            const t = Date.now();
-            try {
-              await db.pool.query('SELECT 1');
-              const wasUnhealthy = !db.health.healthy;
-              db.health.healthy = true;
-              db.health.consecutiveFailures = 0;
-              db.health.avgLatency = (db.health.avgLatency * 0.9) + ((Date.now() - t) * 0.1);
-              if (wasUnhealthy) {
-                console.log(`[DB:${db.name}] ✅ Recovered`);
-              }
-            } catch (err: any) {
-              const wasHealthy = db.health.healthy;
-              db.health.healthy = false;
-              if (wasHealthy) console.warn(`[DB:${db.name}] ⚠️ Health check failed:`, err.message);
+          if (!isDBPool(primary)) return;
+          const db = primary;
+          const t = Date.now();
+          try {
+            await db.pool.query('SELECT 1');
+            const wasUnhealthy = !db.health.healthy;
+            db.health.healthy = true;
+            db.health.consecutiveFailures = 0;
+            db.health.avgLatency = (db.health.avgLatency * 0.9) + ((Date.now() - t) * 0.1);
+            if (wasUnhealthy) {
+              console.log(`[DB:${db.name}] ✅ Recovered`);
             }
+          } catch (err: any) {
+            const wasHealthy = db.health.healthy;
+            db.health.healthy = false;
+            if (wasHealthy) console.warn(`[DB:${db.name}] ⚠️ Health check failed:`, err.message);
           }
         }, 30000);
         healthInterval.unref();
@@ -278,28 +301,28 @@ const initPromise = (() => {
       initialized = true;
     }
   })();
+  return handle.promise;
 })();
 
 // ── Router ───────────────────────────────────────────────────────────────────
 
+/**
+ * Yapısal test, `instanceof` değil: dev'de havuz `globalThis` üzerinden realm'ler
+ * ve yeniden derlemeler arası taşındığı için nesne başka bir modül instance'ının
+ * sınıfından gelir; `instanceof` o durumda false döner. MockPool'un `pool` alanı
+ * kendisine işaret eder, gerçek havuzda ise ayrı bir `pg.Pool` durur.
+ */
 function isDBPool(pool: DBPool | MockPool): pool is DBPool {
-  return pool instanceof DBPool;
+  return pool.pool !== pool && typeof pool.pool.query === "function";
 }
 
-function getReadPool(): DBPool | MockPool {
-  const pools = [primary, secondary].filter((p): p is DBPool => !!p && p.health.healthy);
-  if (pools.length === 0) return primary;
-  const idx = readCounter++ % pools.length;
-  return pools[idx] ?? primary;
-}
-
-function getWritePool(): DBPool | MockPool {
+/**
+ * Tek havuz: okuma ve yazı aynı `primary`'ye gider. Eskiden burada bir
+ * round-robin seçimi ve sağlıklı-havuz filtresi vardı; ikinci havuz tanısız
+ * olduğu için o dal hiç çalışmıyordu.
+ */
+function getPool(): DBPool | MockPool {
   return primary;
-}
-
-function isWriteQuery(sql: string): boolean {
-  const normalized = sql.trim().toUpperCase();
-  return /^(INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|BEGIN|COMMIT|ROLLBACK)/.test(normalized);
 }
 
 // ── Proxy (default export — drop-in replacement) ──────────────────────────────
@@ -369,7 +392,7 @@ const pool = new Proxy({} as Pool, {
 
       if (prop === 'query') {
         const sql = typeof args[0] === 'string' ? args[0] : args[0]?.text ?? '';
-        const target = isWriteQuery(sql) ? getWritePool() : getReadPool();
+        const target = getPool();
 
         // Mock DB (DATABASE_URL yok): boş dön — gerçek pool'da "unhealthy" olsa bile sorguyu dene;
         // aksi halde geçici kesinti sonrası tüm SELECT'ler sessizce boş kalır ve UI "içerik yok" gösterir.
@@ -386,30 +409,16 @@ const pool = new Proxy({} as Pool, {
           return result;
         } catch (err) {
           target.updateStats(Date.now() - t, false);
-          if (target !== primary && isDBPool(target)) {
-            console.warn(`[DB:${target.name}] Read failed, falling back to primary`);
-            // Only fallback if primary is healthy
-            if (primary.health.healthy) {
-              try {
-                const result = await queryWithRetry(primary.pool, sql, args[1] ?? []);
-                primary.updateStats(Date.now() - t, true);
-                return result;
-              } catch (err2) {
-                primary.updateStats(Date.now() - t, false);
-                throw err2;
-              }
-            }
-          }
           throw err;
         }
       }
 
       if (prop === 'connect') {
-        return getWritePool().pool.connect();
+        return getPool().pool.connect();
       }
 
-      const method = (getWritePool().pool as any)[prop];
-      if (typeof method === 'function') return method.apply(getWritePool().pool, args);
+      const method = (getPool().pool as any)[prop];
+      if (typeof method === 'function') return method.apply(getPool().pool, args);
       throw new Error(`[DB] Method ${String(prop)} not available`);
     };
   },

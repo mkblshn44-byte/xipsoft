@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, ShoppingCart, FileText, Settings, Shield,
   Globe, Image as ImageIcon, Activity, Bot, Lock, PanelLeftClose,
-  PanelLeft, Newspaper, BarChart3, Link2, HelpCircle
+  PanelLeft, Newspaper, BarChart3, Link2, HelpCircle, ReceiptText, MessageSquare, FolderTree
 } from "lucide-react";
 
 const NAV_SECTIONS = [
@@ -14,13 +14,15 @@ const NAV_SECTIONS = [
     items: [
       { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
       { href: "/admin/orders", label: "Siparişler", icon: ShoppingCart },
-      { href: "/admin/hizmetler", label: "Hizmetler", icon: Globe },
+      { href: "/admin/teklifler", label: "Teklifler", icon: ReceiptText },
     ],
   },
   {
     label: "İçerik",
     items: [
+      { href: "/admin/cms/content-tree", label: "İçerik Ağacı & Hizmetler", icon: FolderTree },
       { href: "/admin/blog", label: "Blog", icon: Newspaper },
+      { href: "/admin/blog/comments", label: "Blog Yorumları", icon: MessageSquare },
       { href: "/admin/cms/pages", label: "Sayfalar", icon: FileText },
       { href: "/admin/cms/local-pages", label: "Yerel Sayfalar", icon: Globe },
       { href: "/admin/redirects", label: "Yönlendirmeler", icon: Link2 },

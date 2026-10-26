@@ -1,8 +1,9 @@
 "use server";
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { requireAdminAction } from "@/lib/api-guard";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { invalidatePageCaches } from "@/lib/redis/page-cache";
 import type { HomeHeroCopy } from "@/types/common";
 
 /** Admin guard — tek kaynak: api-guard.requireAdminAction() */
@@ -67,6 +68,7 @@ export async function updateManagedPageMetadata(input: {
     revalidateTag(`page-meta:${record.category}`);
     revalidateTag("page-content");
     revalidatePath(record.category === "home" ? "/" : `/${record.category}`);
+    await invalidatePageCaches({ categories: [record.category] });
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Sayfa içeriği kaydedilemedi" };
@@ -128,6 +130,7 @@ export async function saveManagedPageFaq(input: {
     revalidateTag(`page-faq:${input.category}`);
     revalidateTag("page-content");
     revalidatePath(input.category === "home" ? "/" : `/${input.category}`);
+    await invalidatePageCaches({ categories: [input.category] });
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "SSS kaydedilemedi" };
@@ -147,6 +150,7 @@ export async function deleteManagedPageFaq(id: string, category: string) {
     revalidateTag(`page-faq:${category}`);
     revalidateTag("page-content");
     revalidatePath(category === "home" ? "/" : `/${category}`);
+    await invalidatePageCaches({ categories: [category] });
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "SSS silinemedi" };

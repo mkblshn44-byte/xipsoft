@@ -4,11 +4,7 @@ import { useEffect, useState, Suspense, lazy } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import TitleText from "@/components/Common/TitleText/TitleText";
-import {
-  MessageCircle, User, Settings, Globe, MapPin, Briefcase,
-  Activity as ActivityIcon, Camera, Clock, Wifi, Search,
-  Hash, Mail, ChevronDown,
-} from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { getUserByNickAction } from "@/app/_actions/user-actions";
 import type { PublicUserProfile } from "@/types/user-profile";
 import { RankglowAvatar } from "@/app/[locale]/(site)/x/RankGlowAvatar";
@@ -18,7 +14,7 @@ const SettingsDashboard = lazy(() => import("@/app/[locale]/(site)/x/SettingsDas
 const ROLE_COLORS: Record<string, string> = {
   admin: "#a78bfa",
   moderator: "#ddd6fe",
-  user: "#67e8f9",
+  user: "#ddd6fe",
   premium: "#c4b5fd",
   banned: "#dc2626",
 };
@@ -117,7 +113,7 @@ function ActivityPanel({ userId }: { userId: number }) {
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
       <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-        <ActivityIcon className="w-3.5 h-3.5" />Son Aktiviteler
+        <XipIcon name="activity" className="w-3.5 h-3.5" />Son Aktiviteler
       </div>
       {activities.length > 0 ? (
         <div className="space-y-2">
@@ -186,25 +182,25 @@ function ProfileSidebar({
             <a href={profile.website.startsWith("http") ? profile.website : `https://${profile.website}`}
               target="_blank" rel="noreferrer"
               className="flex items-center gap-2 text-xs text-zinc-400 hover:text-cyan-400 transition-colors truncate">
-              <Globe className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" />
+              <XipIcon name="globe" className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" />
               {profile.website.replace(/^https?:\/\//, "")}
             </a>
           )}
           {privacySettings.privacy_show_email && profile.email && (
             <div className="flex items-center gap-2 text-xs text-zinc-400 truncate">
-              <Mail className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+              <XipIcon name="mail" className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
               {profile.email}
             </div>
           )}
           {profile.location && (
             <div className="flex items-center gap-2 text-xs text-zinc-400">
-              <MapPin className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+              <XipIcon name="map-pin" className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
               {profile.location}
             </div>
           )}
           {profile.job && (
             <div className="flex items-center gap-2 text-xs text-zinc-400">
-              <Briefcase className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+              <XipIcon name="briefcase" className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
               {profile.job}
             </div>
           )}
@@ -226,7 +222,7 @@ function ProfileSidebar({
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-[11px] text-zinc-500 flex items-center gap-1.5">
-            <Clock className="w-3 h-3" />Son görülme
+            <XipIcon name="clock" className="w-3 h-3" />Son görülme
           </span>
           <span className="text-[11px] text-zinc-300">
             {profile.last_active
@@ -237,7 +233,7 @@ function ProfileSidebar({
         {privacySettings.privacy_show_activity && profile.last_active && (
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-zinc-500 flex items-center gap-1.5">
-              <Wifi className="w-3 h-3" />Son görülme
+              <XipIcon name="wifi" className="w-3 h-3" />Son görülme
             </span>
             <span className="text-[11px] text-zinc-300">
               {new Date(profile.last_active).toLocaleString("tr-TR", {
@@ -251,7 +247,7 @@ function ProfileSidebar({
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
         <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-          <Hash className="w-3 h-3" />Künye
+          <XipIcon name="hash" className="w-3 h-3" />Künye
         </div>
         <div className="space-y-0">
           {[
@@ -340,9 +336,9 @@ export default function ProfilePageClient({
         <div className="text-center max-w-sm">
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6"
-            style={{ background: "rgba(167,139,250,0.10)", border: "1px solid rgba(167,139,250,0.20)" }}
+            style={{ background: "rgba(167, 139, 250,0.10)", border: "1px solid rgba(167, 139, 250,0.20)" }}
           >
-            <User className="h-9 w-9" style={{ color: "#a78bfa" }} />
+            <XipIcon name="user" className="h-9 w-9" style={{ color: "#a78bfa" }} glow="none" />
           </div>
           <TitleText tag="h1" variant="glass" className="mb-2">Kullanıcı Bulunamadı</TitleText>
           <p className="text-zinc-500 text-sm mb-6">
@@ -351,7 +347,7 @@ export default function ProfilePageClient({
           <Link
             href="/"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-zinc-950 transition-all hover:scale-[1.03]"
-            style={{ background: "linear-gradient(135deg, #a78bfa, #ddd6fe)", boxShadow: "0 0 20px rgba(167,139,250,0.40)" }}
+            style={{ background: "linear-gradient(135deg, #ddd6fe, #a78bfa)", boxShadow: "0 0 20px rgba(167, 139, 250,0.12)" }}
           >
             ← Ana Sayfaya Dön
           </Link>
@@ -392,13 +388,13 @@ export default function ProfilePageClient({
           <img src={(profile as any).cover_url} alt="Kapak" className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="absolute inset-0"
-            style={{ background: "linear-gradient(135deg, #0b0f19 0%, #121826 40%, #070b16 100%)" }} />
+            style={{ background: "linear-gradient(100deg, #0b0f19 0%, #121826 42%, #0b0f19 60%, #121826 100%)" }} />
         )}
         <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+          style={{ backgroundImage: "linear-gradient(rgba(203, 213, 225,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(203, 213, 225,0.5) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
         {isOwner && (
           <label className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/20 flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer">
-            <Camera className="w-4 h-4" />
+            <XipIcon name="camera" className="w-4 h-4" />
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
@@ -435,7 +431,7 @@ export default function ProfilePageClient({
                     size={96}
                   />
                   <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-white" />
+                    <XipIcon name="camera" className="w-6 h-6 text-white" />
                   </div>
                   <input
                     type="file"
@@ -494,10 +490,10 @@ export default function ProfilePageClient({
                   href={`/hakkimizda#contact`}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 hover:bg-blue-600/30 text-xs font-semibold transition-all"
                 >
-                  <MessageCircle className="w-3.5 h-3.5" />Mesaj
+                  <XipIcon name="message-circle" className="w-3.5 h-3.5" glow="none" />Mesaj
                 </Link>
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-all text-xs font-semibold">
-                  <User className="w-3.5 h-3.5" />Takip Et
+                  <XipIcon name="user" className="w-3.5 h-3.5" />Takip Et
                 </button>
               </>
             )}
@@ -506,7 +502,7 @@ export default function ProfilePageClient({
                 onClick={() => setShowSettings(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800/50 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-zinc-700/50 transition-all text-xs font-semibold"
               >
-                <Settings className="w-3.5 h-3.5" />Ayarlar
+                <XipIcon name="settings" className="w-3.5 h-3.5" />Ayarlar
               </button>
             )}
           </div>
@@ -525,9 +521,9 @@ export default function ProfilePageClient({
             {/* Tabs */}
             <div className="flex items-center gap-0 border-b border-zinc-800 overflow-x-auto">
               {[
-                { key: "activity", label: "Aktivite", icon: ActivityIcon },
-                { key: "profile", label: "Profil", icon: User },
-              ].map(({ key, label, icon: Icon }) => (
+                { key: "activity", label: "Aktivite", icon: "activity" },
+                { key: "profile", label: "Profil", icon: "user" },
+              ].map(({ key, label, icon }) => (
                 <button
                   key={key}
                   onClick={() => setActiveTab(key as ProfileTab)}
@@ -537,12 +533,12 @@ export default function ProfilePageClient({
                       : "border-transparent text-zinc-500 hover:text-zinc-300"
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <XipIcon name={icon} className="w-3.5 h-3.5" />
                   {label}
                 </button>
               ))}
               <button className="flex items-center gap-1 px-4 py-2.5 text-xs font-semibold text-zinc-500 hover:text-zinc-300 transition-all ml-auto">
-                Diger <ChevronDown className="w-3 h-3" />
+                Diger <XipIcon name="chevron-down" className="w-3 h-3" />
               </button>
             </div>
 
@@ -555,7 +551,7 @@ export default function ProfilePageClient({
             {activeTab === "profile" && (
               <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 min-h-[300px]">
                 <div className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5" />Profil Bilgileri
+                  <XipIcon name="user" className="w-3.5 h-3.5" />Profil Bilgileri
                 </div>
                 <div className="space-y-4">
                   {profileData.bio && (

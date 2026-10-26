@@ -1,42 +1,39 @@
 /**
- * Rate Limiting Middleware — Redis-based
+ * Rate Limiting — Redis tabanlı
  *
- * Rate Limiting Middleware — Redis-based
- * 
  * Kullanım:
- *   - API route'larda rate limit kontrolü
- *   - IP-based ve user-based limit destegi
- *   - sliding window algoritması
+ *   - middleware zincirinde IP bazlı limit (bkz. `middleware-utils/rate-limiter.ts`)
+ *   - API route'larında kendi identifier'ı ile limit (`/api/teklif`, `/api/telegram`)
+ *   - sabit pencere sayacı (Upstash komuta bütçesi için bkz. FIXED_WINDOW_SCRIPT)
  *
  * Üretimde hassas endpoint'ler Redis kullanılamadığında fail-closed davranır.
  */
 
-import { getRedisClient } from '@/lib/redis';
+import { getRedisClient } from '@/lib/redis/client';
 import { NextRequest, NextResponse } from 'next/server';
-import { randomUUID } from 'node:crypto';
 
-const SLIDING_WINDOW_SCRIPT = `
+/**
+ * Sabit pencere sayacı.
+ *
+ * Eskisi 4 komutluk bir ZSET sliding-window Lua'sıydı (ZREMRANGEBYSCORE + ZCARD +
+ * ZADD + EXPIRE, üstüne anahtar başına istek başına bir üyen). Upstash aylık
+ * komuta kotasının tek büyük kalemi oydu ve anahtar başına bellek de büyüyordu.
+ * Sabit pencere tek INCR + (yalnızca pencerenin ilk vuruşunda) EXPIRE eder:
+ * ortalama ~1 komut, sabit anahtar boyutu.
+ *
+ * Bedeli pencere sınırı burst'u (iki pencere birleşiminde 2x). Limitler IP
+ * başına ve geniş tutulduğu için kabul edilebilir; atomellik bozulmasın diye
+ * INCR ve EXPIRE aynı betiğin içinde — betik yarıda çökerse TTL'siz, yani
+ * sonsuza kadar dolan bir sayaç kalmaz.
+ */
+const FIXED_WINDOW_SCRIPT = `
 local key = KEYS[1]
-local now = tonumber(ARGV[1])
-local window = tonumber(ARGV[2])
-local maxRequests = tonumber(ARGV[3])
-local member = ARGV[4]
-local ttl = tonumber(ARGV[5])
-
-redis.call('ZREMRANGEBYSCORE', key, 0, now - window)
-local count = redis.call('ZCARD', key)
-if count >= maxRequests then
-  local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
-  local retryAfter = window
-  if #oldest > 0 then
-    retryAfter = tonumber(oldest[2]) + window - now
-  end
-  return {0, 0, math.max(0, retryAfter)}
+local ttl = tonumber(ARGV[1])
+local count = redis.call('INCR', key)
+if count == 1 then
+  redis.call('EXPIRE', key, ttl)
 end
-
-redis.call('ZADD', key, now, member)
-redis.call('EXPIRE', key, ttl)
-return {1, maxRequests - count - 1, window}
+return count
 `;
 
 // ─── Payload boyut limitleri ──────────────────────────────────────────────────
@@ -157,12 +154,9 @@ export interface RateLimitResult {
   unavailable?: boolean;
 }
 
-function isRateLimitResponse(value: unknown): value is [number, number, number] {
-  return (
-    Array.isArray(value) &&
-    value.length === 3 &&
-    value.every((part) => typeof part === 'number' && Number.isFinite(part))
-  );
+/** Sabit pencerede sıradaki sıfırlanma anı — pencere sınırları hizalı varsayılır. */
+function fixedWindowEnd(now: number, windowMs: number): number {
+  return now - (now % windowMs) + windowMs;
 }
 
 /**
@@ -202,29 +196,21 @@ export async function checkRateLimit(
   const prefix = config.keyPrefix || 'ratelimit';
   const key = `${prefix}:${identifier}`;
   const now = Date.now();
-  const reset = now + config.windowMs;
+  const reset = fixedWindowEnd(now, config.windowMs);
 
   try {
-    const response = await redis.eval(
-      SLIDING_WINDOW_SCRIPT,
-      [key],
-      [
-        String(now),
-        String(config.windowMs),
-        String(config.maxRequests),
-        `${now}-${randomUUID()}`,
-        String(Math.ceil(config.windowMs / 1000)),
-      ],
-    );
-    if (!isRateLimitResponse(response)) {
+    const response = await redis.eval(FIXED_WINDOW_SCRIPT, [key], [
+      String(Math.ceil(config.windowMs / 1000)),
+    ]);
+    const count = Number(response);
+    if (!Number.isFinite(count)) {
       throw new Error('Unexpected Redis rate-limit response');
     }
-    const [allowed, remaining, retryAfter] = response;
 
-    return allowed === 1
+    return count <= config.maxRequests
       ? {
           success: true,
-          remaining: Math.max(0, remaining),
+          remaining: Math.max(0, config.maxRequests - count),
           limit: config.maxRequests,
           reset,
         }
@@ -233,10 +219,12 @@ export async function checkRateLimit(
           remaining: 0,
           limit: config.maxRequests,
           reset,
-          retryAfter: Math.max(0, retryAfter),
+          // Kalan pencere yerelden hesaplanır; TTL okumak ekstra komut harcardı.
+          retryAfter: Math.max(0, reset - now),
         };
-  } catch (error) {
-    console.error('[RateLimit] Redis error:', error);
+  } catch {
+    // Hata logunu devre kesici taşır (olay başına bir satır). Buradaki
+    // `console.error` kota dolmuşken istek başına tam stack basıyordu.
     if (config.failClosed && process.env.NODE_ENV === 'production') {
       return {
         success: false,
@@ -257,13 +245,16 @@ export async function checkRateLimit(
 }
 
 /**
- * Endpoint bazlı rate limit konfigürasyonları
- * Önceden middleware.ts içindeydi — tek kaynak burası.
+ * Endpoint bazlı rate limit konfigürasyonları — tek kaynak burası.
  *
- * gENEL KURAL: Her IP, 10 dakikada maksimum 50 istek atabilir (100 → 50 DDoS saldırısı sonrası).
- * Hassas endpoint'ler (auth, upload, stream) daha düsük limitlerle korunur.
- * 
- * ⚠️ SALDIRI ÖNCESI NOT: Limitleri çok cömert ayarlamak = saldırganlar için aç kapı
+ * KOVA KARARI: varsayılan limit IP BAŞINA tek kovada uygulanır, path başına değil.
+ * Eskiden anahtar `ip:pathname` idi; yani tek bir IP her farklı URL için ayrı
+ * 200'lük hak alıyordu — uzun kuyruklu tarama/flood karşısında limit fiilen
+ * yoktu, kalan tek şey Upstash komuta ve bellek harcamasıydı.
+ *
+ * Hassas endpoint'ler kendi kovasında ve daha düşük limitle korunur.
+ *
+ * ⚠️ Limitleri çok cömert ayarlamak = saldırganlar için açık kapı.
  */
 const ENDPOINT_RATE_LIMITS: Record<string, RateLimitConfig> = {
   '/api/bot': { windowMs: 10 * 60 * 1000, maxRequests: 60, failClosed: true, message: 'Bot API istek limiti aşıldı. Lütfen bekleyin.' },
@@ -280,15 +271,46 @@ const DEFAULT_ENDPOINT_LIMIT: RateLimitConfig = {
   message: 'API rate limit asıldı. Lütfen bekleyin.',
 };
 
+/** `pathname`'e denk gelen özel limit girdisi; yoksa null (varsayılan devreye girer). */
+function matchEndpointLimit(pathname: string): [string, RateLimitConfig] | null {
+  for (const [endpoint, config] of Object.entries(ENDPOINT_RATE_LIMITS)) {
+    if (pathname === endpoint || pathname.startsWith(`${endpoint}/`)) return [endpoint, config];
+  }
+  return null;
+}
+
 /**
  * Pathname'e göre dogru rate limit konfigürasyonunu döndürür.
- * Eslesme yoksa default limit uygulanır.
+ * Eslesme yoksa default limit uygulanır. API route'ları kendi identifier'ıyla
+ * çağırdığı için bu arayüz olduğu gibi korundu (bkz. /api/teklif, /api/telegram).
  */
 export function getEndpointRateLimit(pathname: string): RateLimitConfig {
-  for (const [endpoint, config] of Object.entries(ENDPOINT_RATE_LIMITS)) {
-    if (pathname === endpoint || pathname.startsWith(`${endpoint}/`)) return config;
+  return matchEndpointLimit(pathname)?.[1] ?? DEFAULT_ENDPOINT_LIMIT;
+}
+
+export interface RateLimitBucket {
+  config: RateLimitConfig;
+  /** Redis anahtar öneki — endpoint-ezgili kovada yol dahil, varsayılanda değil. */
+  keyPrefix: string;
+  /**
+   * true => bu yol için özel bir limit tanımlı. Böyle yollarda yerel ön-eşik
+   * atlanır ve her istek paylaşımlı sayaçtan geçer (düşük hacim, yüksek önem).
+   */
+  endpointSpecific: boolean;
+}
+
+/** Middleware zincirinin kullanacağı kova kararı. */
+export function getRateLimitBucket(pathname: string): RateLimitBucket {
+  const match = matchEndpointLimit(pathname);
+  if (!match) {
+    return { config: DEFAULT_ENDPOINT_LIMIT, keyPrefix: 'middleware', endpointSpecific: false };
   }
-  return DEFAULT_ENDPOINT_LIMIT;
+  const [endpoint, config] = match;
+  return {
+    config,
+    keyPrefix: `middleware:${endpoint.replace(/[^a-z0-9]+/gi, '')}`,
+    endpointSpecific: true,
+  };
 }
 
 export function createRateLimitResponse(

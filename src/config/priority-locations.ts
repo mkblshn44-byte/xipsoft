@@ -23,8 +23,13 @@
  * Listede olmak, sayfanın otomatik olarak index'e gireceği anlamına GELMEZ.
  * Bu sayfalar şu anda `source_type='template'`. Plan gereği özgün yerel
  * bilgiyle zenginleştirilene kadar `noindex, follow` olarak CANLI tutulur;
- * böylece URL korunur, içerik zenginleşince (manual sayfa veya zengin
- * `service_city_seo` satırı) otomatik olarak indexlenebilir hale gelir.
+ * böylece URL korunur ve içerik zenginleşince index'e geçer.
+ * NOT (bu turda değişti): o geçişin TEK yolu artık `pages.source_type='manual'`
+ * + yayında olmaktır. İkinci yol olan `service_city_seo` özgün satırı
+ * `is_indexed=true` dalı **kapandı** — okuma yolu koddan kaldırıldı (tablo
+ * ölçülen 0 satırdı, yani pratikte zaten çalışan bir yol değeri üretmiyordu).
+ * `isIndexableLocation()` arayüzündeki `isCustom`/`isIndexed`/`localIntroLength`
+ * alanları bu yüzden artık daima boş/false gelir.
  * Listede OLMAYAN ilçeler ise aynı hizmetin İL sayfasına kalıcı yönlendirilir.
  *
  * GÜNCELLEME:
@@ -90,12 +95,12 @@ export const PRIORITY_DISTRICTS: ReadonlyArray<readonly [string, string]> = [
  *   3. Diğer illerde yalnızca `MAJOR_DISTRICTS` (ticari/merkez büyük ilçeler)
  *      korunur.
  *   4. Kalan jenerik küçük ilçeler korunmaz → il sayfasına 308 yönlendirilir
- *      ve `scripts/manage-location-status.ts` ile DB'de `status='paused'` yapılır
- *      (sitemap dışı + taranmaz → kopya içerik uyarısı önlenir).
+ *      ve DB'de `status='paused'` yapılır (sitemap dışı + taranmaz →
+ *      kopya içerik uyarısı önlenir).
  *
  * Yukarıdaki `PRIORITY_DISTRICTS` listesi geriye dönük uyumluluk için aynen
- * korunur (publish-local-seo-content.ts ile eşleşir); karar `isPriorityDistrict`
- * üzerinden bu genişletilmiş kurala göre verilir.
+ * korunur; karar `isPriorityDistrict` üzerinden bu genişletilmiş kurala göre
+ * verilir.
  */
 
 /** En büyük 10 il — bu illerin TÜM ilçeleri önceliklidir (URL korunur). */
@@ -388,25 +393,32 @@ export const MAJOR_DISTRICT_KEYS: ReadonlySet<string> = new Set(
 );
 
 /**
- * Bir ilçenin öncelikli (korunacak) olup olmadığını söyler.
+ * KORUNAN İLÇELERİN bağlı olduğu iller.
  *
- * Öncelik kuralı (yukarıdaki GENİŞLETİLMİŞ ÖNCELİK KURALI ile aynı):
- *   1. Bağlı olduğu il `TOP_PRIORITY_PROVINCES` içindeyse → öncelikli.
- *   2. `PRIORITY_DISTRICTS` (pilot 30) veya `MAJOR_DISTRICTS` listesindeyse
- *      (il/ilçe anahtarıyla) → öncelikli.
- *   3. Aksi halde → öncelikli DEĞİL (pasife alınır / il sayfasına yönlenir).
+ * KARAR (17.10.2026 — kullanıcı): Yalnızca **İstanbul'un ilçeleri** canlı tutulur.
+ * İstanbul dışındaki TÜM ilçe sayfaları kaldırılır (soft-delete → 404). İstanbul
+ * ilçeleri ancak içerik kalite/yayın kurallarını sağlıyorsa indexlenir ve
+ * sitemap'e girer; diğerleri `noindex, follow` kalır. İller (`province`) ayrı
+ * olarak korunmaya devam eder.
  *
- * Parent bilgisi (il slug'ı) aynı adlı ilçeleri (ör. "merkez", "altyazi")
- * ayırt etmek için ZORUNLUDUR — salt ilçe adıyla karar verilmez.
+ * Önceki genişletilmiş kural (top-10 il + `MAJOR_DISTRICTS` + `TOP_100_DISTRICTS`)
+ * yukarıdaki sabitlerde referans olarak durur; ancak artık KORUMA kararı bu setle
+ * verilir. Geçmişe dönük liste kullanan script'ler (enrich/publish) etkilenmez.
+ */
+export const KEPT_DISTRICT_PROVINCES: ReadonlySet<string> = new Set(["istanbul"]);
+
+/**
+ * Bir ilçenin KORUNUP korunmayacağını söyler (17.10.2026 kararı).
+ *
+ * Yalnızca bağlı olduğu il `KEPT_DISTRICT_PROVINCES` içindeyse `true` döner.
+ * Parent bilgisi (il slug'ı) aynı adlı ilçeleri ayırt etmek için ZORUNLUDUR.
  */
 export function isPriorityDistrict(
   parentLocationSlug: string | null | undefined,
   locationSlug: string | null | undefined,
 ): boolean {
   if (!parentLocationSlug || !locationSlug) return false;
-  if (TOP_PRIORITY_PROVINCES.has(parentLocationSlug)) return true;
-  const key = buildKey(parentLocationSlug, locationSlug);
-  return PRIORITY_DISTRICT_KEYS.has(key) || MAJOR_DISTRICT_KEYS.has(key) || TOP_100_DISTRICTS.has(key);
+  return KEPT_DISTRICT_PROVINCES.has(parentLocationSlug);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -425,11 +437,11 @@ export interface LocationDecisionInput {
   locationType?: string | null;
   /** pages.source_type: 'manual' | 'template' | 'ai' | null (DB satırı yoksa) */
   sourceType?: string | null;
-  /** service_city_seo satırı var mı */
+  /** ESKİ `service_city_seo` satırı — okuma yolu silindiği için daima `false` */
   isCustom?: boolean | null;
-  /** service_city_seo.is_indexed */
+  /** ESKİ `service_city_seo.is_indexed` — verisi artık gelmiyor */
   isIndexed?: boolean | null;
-  /** service_city_seo.lokal_giris uzunluğu (özgün içerik derinliği eşiği) */
+  /** ESKİ `service_city_seo.lokal_giris` uzunluğu — verisi artık gelmiyor */
   localIntroLength?: number | null;
   /** İlçenin bağlı olduğu ilin slug'ı (district/neighborhood için) */
   parentLocationSlug?: string | null;
@@ -442,15 +454,18 @@ export interface LocationDecisionInput {
  *
  * Indexlenir (index, follow + self canonical):
  *  1. Yayınlanmış, zenginleştirilmiş CMS sayfaları (`pages.source_type = 'manual'`).
- *  2. `service_city_seo`'da özgün satırı olan ve `is_indexed` açık + en az
- *     200 karakter özgün giriş barındıran sayfalar.
+ *  2. `isCustom === true` + `isIndexed !== false` + en az 200 karakter özgün
+ *     giriş. **Bu dal bugün ETKİSİZ**: `service_city_seo` okuma yolu kaldırıldı,
+ *     `getServiceCityData()` daima `isCustom: false` döndürüyor. Alanlar
+ *     arayüzde duruyor, ama fiilen index kararını yalnız 1. madde verir.
  *
  * `source_type` tek başına içerik kalitesini kanıtlamaz; yayınlamadan önce
  * sayfanın içerik ve SSS eşikleri içerik iş akışında doğrulanmalıdır.
  *
- * ÖNEMLİ: İller korunur fakat şablon içerikle otomatik indexlenmez. İlçe
- * allowlist'inde olmak da tek başına index VERMEZ; template sayfalar özgün
- * içerikle zenginleştirilene kadar `noindex, follow` kalır.
+ * ÖNEMLİ: İller korunur fakat şablon içerikle otomatik indexlenmez. İstanbul
+ * ilçesi olmak tek başına index VERMEZ; template sayfalar özgün içerikle
+ * zenginleştirilene kadar `noindex, follow` kalır. Manuel yayınlı sayfalar ve
+ * nitelikli/index açık özgün SEO kayıtları indexlenebilir.
  */
 export function isIndexableLocation(input: LocationDecisionInput): boolean {
   if (
@@ -467,8 +482,9 @@ export function isIndexableLocation(input: LocationDecisionInput): boolean {
 
 /**
  * Sayfanın 404/yönlendirme yerine CANLI tutulup tutulmayacağı.
- * Indexlenebilir sayfalar ve öncelikli ilçeler korunur; kalan ilçeler
- * (`isKeepableLocation === false`) il sayfasına yönlendirilir veya 404 döner.
+ *
+ * KORUNAN: tüm iller (`province`) + İstanbul'un ilçeleri (`isPriorityDistrict`).
+ * Kalan ilçeler korunmaz → 404 (soft-delete edilmiş) veya il sayfasına 308.
  */
 export function isKeepableLocation(input: LocationDecisionInput): boolean {
   if (input.locationType === "province") return true;

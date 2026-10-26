@@ -86,7 +86,10 @@ function logToConsole(metric: Metric) {
 // ── Rapor fonksiyonu ─────────────────────────────────────────────────────
 function onMetric(metric: Metric) {
   if (process.env.NODE_ENV !== "production") {
-    logToConsole(metric);
+    // Dev'de TTFB/FCP on-demand derleme ve HMR rebuild'iyle şişiyor: rebuild
+    // sırasında yüklenen `/` 2435 ms TTFB üretti, ısınmış aynı yol 320 ms.
+    // Yanıltıcı "POOR" satırları yerine yalnızca yükleme sonrası metrikler.
+    if (metric.name !== "TTFB" && metric.name !== "FCP") logToConsole(metric);
   }
   sendToAnalytics(metric);
 }
@@ -94,17 +97,44 @@ function onMetric(metric: Metric) {
 // ── Bileşen — sıfır render, sadece ölçüm ────────────────────────────────
 export default function WebVitalsReporter() {
   useEffect(() => {
-    // web-vitals'ı lazy import et — initial bundle'a ekleme
-    import("web-vitals").then(({ onLCP, onCLS, onINP, onFCP, onTTFB }) => {
-      // reportAllChanges: true → her güncellemeyi raporla (soft nav dahil)
-      onLCP(onMetric,  { reportAllChanges: false });
-      onCLS(onMetric,  { reportAllChanges: false });
-      onINP(onMetric,  { reportAllChanges: false });
-      onFCP(onMetric,  { reportAllChanges: false });
-      onTTFB(onMetric, { reportAllChanges: false });
-    }).catch(() => {
-      // web-vitals yüklenemezse sessizce devam et
-    });
+    // PERF: `web-vitals` import'u da ilk yüklemede ana thread'i meşgul ediyordu
+    // (dev'de ~30 ms, prod'da daha az ama LCP penceresinde gereksiz). Ölçüm
+    // zaten sayfa yüklendikten sonra anlamlı; import'u load + idle'a erteliyoruz.
+    let cancelled = false;
+
+    const start = () => {
+      if (cancelled) return;
+      // web-vitals'ı lazy import et — initial bundle'a ekleme
+      import("web-vitals").then(({ onLCP, onCLS, onINP, onFCP, onTTFB }) => {
+        if (cancelled) return;
+        // reportAllChanges: true → her güncellemeyi raporla (soft nav dahil)
+        onLCP(onMetric,  { reportAllChanges: false });
+        onCLS(onMetric,  { reportAllChanges: false });
+        onINP(onMetric,  { reportAllChanges: false });
+        onFCP(onMetric,  { reportAllChanges: false });
+        onTTFB(onMetric, { reportAllChanges: false });
+      }).catch(() => {
+        // web-vitals yüklenemezse sessizce devam et
+      });
+    };
+
+    const idle = () => {
+      const ric = (
+        window as Window & {
+          requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void;
+        }
+      ).requestIdleCallback;
+      if (typeof ric === "function") ric(start, { timeout: 2500 });
+      else window.setTimeout(start, 1200);
+    };
+
+    if (document.readyState === "complete") idle();
+    else window.addEventListener("load", idle, { once: true });
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", idle);
+    };
   }, []);
 
   // Hiçbir DOM elementi render etme — CLS etkisi sıfır

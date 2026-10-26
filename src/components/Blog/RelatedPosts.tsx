@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, Clock3, Tag } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { getRelatedBlogPostsAction } from "@/app/_actions/blog-actions";
 import type { BlogPost } from "@/types/blog";
 import LazyImage from "@/components/LazyImage";
@@ -91,7 +91,7 @@ export default function RelatedPosts({
               İlgili Yazılar
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-zinc-100 tracking-tight">
+          <h2 className="text-xl md:text-2xl font-bold text-zinc-100 tracking-tight brand-gradient-text">
             Devamını okuyun
           </h2>
         </div>
@@ -99,7 +99,7 @@ export default function RelatedPosts({
           href="/blog"
           className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-prism-cyan transition-colors"
         >
-          Tüm Yazılar <ArrowRight className="w-3.5 h-3.5" />
+          Tüm Yazılar <XipIcon name="arrow-right" glow="soft" className="w-3.5 h-3.5" />
         </MseLink>
       </div>
 
@@ -189,7 +189,7 @@ function RelatedCard({ post, index }: { post: BlogPost; index: number }) {
                   key={tag}
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono text-zinc-400 bg-white/[0.03] border border-white/[0.04]"
                 >
-                  <Tag className="w-2.5 h-2.5 text-prism-violet/70" />
+                  <XipIcon name="tag" glow="none" className="w-2.5 h-2.5 text-prism-violet/70" />
                   {tag}
                 </span>
               ))}

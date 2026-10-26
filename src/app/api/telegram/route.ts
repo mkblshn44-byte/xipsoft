@@ -16,7 +16,7 @@ import {
   shareBlogToTelegram,
   sendCustomTelegramMessage,
 } from "@/lib/telegram";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 
 // Izin verilen type degerleri — whitelist
 const ALLOWED_TYPES = new Set(["Blog", "custom", "test"]);

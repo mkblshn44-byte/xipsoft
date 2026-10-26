@@ -4,7 +4,7 @@
 
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { timingSafeEqual } from "@/lib/api-guard";
 import { getClientIp as getRequestClientIp } from "@/lib/rate-limit";
 import { fail } from "./response";

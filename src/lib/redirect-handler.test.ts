@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { NextRequest } from "next/server";
 import {
+  canonicalizeTargetPath,
   createRedirectResponse,
   handleRedirect,
   recordBlogPostSlugChange,
+  targetPathPolicy,
   type RedirectEntry,
 } from "@/lib/redirect-handler";
 
@@ -86,4 +88,103 @@ test("redirect handler resolves a stored entry and returns a permanent redirect"
   assert.ok(response);
   assert.equal(response.status, 301);
   assert.equal(response.headers.get("location"), "https://xipsoft.test/blog/new");
+});
+
+test("stored uzantısız hedef, ağaç sahibi ise tek hop'ta .html kanoniğine çözülür", () => {
+  const request = new NextRequest("https://xipsoft.test/hizmetler/web-yazilim-tasarim");
+  const response = createRedirectResponse(
+    request,
+    { target_path: "/hizmetler/web-yazilim-tasarim1", status_code: 301 },
+    { isTreeOwned: () => true },
+  );
+
+  assert.ok(response);
+  assert.equal(
+    response.headers.get("location"),
+    "https://xipsoft.test/hizmetler/web-yazilim-tasarim1.html",
+  );
+});
+
+test("stored uzantısız hedef, ağaca ait değilse uzantısız kalır (döngü yok)", () => {
+  const request = new NextRequest("https://xipsoft.test/hizmetler/web-yazilim-tasarim");
+  const response = createRedirectResponse(
+    request,
+    { target_path: "/hizmetler/web-yazilim-tasarim1", status_code: 301 },
+    { isTreeOwned: () => false },
+  );
+
+  assert.ok(response);
+  assert.equal(
+    response.headers.get("location"),
+    "https://xipsoft.test/hizmetler/web-yazilim-tasarim1",
+  );
+});
+
+test("handleRedirect sahiplik kararını VERİDEN okuyup hedefi tek hop'ta çözer", async () => {
+  const request = new NextRequest("https://xipsoft.test/hizmetler/eski-hizmet");
+  const asked: string[] = [];
+
+  const owned = await handleRedirect(
+    request,
+    async () => ({ target_path: "/hizmetler/yeni-hizmet", status_code: 301 }),
+    async (path) => {
+      asked.push(path);
+      return true;
+    },
+  );
+
+  assert.ok(owned);
+  assert.equal(owned.headers.get("location"), "https://xipsoft.test/hizmetler/yeni-hizmet.html");
+  assert.deepEqual(asked, ["/hizmetler/yeni-hizmet"]);
+});
+
+test("handleRedirect EXACT kod rotasi hedefi için ağaca hiç sormaz", async () => {
+  const request = new NextRequest("https://xipsoft.test/eski-hakkimizda");
+  let treeCalls = 0;
+
+  const response = await handleRedirect(
+    request,
+    async () => ({ target_path: "/hakkimizda", status_code: 301 }),
+    async () => {
+      treeCalls++;
+      return true;
+    },
+  );
+
+  assert.ok(response);
+  assert.equal(response.headers.get("location"), "https://xipsoft.test/hakkimizda");
+  assert.equal(treeCalls, 0, "EXACT rotada sahiplik sorgusu gereksiz");
+});
+
+test("canonicalizeTargetPath uzantısız kanonik rotalara ve sorgu kuyruğuna dokunmaz", () => {
+  assert.equal(canonicalizeTargetPath("/blog/yazi"), "/blog/yazi");
+  assert.equal(canonicalizeTargetPath("/hizmetler"), "/hizmetler");
+  assert.equal(canonicalizeTargetPath("/"), "/");
+  assert.equal(canonicalizeTargetPath("/urunler/telefon"), "/urunler/telefon");
+  assert.equal(canonicalizeTargetPath("/iletisim?utm=1"), "/iletisim.html?utm=1");
+  assert.equal(
+    canonicalizeTargetPath("https://xipsoft.test/hizmetler/x"),
+    "https://xipsoft.test/hizmetler/x",
+  );
+});
+
+test("targetPathPolicy yalnızca veriden değişebilen yollarda sorgu atar", async () => {
+  let calls = 0;
+  const treeLookup = async () => {
+    calls++;
+    return true;
+  };
+
+  assert.equal(await targetPathPolicy("/hakkimizda", treeLookup), undefined);
+  assert.equal(await targetPathPolicy("/iletisim.html", treeLookup), undefined);
+  assert.equal(await targetPathPolicy("/hizmetler", treeLookup), undefined);
+  assert.equal(calls, 0, "EXACT ve önek-listesi-dışı hedefler ağaca sorulmaz");
+
+  const policy = await targetPathPolicy("/hizmetler/web-yazilim?utm=1", treeLookup);
+  assert.equal(calls, 1);
+  assert.equal(policy?.isTreeOwned?.("/hizmetler/web-yazilim"), true);
+  assert.equal(
+    canonicalizeTargetPath("/hizmetler/web-yazilim?utm=1", policy),
+    "/hizmetler/web-yazilim.html?utm=1",
+  );
 });

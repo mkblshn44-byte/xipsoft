@@ -19,15 +19,15 @@
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
 import Link from "next/link";
-import { ArrowRight, Star, Target } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { useTranslations } from "next-intl";
 import type { ComponentPropsWithoutRef } from "react";
-import type { LucideIcon } from "lucide-react";
 import Hero, { type HeroStat } from "@/components/Landing/Hero";
 import WhyXipsoft from "@/components/MSE/WhyXipsoft";
+import missionVisionStyles from "./MissionVisionBackground.module.css";
 import { GlassCard } from "@/components/Ui/Card";
 import TitleText from "@/components/Common/TitleText/TitleText";
-import { teklifModal } from "@/components/Common/TeklifModal/TeklifModal";
+import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
 import { BRAND_COMPANY } from "@/config/brand.config";
 import type { HomeHeroCopy } from "@/types/common";
 import { cn } from "@/utils";
@@ -79,7 +79,8 @@ const DEFAULT_STATS: HeroStat[] = [
 ];
 
 interface MissionCard {
-  icon: LucideIcon;
+  /** XipSoft özel ikon adı. */
+  icon: string;
   title: string;
   accent: AccentName;
   text: string;
@@ -88,7 +89,7 @@ interface MissionCard {
 
 const DEFAULT_CARDS: MissionCard[] = [
   {
-    icon: Target,
+    icon: "target",
     title: "Misyonumuz",
     accent: "cyan",
     text: "Müşterilerimizin dijital dönüşüm süreçlerini en verimli, güvenli ve sürdürülebilir şekilde yönetmelerine yardımcı olmak temel misyonumuzdur.",
@@ -101,7 +102,7 @@ const DEFAULT_CARDS: MissionCard[] = [
     ],
   },
   {
-    icon: Star,
+    icon: "star",
     title: "Vizyonumuz",
     accent: "neon",
     text: "Türkiye'nin ve bölgenin en güvenilir yazılım şirketlerinden biri olarak müşterilerimizin ilk tercih ettiği teknoloji ortağı olmak.",
@@ -181,7 +182,7 @@ function SectionHeading({
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
     >
-      <TitleText tag={tag} variant="section" className="mb-3">
+      <TitleText tag={tag} variant="brand" className="mb-3">
         {title}
       </TitleText>
 
@@ -234,59 +235,73 @@ function AboutMissionVision({
   const isInView = useInView(ref, { once: true, amount: 0.15 });
 
   return (
-    <section ref={ref} className="py-20 lg:py-28 border-t border-edge">
-      <SectionHeading title={title} subtitle={subtitle} isInView={isInView} />
+    <section
+      ref={ref}
+      className={cn(
+        "relative isolate overflow-hidden py-20 lg:py-28 border-t border-edge",
+        missionVisionStyles.section,
+      )}
+    >
+      <div className={missionVisionStyles.backdrop} aria-hidden="true">
+        <span className={missionVisionStyles.glow} />
+        <span className={missionVisionStyles.orbit} />
+        <span className={missionVisionStyles.orbitInner} />
+        <span className={missionVisionStyles.signalLine} />
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        {cards.map((card, i) => {
-          const Icon = card.icon;
-          return (
-            <motion.div
-              key={card.title}
-              className="group relative"
-              initial={{ opacity: 0, x: i === 0 ? -28 : 28, y: 16, scale: 0.97 }}
-              animate={isInView ? { opacity: 1, x: 0, y: 0, scale: 1 } : {}}
-              transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <GlassCard
-                className={cn(
-                  "relative p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1.5",
-                  ACCENT_CLASS[card.accent],
-                )}
+      <div className="relative z-10">
+        <SectionHeading title={title} subtitle={subtitle} isInView={isInView} />
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {cards.map((card, i) => {
+            return (
+              <motion.div
+                key={card.title}
+                className="group relative"
+                initial={{ opacity: 0, x: i === 0 ? -28 : 28, y: 16, scale: 0.97 }}
+                animate={isInView ? { opacity: 1, x: 0, y: 0, scale: 1 } : {}}
+                transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* Hover üst vurgu çizgisi */}
-                <div className="absolute inset-x-0 top-0 h-[1.5px] rounded-t-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-r from-transparent via-[color:var(--accent-line)] to-transparent" />
-                {/* Hover iç glow */}
-                <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-700 group-hover:opacity-100 bg-[radial-gradient(ellipse_80%_55%_at_50%_0%,var(--accent-soft),transparent_70%)]" />
-                {/* Köşe orb */}
-                <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-[var(--accent)] opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100 pointer-events-none" />
+                <GlassCard
+                  className={cn(
+                    "relative p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1.5",
+                    ACCENT_CLASS[card.accent],
+                  )}
+                >
+                  {/* Hover üst vurgu çizgisi */}
+                  <div className="absolute inset-x-0 top-0 h-[1.5px] rounded-t-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-r from-transparent via-[color:var(--accent-line)] to-transparent" />
+                  {/* Hover iç glow */}
+                  <div className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-700 group-hover:opacity-100 bg-[radial-gradient(ellipse_80%_55%_at_50%_0%,var(--accent-soft),transparent_70%)]" />
+                  {/* Köşe orb */}
+                  <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-[var(--accent)] opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-100 pointer-events-none" />
 
-                {/* Başlık */}
-                <div className="relative z-10 mb-4 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--accent-border)] bg-[var(--accent-soft)]">
-                    <Icon className="h-5 w-5 text-[color:var(--accent)]" strokeWidth={1.5} />
+                  {/* Başlık */}
+                  <div className="relative z-10 mb-4 flex items-center gap-3">
+                    <div className="icon-backlight flex h-10 w-10 items-center justify-center rounded-xl border border-[color:var(--accent-border)] bg-[var(--accent-soft)]">
+                      <XipIcon name={card.icon} glow="strong" className="h-5 w-5 text-[color:var(--accent)]" />
+                    </div>
+                    <h3 className="text-lg font-black uppercase tracking-wide text-[color:var(--accent)]">
+                      {card.title}
+                    </h3>
                   </div>
-                  <h3 className="text-lg font-black uppercase tracking-wide text-[color:var(--accent)]">
-                    {card.title}
-                  </h3>
-                </div>
 
-                <p className="relative z-10 mb-5 text-sm leading-relaxed text-ink-muted">
-                  {card.text}
-                </p>
+                  <p className="relative z-10 mb-5 text-sm leading-relaxed text-ink-muted">
+                    {card.text}
+                  </p>
 
-                <ul className="relative z-10 space-y-2">
-                  {card.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2.5 text-sm text-ink-secondary">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </GlassCard>
-            </motion.div>
-          );
-        })}
+                  <ul className="relative z-10 space-y-2">
+                    {card.items.map((item) => (
+                      <li key={item} className="flex items-center gap-2.5 text-sm text-ink-secondary">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--accent)]" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </GlassCard>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -329,7 +344,7 @@ function AboutCTA({ cta }: { cta: typeof DEFAULT_CTA }) {
           ))}
         </div>
 
-        <TitleText tag="h2" variant="silver" className="relative z-10 mb-4">
+        <TitleText tag="h2" variant="brand" className="relative z-10 mb-4">
           {cta.title}
         </TitleText>
 
@@ -342,7 +357,7 @@ function AboutCTA({ cta }: { cta: typeof DEFAULT_CTA }) {
             onClick={() => teklifModal.open()}
             className="site-cta-primary px-8 py-3.5 text-sm font-bold transition-transform hover:scale-[1.03]"
           >
-            {cta.primary} <ArrowRight className="h-4 w-4" />
+            {cta.primary} <XipIcon name="arrow-right" glow="strong" halo="red" className="h-4 w-4" />
           </button>
           <Link
             href="/contact-us"

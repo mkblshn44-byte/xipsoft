@@ -17,6 +17,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/automation": "Otomasyon",
   "/admin/telegram": "Telegram",
   "/admin/cms/pages": "Sayfalar",
+  "/admin/cms/content-tree": "İçerik Ağacı",
   "/admin/cms/media": "Medya",
   "/admin/cms/local-pages": "Yerel Sayfalar",
   "/admin/redirects": "Yönlendirmeler",
@@ -33,6 +34,7 @@ export default function AdminHeader({ sidebarOpen, onToggleSidebar }: AdminHeade
   const router = useRouter();
 
   const title = PAGE_TITLES[pathname]
+    || (pathname.startsWith("/admin/cms/content-tree/") ? "İçerik Düzenle" : null)
     || (pathname.startsWith("/admin/cms/local-pages/") ? "Yerel Sayfa Düzenle" : null)
     || pathname.split("/").filter(Boolean).pop()
     || "Admin";

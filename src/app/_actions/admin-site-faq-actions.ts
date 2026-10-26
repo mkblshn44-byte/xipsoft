@@ -1,8 +1,9 @@
 "use server";
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { requireAdminAction } from "@/lib/api-guard";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { invalidateServiceCaches } from "@/lib/redis/page-cache";
 
 /**
  * Genel site SSS yönetimi — `xip_dynamic_content` tablosunda
@@ -72,6 +73,7 @@ export async function saveSiteFaq(input: {
     revalidateTag("services");
     revalidateTag("sitemap");
     revalidatePath("/hizmetler");
+    await invalidateServiceCaches();
     return { success: true };
   } catch (error) {
     console.error("saveSiteFaq error:", error);
@@ -94,6 +96,7 @@ export async function setSiteFaqActive(id: string, isActive: boolean) {
     if (!result.rowCount) return { success: false, error: "SSS kaydı bulunamadı" };
     revalidateTag("services");
     revalidatePath("/hizmetler");
+    await invalidateServiceCaches();
     return { success: true };
   } catch (error) {
     console.error("setSiteFaqActive error:", error);
@@ -117,6 +120,7 @@ export async function deleteSiteFaq(id: string) {
     revalidateTag("services");
     revalidateTag("sitemap");
     revalidatePath("/hizmetler");
+    await invalidateServiceCaches();
     return { success: true };
   } catch (error) {
     console.error("deleteSiteFaq error:", error);

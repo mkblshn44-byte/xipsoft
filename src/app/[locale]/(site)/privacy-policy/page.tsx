@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Container from "@/components/Common/Container/Container";
 import Link from "next/link";
-import { SITE_URL } from "@/config/brand.config";
+import { DEFAULT_OG_IMAGE_URL, SITE_URL } from "@/config/brand.config";
 import TitleText from "@/components/Common/TitleText/TitleText";
 import JsonLd from "@/components/seo/JsonLd";
-import { corporatePageSchema } from "@/lib/schema-helpers";
+import { corporatePageSchema } from "@/lib/schema/page";
 import { getPageMeta } from "@/lib/page-content";
 
 export const revalidate = 3600;
@@ -30,7 +30,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: meta?.ogDescription || description,
       locale: "tr_TR",
       siteName: "XipSoft",
-      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: title }],
+      images: [{ url: DEFAULT_OG_IMAGE_URL, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta?.ogTitle || title,
+      description: meta?.ogDescription || description,
+      images: [DEFAULT_OG_IMAGE_URL],
     },
   };
 }

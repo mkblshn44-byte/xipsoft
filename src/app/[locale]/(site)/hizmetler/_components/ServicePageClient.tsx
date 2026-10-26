@@ -2,8 +2,8 @@
 /**
  * ServicePageClient — Hizmet detay + Hizmet×Konum (il/ilçe) için TEK şablon.
  *
- * - `district` yok  → hizmet detay sayfası (/hizmetler/[slug])
- * - `district` var  → yerel SEO sayfası (/hizmetler/[slug]/[sehir])
+ * - `district` yok  → hizmet detay sayfası (/hizmetler/[slug].html)
+ * - `district` var  → yerel SEO sayfası (/hizmetler/[slug]/[sehir].html)
  *
  * Mimari: MIMARI.md §3 (şablon–içerik ayrımı) ve "sıfır kod tekrarı" ilkesi.
  * Daha önce `ServicePageClient` + `ServiceDistrictPageClient` ~%90 kopyaydı;
@@ -12,32 +12,32 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "motion/react";
-import {
-  ArrowRight, CheckCircle, MessageCircle,
-  Smartphone, Palette, Code, Zap, Shield, Layers, Globe, Database,
-  Search, BarChart2, Monitor, Terminal, Cloud, Lock, Eye, FileCheck,
-  AlertTriangle, Server, Brain, Bot, Workflow, Cpu, TrendingUp, Target,
-  Users, MousePointer, GitBranch, RefreshCw, Code2, Link2, Webhook,
-  GitMerge, PieChart, FileText, Filter, Package, MapPin,
-  type LucideIcon,
-} from "lucide-react";
-import { teklifModal } from "@/components/Common/TeklifModal/TeklifModal";
+import XipIcon from "@/components/Ui/Icon";
+import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
 import Hero from "@/components/Landing/Hero";
 import SectionReveal from "@/components/Ui/SectionReveal/SectionReveal";
 import FaqSection from "@/components/seo/FaqSection";
-import type { ServicePageData } from "@/lib/database";
+import type { ServicePageData } from "@/lib/db/services";
 import type { ServiceDistrict } from "@/types/common";
+import IceButton from "@/components/Ui/IceButton/IceButton";
+import TechMarquee from "./TechMarquee";
 
 // ─── Ikon haritası ─────────────────────────────────────────────────────────
-const iconMap: Record<string, LucideIcon> = {
-  Smartphone, Palette, Code, Zap, Shield, Layers, Globe, Database, Search,
-  BarChart2, Monitor, Terminal, Cloud, Lock, Eye, FileCheck, AlertTriangle,
-  Server, Brain, Bot, Workflow, Cpu, TrendingUp, Target, Users, MousePointer,
-  GitBranch, RefreshCw, Code2, Link2, Webhook, GitMerge, PieChart, FileText,
-  Filter, CheckCircle, ArrowRight, Package, MapPin,
-};
-function getIcon(name: string): LucideIcon {
-  return iconMap[name] || Globe;
+// XipSoft ÖZEL ikon seti (src/components/Ui/Icon/icon-data.ts). Anahtarlar DB
+// `badgeIcon` / içerik jsonb değerleriyle birebir aynı tutulur; listede
+// olmayan bir ad geldiğinde `getIcon` güvenli varsayılana ("Globe") düşer.
+const SERVICE_ICONS = new Set<string>([
+  "Smartphone", "Palette", "Code", "Zap", "Shield", "Layers", "Globe", "Database",
+  "Search", "BarChart2", "Monitor", "Terminal", "Cloud", "Lock", "Eye", "FileCheck",
+  "AlertTriangle", "Server", "Brain", "Bot", "Workflow", "Cpu", "TrendingUp",
+  "Target", "Users", "MousePointer", "GitBranch", "RefreshCw", "Code2", "Link2",
+  "Webhook", "GitMerge", "PieChart", "FileText", "Filter", "CheckCircle",
+  "ArrowRight", "Package", "MapPin",
+]);
+
+/** İkon adını doğrular; bilinmeyen adlarda güvenli varsayılana düşer. */
+function getIcon(name: string): string {
+  return SERVICE_ICONS.has(name) ? name : "Globe";
 }
 
 // ─── Accent rengi çözücü ────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ function resolveAccent(badgeColor?: string): string {
   if (badgeColor.includes("cyan"))    return "#ddd6fe";
   if (badgeColor.includes("emerald")) return "#ddd6fe";
   if (badgeColor.includes("violet"))  return "#a78bfa";
-  if (badgeColor.includes("rose"))    return "#f43f5e";
+  if (badgeColor.includes("rose"))    return "#a78bfa";
   return "#a78bfa";
 }
 
@@ -57,14 +57,14 @@ const FeatureCard = ({
   icon: string; title: string; description: string;
   color: string; index: number; isInView: boolean;
 }) => {
-  const Icon = getIcon(icon);
+  const iconName = getIcon(icon);
   return (
     <motion.div
       className="group relative flex flex-col gap-4 p-6 rounded-2xl overflow-hidden transition-all duration-500 hover:-translate-y-1.5"
       style={{
         background: "var(--color-card-bg)",
-        backdropFilter: "blur(20px)",
-        border: "1px solid var(--color-border)",
+        backdropFilter: "var(--glass-blur-card)",
+        border: "1px solid var(--color-glass-border)",
       }}
       initial={{ opacity: 0, y: 32, scale: 0.96 }}
       animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
@@ -90,7 +90,7 @@ const FeatureCard = ({
           className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-50 transition-opacity duration-400 blur-lg scale-[1.6] pointer-events-none"
           style={{ background: color }}
         />
-        <Icon className="w-5 h-5 relative z-10" style={{ color }} strokeWidth={1.5} />
+        <XipIcon name={iconName} className="w-5 h-5 relative z-10" style={{ color }} strokeWidth={1.6} />
       </div>
       <p className="font-bold text-sm text-zinc-100 group-hover:text-white transition-colors leading-tight">{title}</p>
       <p className="text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors leading-relaxed mt-auto">{description}</p>
@@ -183,25 +183,12 @@ const PackageCard = ({
     <ul className="flex flex-col gap-2.5 flex-1 mb-6">
       {features.map((f, j) => (
         <li key={j} className="flex items-start gap-2 text-sm text-zinc-300">
-          <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
+          <XipIcon name="check-circle" className="w-4 h-4 mt-0.5 shrink-0 text-emerald-400" />
           {f}
         </li>
       ))}
     </ul>
-    <button
-      onClick={() => teklifModal.open(name)}
-      className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:scale-[1.02] active:scale-95"
-      style={{
-        background: popular
-          ? `linear-gradient(135deg, ${color}, ${color}bb)`
-          : "rgba(255,255,255,0.06)",
-        color: popular ? "#09090b" : "rgba(255,255,255,0.8)",
-        border: popular ? "none" : "1px solid rgba(255,255,255,0.10)",
-        boxShadow: popular ? `0 0 20px ${color}35` : "none",
-      }}
-    >
-      Teklif Al
-    </button>
+    <IceButton label="Teklif Al" service={name} fullWidth />
   </motion.div>
 );
 
@@ -268,7 +255,7 @@ const LocalIntroCard = ({
       style={{ background: `linear-gradient(90deg, transparent, ${accentColor}60, transparent)` }}
     />
     <div className="flex items-center gap-2 mb-4">
-      <MapPin className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
+      <XipIcon name="map-pin" className="w-4 h-4 shrink-0" style={{ color: accentColor }} />
       <span className="text-xs font-bold uppercase tracking-widest" style={{ color: accentColor }}>
         {cityName} Bölgesel Bilgi
       </span>
@@ -315,7 +302,7 @@ export default function ServicePageClient({ service, district, localContent }: P
   const introText = localContent?.lokalAciklama?.trim() || "";
 
   return (
-    <article className="relative">
+    <article className="site-ambient-led relative">
       {/* ══ NEON HERO — Semantic HTML: <header> elementi ═════════════════════ */}
       <header className="relative z-10">
         <Hero
@@ -345,8 +332,8 @@ export default function ServicePageClient({ service, district, localContent }: P
         {/* ══ ÖZELLIKLER ═════════════════════════════════════════════════ */}
         {service.features.length > 0 && (
           <SectionReveal
-            title="Özellikler"
-            subtitle="Sunduğumuz temel özellikler ve avantajlar."
+            title={service.featuresTitle ?? undefined}
+            subtitle={service.featuresDesc ?? undefined}
             accentColor={primaryColor}
             topBorder={!!introText}
           >
@@ -369,38 +356,24 @@ export default function ServicePageClient({ service, district, localContent }: P
         {/* ══ TEKNOLOJILER ════════════════════════════════════════════════ */}
         {(service.techStack.length > 0 || (service.servicesTag && service.servicesTag.length > 0)) && (
           <SectionReveal
-            title="Teknolojiler & Uzmanlıklar"
+            title={service.techTitle ?? undefined}
             accentColor={primaryColor}
             topBorder
           >
-            <div className="flex flex-wrap justify-center gap-2.5">
-              {[...(service.techStack ?? []), ...(service.servicesTag ?? [])].map((t, i) => (
-                <motion.span
-                  key={i}
-                  className="px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 cursor-default"
-                  style={{
-                    color: t.color,
-                    border: `1px solid ${t.color}35`,
-                    background: `${t.color}0c`,
-                  }}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.04 }}
-                  whileHover={{ scale: 1.06, background: `${t.color}18` }}
-                >
-                  {t.name}
-                </motion.span>
-              ))}
-            </div>
+            <TechMarquee
+              items={[
+                ...(service.techStack ?? []).map((t) => ({ ...t, group: "tech" as const })),
+                ...(service.servicesTag ?? []).map((t) => ({ ...t, group: "expertise" as const })),
+              ]}
+            />
           </SectionReveal>
         )}
 
         {/* ══ SÜREÇ ════════════════════════════════════════════════════════ */}
         {service.processSteps.length > 0 && (
           <SectionReveal
-            title={service.processTitle || "Çalışma Sürecimiz"}
-            subtitle={service.processDesc ?? "Projeden canlıya — adım adım şeffaf süreç."}
+            title={service.processTitle ?? undefined}
+            subtitle={service.processDesc ?? undefined}
             accentColor={primaryColor}
             topBorder
           >
@@ -423,8 +396,8 @@ export default function ServicePageClient({ service, district, localContent }: P
         {/* ══ PAKETLER ════════════════════════════════════════════════════ */}
         {service.packages.length > 0 && (
           <SectionReveal
-            title="Fiyat Paketleri"
-            subtitle="İhtiyacınıza uygun paketi seçin, hemen başlayalım."
+            title={service.packagesTitle ?? undefined}
+            subtitle={service.packagesDesc ?? undefined}
             accentColor={primaryColor}
             topBorder
           >
@@ -449,8 +422,8 @@ export default function ServicePageClient({ service, district, localContent }: P
         {/* ══ MIKRO SERVISLER ════════════════════════════════════════════ */}
         {service.microServices.length > 0 && (
           <SectionReveal
-            title="Hizmet Detayları"
-            subtitle="Her alt başlık için derinlemesine bilgi."
+            title={service.microTitle ?? undefined}
+            subtitle={service.microDesc ?? undefined}
             accentColor={primaryColor}
             topBorder
           >
@@ -473,7 +446,7 @@ export default function ServicePageClient({ service, district, localContent }: P
         {/* ══ SSS ════════════════════════════════════════════════════════ */}
         {faqItems.length > 0 && (
           <SectionReveal
-            title={service.faqTitle || "Sıkça Sorulan Sorular"}
+            title={service.faqTitle ?? undefined}
             accentColor={primaryColor}
             topBorder
           >
@@ -523,13 +496,13 @@ export default function ServicePageClient({ service, district, localContent }: P
             </div>
 
             <h2
-              className="relative z-10 font-black text-3xl md:text-4xl mb-4"
+              className="relative z-10 font-black text-3xl md:text-4xl mb-4 brand-gradient-text"
               style={{
-                background: "linear-gradient(180deg, #ffffff 0%, #f1f5f9 30%, #e2e8f0 50%, #f1f5f9 70%, #ffffff 100%)",
+                backgroundImage: "linear-gradient(90deg, #ddd6fe 0%, #a78bfa 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
-                filter: "drop-shadow(0 0 24px rgba(255,255,255,0.18)) drop-shadow(0 0 12px rgba(148,163,184,0.10))",
+                filter: "drop-shadow(0 0 24px rgba(167, 139, 250,0.20))",
               }}
             >
               {service.ctaTitle}
@@ -542,7 +515,7 @@ export default function ServicePageClient({ service, district, localContent }: P
                 onClick={() => teklifModal.open(pageTitle)}
                 className="site-cta-primary px-8 py-3.5 font-bold text-sm transition-all hover:scale-[1.03]"
               >
-                {service.ctaBtn} <ArrowRight className="w-4 h-4" />
+                {service.ctaBtn} <XipIcon name="arrow-right" className="w-4 h-4" />
               </button>
               <a
                 href="https://wa.me/905444548444"
@@ -554,7 +527,7 @@ export default function ServicePageClient({ service, district, localContent }: P
                   border: "1px solid var(--color-border)",
                 }}
               >
-                <MessageCircle className="w-4 h-4" /> WhatsApp
+                <XipIcon name="message-circle" className="w-4 h-4" /> WhatsApp
               </a>
             </div>
           </div>

@@ -33,7 +33,7 @@ export default function ServiceError({
         </button>
         <Link
           href="/"
-          className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium transition-colors"
+          className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-space-950 text-sm font-medium transition-colors"
         >
           Ana Sayfa
         </Link>

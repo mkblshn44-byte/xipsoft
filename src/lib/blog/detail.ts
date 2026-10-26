@@ -2,7 +2,8 @@
  * blog/detail.ts — Blog detay sayfası için paylaşılan sunucu verisi.
  *
  * Tek şablon ilkesi (MIMARI.md): `/blog/[slug]` rotası DB'den gelen blog
- * yazısını bu ortak veri çözümleme + metadata üretimi üzerinden render eder.
+ * yazısını bu ortak veri çözümleme katmanı üzerinden render eder; metadata
+ * `blog/[slug]/page.tsx` içinde `seo-helpers.buildPageMetadata()` ile üretilir.
  * Legacy WordPress forum URL'leri middleware'de 301 ile `/blog/<slug>` adresine
  * bağlanır; forum artık canlı bir bölüm değildir.
  *
@@ -10,14 +11,11 @@
  * (`base` ↔ `base-<sayı>` WordPress eki) doğru yazıyı çözer.
  */
 
-import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
-import { SITE_URL } from "@/config/brand.config";
-import pool from "@/lib/database";
-import { getBlogPostCache, setBlogPostCache } from "@/lib/redis";
+import pool from "@/lib/db/pool";
+import { getBlogPostCache, setBlogPostCache } from "@/lib/redis/blog-cache";
 import { blogSlugCandidates } from "@/lib/slug-candidates";
 import { normalizeBlogSlug } from "../blog-slug";
-import { buildPageMetadata, DEFAULT_OG_IMAGE } from "@/lib/seo-helpers";
 
 // ── Tipler ────────────────────────────────────────────────────────────────────
 
@@ -106,7 +104,7 @@ export const BLOG_AUTHOR_COLUMNS = `u.display_name AS author_name,
 
 /**
  * Slug ile tek yayınlanmış blog yazısı getiren ortak sorgu.
- * Hem `blog-post-page` (detay sayfası) hem `blog-actions` (server action)
+ * Hem `blog/[slug]/page.tsx` (detay sayfası) hem `blog-actions` (server action)
  * bu tek kaynağı kullanır → kolon listeleri bir daha ayrışamaz.
  */
 export const BLOG_BY_SLUG_SQL = `SELECT ${BLOG_POST_COLUMNS},
@@ -222,60 +220,4 @@ export function serializeDbBlog(row: DbBlogRow): SerializedDbBlog {
     authorId: row.author_id,
     status: row.status,
   };
-}
-
-// ── Metadata ────────────────────────────────────────────────────────────────────
-
-/**
- * Blog yazısı için tam metadata üretir. `canonicalPath` kanonik blog yolunu
- * (`/blog/<slug>`) işaret eder; böylece kopya içerik oluşmaz.
- *
- * Ortak SEO kuralları (canonical, robots, OG, Twitter) `seo-helpers`'tan
- * gelir; burada yalnızca Article'a özgü alanlar eklenir.
- */
-export function buildBlogPostMetadata(
-  row: DbBlogRow,
-  opts: { canonicalPath: string }
-): Metadata {
-  const title = row.title;
-
-  // CTR optimizasyonu: description boşsa başlığı tekrar etmek yerine
-  // tag'lardan anlamlı bir fallback üret; o da yoksa genel açıklama kullan
-  const descriptionFallback =
-    Array.isArray(row.tags) && row.tags.length > 0
-      ? `${row.tags.slice(0, 3).join(", ")} hakkında kapsamlı rehber ve teknik analiz.`
-      : "Yazılım, teknoloji ve otomasyon hakkında kapsamlı teknik rehber.";
-  const description = row.description || descriptionFallback;
-
-  const image = row.cover_image_url || DEFAULT_OG_IMAGE.url;
-  const tags = Array.isArray(row.tags) ? row.tags : [];
-
-  // ── İndeksleme politikası ────────────────────────────────────────────────
-  // Yayınlanmış her blog yazısı indexlenir ve sitemap'e girer. İnce içerik için
-  // noindex UYGULANMAZ; sitemap ile robots direktifleri senkron kalır.
-  const metadata = buildPageMetadata({
-    title,
-    description,
-    keywords: tags,
-    canonicalPath: opts.canonicalPath,
-    ogType: "article",
-    image,
-    imageAlt: row.title,
-    ogExtras: {
-      publishedTime: (row.published_at ?? row.created_at)?.toISOString(),
-      authors: [row.author_name ?? "XipBot"],
-      tags,
-    },
-  });
-
-  if (row.author_name) {
-    metadata.authors = [
-      {
-        name: row.author_name,
-        url: row.author_nick ? `${SITE_URL}/x/${row.author_nick}` : undefined,
-      },
-    ];
-  }
-
-  return metadata;
 }

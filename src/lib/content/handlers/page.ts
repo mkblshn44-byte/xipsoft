@@ -9,24 +9,33 @@
 
 import { NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
-import pool from "@/lib/database";
-import {
-  hashPageContent,
-  CENTRAL_LOCATION_COLUMNS,
-  type CentralLocation,
-  type LocalFaqItem,
-} from "@/lib/pages";
+import pool from "@/lib/db/pool";
+import { hashPageContent } from "@/lib/pages/hash";
+import { CENTRAL_LOCATION_COLUMNS } from "@/lib/pages/sql";
+import type { CentralLocation, LocalFaqItem } from "@/lib/pages/types";
 import { SITE_URL } from "@/lib/site-url";
+import { locationTreeFullPath, serviceLocationPath, servicePath } from "@/lib/content-path";
+import { isFullPathTaken } from "@/lib/content-tree-admin";
+import { invalidateContentTreePolicy } from "@/lib/content-tree-policy";
+import { invalidateRedirectCache } from "@/lib/redirect-handler";
+import { invalidatePageCaches } from "@/lib/redis/page-cache";
 import { slugify } from "@/utils/slugify";
 import { PAGE_STATUSES, PAGE_SOURCE_TYPES, UUID_RE } from "../constants";
 
+/**
+ * Payload'taki `service` değerini (id veya slug) ANA hizmet satırına çözer.
+ * `row_type='main'` şart: `row_type='location'` ayna satırları aynı tabloda
+ * bileşik slug taşıdığı için onları adreslemek tek-kaynak ilkesini bozar
+ * (MIMARI.md §11.6.3/B6).
+ */
 async function resolveServiceRef(
   service: unknown,
 ): Promise<{ id: string; slug: string } | null> {
   if (service == null) return null;
   if (typeof service === "number" && Number.isInteger(service)) {
     const r = await pool.query<{ id: string; slug: string }>(
-      `SELECT id::text, slug FROM services WHERE id = $1::int AND is_active = TRUE LIMIT 1`,
+      `SELECT id::text, slug FROM services
+        WHERE id = $1::int AND row_type = 'main' AND is_active = TRUE LIMIT 1`,
       [service],
     );
     return r.rows[0] ?? null;
@@ -35,13 +44,15 @@ async function resolveServiceRef(
     const v = service.trim();
     if (/^\d+$/.test(v)) {
       const r = await pool.query<{ id: string; slug: string }>(
-        `SELECT id::text, slug FROM services WHERE id = $1::int AND is_active = TRUE LIMIT 1`,
+        `SELECT id::text, slug FROM services
+        WHERE id = $1::int AND row_type = 'main' AND is_active = TRUE LIMIT 1`,
         [Number(v)],
       );
       if (r.rows[0]) return r.rows[0];
     }
     const r = await pool.query<{ id: string; slug: string }>(
-      `SELECT id::text, slug FROM services WHERE slug = $1 AND is_active = TRUE LIMIT 1`,
+      `SELECT id::text, slug FROM services
+        WHERE slug = $1 AND row_type = 'main' AND is_active = TRUE LIMIT 1`,
       [v],
     );
     return r.rows[0] ?? null;
@@ -232,7 +243,7 @@ export async function pageIngestCore(
        FROM services s
        JOIN locations l ON l.id = $2::uuid AND l.is_active = TRUE
        LEFT JOIN locations parent ON parent.id = l.parent_id
-      WHERE s.id = $1::int AND s.is_active = TRUE LIMIT 1`,
+      WHERE s.id = $1::int AND s.row_type = 'main' AND s.is_active = TRUE LIMIT 1`,
     [svc.id, loc.id],
   );
   const centralLocation = context.rows[0];
@@ -251,7 +262,7 @@ export async function pageIngestCore(
     title: `${centralLocation.serviceTitle} ${centralLocation.locationName}`,
     metaTitle: `${centralLocation.serviceTitle} ${centralLocation.locationName} | XipSoft`,
     metaDescription: `${centralLocation.locationName} için ${centralLocation.serviceTitle}.`,
-    canonicalUrl: `${SITE_URL}/hizmetler/${serviceSlug}/${locationSlug}`,
+    canonicalUrl: `${SITE_URL}${serviceLocationPath(serviceSlug, locationSlug)}`,
   };
 
   let finalSlug = defaults.slug;
@@ -276,7 +287,26 @@ export async function pageIngestCore(
   const safeOzelMetaDesc =
     typeof ozelMetaDesc === "string" && ozelMetaDesc.trim() ? ozelMetaDesc.trim() : null;
   const markdownContent = content.trim();
-  const canonicalUrl = `${SITE_URL}/hizmetler/${finalSlug}`;
+  const canonicalUrl = `${SITE_URL}${servicePath(finalSlug)}`;
+  const fullPath = locationTreeFullPath(finalSlug);
+
+  // full_path ağacın adresleme anahtarı ve kısmi UNIQUE indeksi var
+  // (pages_full_path_uq). Bu satır daha önce NULL bırakıldığı için çakışma
+  // hiç tetiklenmiyordu; artık doldurulduğu için önce kontrol edilir.
+  const ownRow = await pool.query<{ id: string; full_path: string | null; status: string }>(
+    `SELECT id::text AS id, full_path, status FROM pages
+      WHERE service_id = $1::int AND location_id = $2::uuid AND is_deleted = FALSE
+      LIMIT 1`,
+    [svc.id, loc.id],
+  );
+  const previousRow = ownRow.rows[0] ?? null;
+  if (await isFullPathTaken(fullPath, previousRow?.id)) {
+    return res(409, {
+      success: false,
+      error: "PATH_CONFLICT",
+      message: `"${fullPath}" adresi başka bir aktif düğüm tarafından kullanılıyor`,
+    });
+  }
 
   try {
     const result = await pool.query<{
@@ -286,15 +316,17 @@ export async function pageIngestCore(
       is_insert: boolean;
     }>(
       `INSERT INTO pages
-         (service_id, location_id, slug, title, markdown_content, meta_title, meta_description,
+         (service_id, location_id, slug, full_path, kind, node_type,
+          title, markdown_content, meta_title, meta_description,
           canonical_url, status, content_hash, source_type, page_type,
           lokal_aciklama, ozel_meta_desc, lokal_sss, published_at, updated_at)
-       VALUES ($1::int, $2::uuid, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'location',
+       VALUES ($1::int, $2::uuid, $3, $15, 'location', 'page', $4, $5, $6, $7, $8, $9, $10, $11, 'location',
                $12, $13, $14::jsonb,
                CASE WHEN $9 = 'published' THEN NOW() ELSE NULL END, NOW())
        ON CONFLICT (service_id, location_id) WHERE is_deleted = FALSE
        DO UPDATE SET
          slug = EXCLUDED.slug,
+         full_path = EXCLUDED.full_path,
          title = EXCLUDED.title,
          markdown_content = EXCLUDED.markdown_content,
          meta_title = EXCLUDED.meta_title,
@@ -324,12 +356,27 @@ export async function pageIngestCore(
         safeLokalAciklama,
         safeOzelMetaDesc,
         sssResult.value ? JSON.stringify(sssResult.value) : null,
+        fullPath,
       ],
     );
 
     const page = result.rows[0];
     if (!page) {
       return res(500, { success: false, error: "SERVER_ERROR", message: "Sayfa kaydedilemedi" });
+    }
+
+    // Yol ya da yayın durumu değiştiyse middleware ve redirect tarafı eski değerleri
+    // servis etmesin (MIMARI.md §10: yol değişiminde snapshot sıfırlanır).
+    if (
+      page.is_insert ||
+      previousRow?.full_path !== fullPath ||
+      previousRow?.status !== page.status
+    ) {
+      invalidateContentTreePolicy();
+      invalidateRedirectCache(`/${fullPath}`);
+      if (previousRow?.full_path && previousRow.full_path !== fullPath) {
+        invalidateRedirectCache(`/${previousRow.full_path}`);
+      }
     }
 
     // ── Cache + ISR + sitemap tazele (admin createPage ile aynı tag'ler) ──────
@@ -340,15 +387,19 @@ export async function pageIngestCore(
       );
       revalidateTag("local-pages");
       revalidateTag("sitemap");
-      revalidatePath(`/hizmetler/${finalSlug}`);
+      revalidatePath(servicePath(finalSlug));
       revalidatePath("/sitemap.xml");
+      await invalidatePageCaches({
+        slugs: [finalSlug, servicePath(finalSlug), fullPath],
+        sitemap: true,
+      });
     }
 
     return res(page.is_insert ? 201 : 200, {
       success: true,
       page_id: page.id,
       slug: page.slug,
-      url: `${SITE_URL}/hizmetler/${page.slug}`,
+      url: `${SITE_URL}${servicePath(page.slug)}`,
       status: page.status,
       created: page.is_insert,
     });

@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 
 export const runtime = "nodejs";
 

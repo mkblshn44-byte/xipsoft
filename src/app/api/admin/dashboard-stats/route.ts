@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { extractAuthContext, requireAdmin } from "@/lib/api-guard";
 
 export const runtime = "nodejs";

@@ -2,7 +2,18 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifySessionCookie } from "@/lib/security";
 import { checkAdminIdentity } from "@/lib/admin-2fa-config";
+import { NOINDEX_NOFOLLOW } from "@/lib/seo-helpers";
 import AdminGuard from "./AdminGuard";
+
+/**
+ * Panel sayfaları arama motorlarına kapalıdır. next.config.mjs `X-Robots-Tag`
+ * başlığıyla bunu header seviyesinde yapıyor; aynı karar HTML içindeki
+ * `<meta name="robots">` etiketiyle de verilir — başlık bir CDN/proxy
+ * katmanında düşerse etiket yedek olarak kalır.
+ */
+export const metadata = {
+  robots: NOINDEX_NOFOLLOW,
+};
 
 /**
  * Admin layout — savunma derinliği katmanı.

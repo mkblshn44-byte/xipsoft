@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import Link from "next/link";
 import { cn } from "@/utils";
 import { BRAND_COLORS } from "@/config/brand.config";
@@ -94,20 +94,20 @@ function CardInner({
       onMouseEnter={onEnter}
       onMouseMove={onMove}
       onMouseLeave={onLeave}
-      className="card group relative flex flex-col overflow-hidden rounded-[1.5rem] h-full"
+      className="card group relative flex flex-col overflow-hidden rounded-2xl h-full"
       style={{
         transform: `perspective(600px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
         transition: "transform 0.2s ease-out, box-shadow 0.5s ease, border-color 0.5s ease",
         background: "linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
         border: `1px solid ${isHovered ? `${accent}55` : `${accent}25`}`,
         boxShadow: isHovered
-          ? `inset 0 1px 0 rgba(255,255,255,0.12), 0 12px 48px rgba(2,6,23,0.2), 0 0 60px ${accent}20, 0 0 100px ${accent}08`
-          : `inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(2,6,23,0.15), 0 0 50px ${accent}12`,
+          ? `inset 0 1px 0 rgba(255,255,255,0.12), 0 12px 48px rgba(5, 8, 17,0.2), 0 0 60px ${accent}20, 0 0 100px ${accent}08`
+          : `inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(5, 8, 17,0.15), 0 0 50px ${accent}12`,
       }}
     >
       {/* glare — fare konumunu takip eder */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[1.5rem]"
+        className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
           background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,${glareOpacity}), transparent 55%)`,
           transition: "background 0.4s ease",
@@ -116,7 +116,7 @@ function CardInner({
 
       {/* kenar parlamasi */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[1.5rem] transition-opacity duration-500"
+        className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-500"
         style={{
           opacity: isHovered ? 1 : 0,
           background: `linear-gradient(${135 + tilt.y}deg, ${accent}60, transparent 30%, transparent 70%, ${accent}40)`,
@@ -130,7 +130,7 @@ function CardInner({
 
       {/* ust cam yansi */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[1.5rem]"
+        className="pointer-events-none absolute inset-0 rounded-2xl"
         style={{
           background: `radial-gradient(ellipse at ${glare.x}% ${glare.y}%, rgba(255,255,255,${isHovered ? 0.1 : 0.06}), transparent 50%)`,
           transition: "background 0.4s ease",
@@ -196,7 +196,7 @@ function CardInner({
         <h3
           className="font-extrabold tracking-wide uppercase text-lg transition-all duration-500"
           style={{
-            background: `linear-gradient(135deg, #fff 0%, ${accent} 100%)`,
+            backgroundImage: `linear-gradient(135deg, #fff 0%, ${accent} 100%)`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -229,10 +229,10 @@ function CardInner({
         <div className="px-7 pb-6 flex justify-center">
           <Link
             href={card.href}
-            className="inline-flex items-center gap-2 rounded-full px-7 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            className="inline-flex items-center gap-2 rounded-full border px-7 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 hover:shadow-lg"
             style={{
-              background: `linear-gradient(135deg, ${accent}, ${BRAND_COLORS.primary})`,
-              color: "#050811",
+              borderColor: `${accent}99`,
+              color: accent,
               boxShadow: isHovered ? `0 0 30px ${accent}45` : `0 0 20px ${accent}30`,
             }}
           >
@@ -303,7 +303,7 @@ export default function CardCarousel3D({ cards, autoPlay = 0, className }: Props
     const isCenter = wrapped === 0;
     const isLeft = wrapped < 0;
 
-    const gAP = 380;
+    const gAP = 440;
     const x = isCenter ? 0 : isLeft ? -(gAP + abs * 100) : gAP + abs * 100;
     const z = isCenter ? 0 : -300 - abs * 120;
     const ry = isCenter ? 0 : isLeft ? 22 + abs * 3 : -(22 + abs * 3);
@@ -331,7 +331,7 @@ export default function CardCarousel3D({ cards, autoPlay = 0, className }: Props
       <div
         className="relative w-full flex items-center justify-center overflow-visible"
         style={{
-          height: "clamp(400px, 52vw, 580px)",
+          height: "clamp(440px, 54vw, 620px)",
           perspective: "1600px",
           transformStyle: "preserve-3d",
         }}
@@ -365,7 +365,7 @@ export default function CardCarousel3D({ cards, autoPlay = 0, className }: Props
                 transition={{ type: "spring", stiffness: 200, damping: 24, mass: 1 }}
                 style={{
                   position: "absolute",
-                  width: "clamp(280px, 32vw, 400px)",
+                  width: "clamp(280px, 36vw, 460px)",
                   zIndex: s.zIndex + hoverZBoost,
                   transformStyle: "preserve-3d",
                   pointerEvents: s.opacity === 0 ? "none" : "auto",
@@ -388,10 +388,10 @@ export default function CardCarousel3D({ cards, autoPlay = 0, className }: Props
         <button
           onClick={() => setActive((p) => (p - 1 + total) % total)}
           className="group flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(203, 213, 225, 0.12)" }}
           aria-label="Önceki"
         >
-          <ChevronLeft className="h-5 w-5 text-zinc-400 group-hover:text-white transition-colors" />
+          <XipIcon name="chevron-left" glow="soft" className="h-5 w-5 text-zinc-400 group-hover:text-white transition-colors" />
         </button>
 
         <div className="flex items-center gap-3">
@@ -403,17 +403,26 @@ export default function CardCarousel3D({ cards, autoPlay = 0, className }: Props
                 key={card.id}
                 onClick={() => setActive(i)}
                 aria-label={`${i + 1}. karta git`}
-                className="transition-all duration-300 hover:scale-125"
-                style={{
-                  width: on ? 36 : 10,
-                  height: 10,
-                  borderRadius: 999,
-                  background: on
-                    ? `linear-gradient(90deg, ${accent}, ${BRAND_COLORS.primary})`
-                    : "rgba(255,255,255,0.18)",
-                  boxShadow: on ? `0 0 16px ${accent}70` : "none",
-                }}
-              />
+                // NOT (A11Y): dokunma hedefi en az 24×24 px olmalı (WCAG 2.2
+                // target-size). Görsel nokta küçük kalır; tıklanabilir alan
+                // butonun kendisidir.
+                className="flex h-6 items-center justify-center transition-transform duration-300 hover:scale-110"
+                style={{ width: on ? 44 : 24 }}
+              >
+                <span
+                  aria-hidden="true"
+                  className="block transition-all duration-300"
+                  style={{
+                    width: on ? 36 : 10,
+                    height: 10,
+                    borderRadius: 999,
+                    background: on
+                      ? `linear-gradient(90deg, ${accent}, ${BRAND_COLORS.primary})`
+                      : "rgba(255,255,255,0.18)",
+                    boxShadow: on ? `0 0 16px ${accent}70` : "none",
+                  }}
+                />
+              </button>
             );
           })}
         </div>
@@ -421,10 +430,10 @@ export default function CardCarousel3D({ cards, autoPlay = 0, className }: Props
         <button
           onClick={() => setActive((p) => (p + 1) % total)}
           className="group flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(203, 213, 225, 0.12)" }}
           aria-label="Sonraki"
         >
-          <ChevronRight className="h-5 w-5 text-zinc-400 group-hover:text-white transition-colors" />
+          <XipIcon name="chevron-right" glow="soft" className="h-5 w-5 text-zinc-400 group-hover:text-white transition-colors" />
         </button>
       </div>
     </div>

@@ -34,6 +34,7 @@ const BLOCKED_PATHS = [
   "/api",
   "/auth",
   "/teklif",
+  "/takip",
   "/odeme",
   "/login",
   "/register",

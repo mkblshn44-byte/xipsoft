@@ -4,8 +4,8 @@ import { cn } from "@/utils";
 import AnalyticsScripts from "@/components/Common/AnalyticsScripts";
 import SiteStarfield from "@/components/Common/SiteStarfield/SiteStarfield";
 import SiteLayoutGuard from "./SiteLayoutGuard";
+import TeklifModalHost from "@/components/Common/TeklifModal/TeklifModalHost";
 
-const TeklifModal       = dynamic(() => import("@/components/Common/TeklifModal/TeklifModal"));
 const ScrollToTop       = dynamic(() => import("@/components/Common/ScrollToTop/ScrollToTop"));
 const CartSidebar       = dynamic(() => import("@/components/Cart/CartSidebar"));
 const DeviceTracker     = dynamic(() => import("@/components/Common/DeviceTracker/DeviceTracker"));
@@ -15,7 +15,9 @@ const WebVitalsReporter = dynamic(() => import("@/components/Common/WebVitalsRep
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={cn(styles.gradient, "text-zinc-200")}>
+    <div
+      className={cn(styles.gradient, "site-ambient-led site-headings text-zinc-200")}
+    >
       {/* Site geneli sabit yıldız katmanı — opak zeminin üstünde,
           içeriğin arkasında (bkz. styles.gradient `isolate`). */}
       <SiteStarfield />
@@ -30,14 +32,16 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </SiteLayoutGuard>
 
-      <TeklifModal />
-      <CartSidebar />
-      <ScrollToTop />
-      <DeviceTracker />
-      <AdSenseConsent />
-      <GoogleAdSense />
-      <WebVitalsReporter />
-      <AnalyticsScripts />
+      <div suppressHydrationWarning>
+        <TeklifModalHost />
+        <CartSidebar />
+        <ScrollToTop />
+        <DeviceTracker />
+        <AdSenseConsent />
+        <GoogleAdSense />
+        <WebVitalsReporter />
+        <AnalyticsScripts />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { X, ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import TitleText from "@/components/Common/TitleText/TitleText";
@@ -43,13 +43,13 @@ export default function CartSidebar() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-full w-full max-w-md bg-zinc-950 border-l border-purple-500/20 shadow-[0_0_50px_rgba(167,139,250,0.2)] z-50 flex flex-col"
+            className="fixed right-0 top-0 h-full w-full max-w-md bg-zinc-950 border-l border-purple-500/20 shadow-[0_0_50px_rgba(167, 139, 250,0.2)] z-50 flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-purple-500/20">
               <div className="flex items-center gap-3">
-                <ShoppingCart className="w-6 h-6 text-purple-400" />
-                <TitleText tag="h2" variant="section" className="text-xl">
+                <XipIcon name="shopping-cart" className="w-6 h-6 text-purple-400" />
+                <TitleText tag="h2" variant="brand" className="text-xl">
                   Sepetim ({totalItems})
                 </TitleText>
               </div>
@@ -57,7 +57,7 @@ export default function CartSidebar() {
                 onClick={() => setIsOpen(false)}
                 className="p-2 hover:bg-purple-500/10 rounded-lg transition-colors"
               >
-                <X className="w-6 h-6 text-zinc-400" />
+                <XipIcon name="x" className="w-6 h-6 text-zinc-400" />
               </button>
             </div>
 
@@ -65,7 +65,7 @@ export default function CartSidebar() {
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {items.length === 0 ? (
                 <div className="text-center py-12">
-                  <ShoppingCart className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
+                  <XipIcon name="shopping-cart" className="w-16 h-16 text-zinc-600 mx-auto mb-4" />
                   <p className="text-zinc-400">Sepetiniz bos</p>
                 </div>
               ) : (
@@ -86,7 +86,7 @@ export default function CartSidebar() {
                         onClick={() => removeFromCart(item.productId)}
                         className="p-2 hover:bg-red-500/10 rounded-lg transition-colors"
                       >
-                        <Trash2 className="w-4 h-4 text-red-400" />
+                        <XipIcon name="trash2" className="w-4 h-4 text-red-400" />
                       </button>
                     </div>
                     
@@ -97,7 +97,7 @@ export default function CartSidebar() {
                           className="p-1.5 hover:bg-purple-500/10 rounded-lg transition-colors"
                           disabled={item.quantity <= 1}
                         >
-                          <Minus className="w-4 h-4 text-zinc-400" />
+                          <XipIcon name="minus" className="w-4 h-4 text-zinc-400" />
                         </button>
                         <span className="w-8 text-center text-white font-medium">
                           {item.quantity}
@@ -106,7 +106,7 @@ export default function CartSidebar() {
                           onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                           className="p-1.5 hover:bg-purple-500/10 rounded-lg transition-colors"
                         >
-                          <Plus className="w-4 h-4 text-zinc-400" />
+                          <XipIcon name="plus" className="w-4 h-4 text-zinc-400" />
                         </button>
                       </div>
                       <p className="-bold text-purple-400">
@@ -126,7 +126,7 @@ export default function CartSidebar() {
               <div className="border-t border-purple-500/20 p-6 space-y-4 bg-black/40">
                 <div className="flex items-center justify-between">
                   <span className="text-zinc-400">Toplam</span>
-                  <span className="-display text-2xl font-bold text-purple-400 drop-shadow-[0_0_12px_rgba(167,139,250,0.4)]">
+                  <span className="-display text-2xl font-bold text-purple-400 drop-shadow-[0_0_12px_rgba(167, 139, 250,0.4)]">
                     {totalPrice.toLocaleString("tr-TR", {
                       style: "currency",
                       currency: "TRY",
@@ -136,7 +136,7 @@ export default function CartSidebar() {
                 
                 <button
                   onClick={handleCheckout}
-                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white rounded-xl font-bold text-lg transition-all hover:shadow-[0_0_30px_rgba(167,139,250,0.4)] hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white rounded-xl font-bold text-lg transition-all hover:shadow-[0_0_30px_rgba(167, 139, 250,0.4)] hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Ödemeye geç
                 </button>

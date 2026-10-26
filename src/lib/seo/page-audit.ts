@@ -2,8 +2,8 @@
  * seo/page-audit.ts — Sayfa SEO denetim hesaplama.
  */
 
-import pool from "@/lib/database";
-import { hashPageContent } from "@/lib/pages";
+import pool from "@/lib/db/pool";
+import { hashPageContent } from "@/lib/pages/hash";
 
 export interface SEOAuditResult {
   contentLength: number;
@@ -30,7 +30,10 @@ export interface PageAuditData {
   locationName: string;
 }
 
-export async function performSEOAudit(page: PageAuditData): Promise<SEOAuditResult> {
+export async function performSEOAudit(
+  page: PageAuditData,
+  options: { duplicates?: DuplicateHashIndex } = {},
+): Promise<SEOAuditResult> {
   const issues: string[] = [];
   let score = 100;
 
@@ -66,7 +69,9 @@ export async function performSEOAudit(page: PageAuditData): Promise<SEOAuditResu
 
   // Duplicate content check
   const contentHash = hashPageContent(page.markdownContent);
-  const duplicateHash = await checkDuplicateHash(contentHash, page.id);
+  const duplicateHash = options.duplicates
+    ? options.duplicates.findOther(contentHash, page.id)
+    : await checkDuplicateHash(contentHash, page.id);
   if (duplicateHash) {
     issues.push("İçerik hash'i başka sayfa ile aynı (duplicate içerik riski)");
     score -= 30;
@@ -145,4 +150,47 @@ async function checkDuplicateHash(contentHash: string, excludePageId: string): P
   } catch {
     return null;
   }
+}
+
+/** hash → bu hash'e sahip sayfa id'leri. */
+export interface DuplicateHashIndex {
+  /** Aynı içeriğe sahip başka bir sayfanın hash'ini döner; yoksa `null`. */
+  findOther(contentHash: string, excludePageId: string): string | null;
+}
+
+/**
+ * Toplu denetimde sayfa başına tekil sorgu yerine tüm hash'leri TEK sorguyla
+ * çeker (REFACTOR.md §9.1 Adım 4 / P4).
+ */
+export async function loadDuplicateHashIndex(
+  contentHashes: string[],
+): Promise<DuplicateHashIndex> {
+  const byHash = new Map<string, string[]>();
+  const unique = [...new Set(contentHashes.filter(Boolean))];
+  if (unique.length === 0) {
+    return { findOther: () => null };
+  }
+
+  try {
+    const { rows } = await pool.query<{ id: string; content_hash: string }>(
+      `SELECT id::text AS id, content_hash FROM pages
+       WHERE content_hash = ANY($1::text[]) AND is_deleted = FALSE`,
+      [unique],
+    );
+    for (const row of rows) {
+      const existing = byHash.get(row.content_hash);
+      if (existing) existing.push(row.id);
+      else byHash.set(row.content_hash, [row.id]);
+    }
+  } catch {
+    // İndeks kurulamazsa boş harita kalır; denetim tekil sorguya düşmez.
+  }
+
+  return {
+    findOther(contentHash, excludePageId) {
+      const owners = byHash.get(contentHash);
+      if (!owners) return null;
+      return owners.some((id) => id !== excludePageId) ? contentHash : null;
+    },
+  };
 }

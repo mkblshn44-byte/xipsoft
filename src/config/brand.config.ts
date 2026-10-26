@@ -11,7 +11,7 @@ import { PALETTE } from "@/config/palette";
 // ─── SITE URL ──────────────────────────────────────────────────────────────
 export { SITE_URL };
 
-export const APP_CONFIg = {
+export const APP_CONFIG = {
   // Meta title — ana anahtar kelimeler öne alındı (60 karakter sınırı içinde)
   title: process.env.NEXT_PUBLIC_APP_TITLE || "XipSoft | Kurumsal Web Tasarım, Özel Yazılım & Siber Güvenlik",
   // Meta description — arama niyetine uygun, somut değer önerileri içeriyor (155 karakter)
@@ -19,8 +19,7 @@ export const APP_CONFIg = {
     "Next.js 15 ile yüksek hızlı kurumsal web siteleri, özel yazılım ve mobil uygulamalar. 15 yıl deneyim, 200+ proje. İstanbul merkezli — ücretsiz analiz alın.",
 } as const;
 
-export const APP_CONFIG = APP_CONFIg;
-export default APP_CONFIg;
+export default APP_CONFIG;
 
 // ─── FONT ──────────────────────────────────────────────────────────────────
 export const defaultFont = "font-body";
@@ -44,39 +43,45 @@ export const BRAND = {
 // ─── RENKLER ───────────────────────────────────────────────────────────────
 
 export const BRAND_COLORS = {
-  primary: PALETTE.neon[500],     // neon mor — ANA VURGU (merkezi palet)
-  secondary: PALETTE.accent.cyan,  // cyan — ikincil aksan
-  accent: PALETTE.neon[500],       // mor — (eski ad: üçüncül) artık marka moru
-  gold: PALETTE.accent.cyan,       // cyan — (eski ad: gold) artık ikincil cyan
+  primary: PALETTE.neon[500],      // safir mavi — ana vurgu (merkezi palet)
+  secondary: PALETTE.accent.cyan,  // açık mavi — ikincil aksan (eski cyan token adı)
+  accent: PALETTE.neon[500],       // (eski ad: üçüncül vurgu)
+  accentDeep: PALETTE.neon[600],   // derin mavi — ikon renkleri için çeşitlilik tonu
+  gold: PALETTE.accent.gold,       // NADİR premium altın (yalnızca CTA / aktif menü çizgisi)
   background: PALETTE.space[950],  // uzay zemini
   themeColor: PALETTE.space[950],  // PWA theme color
-  manifestBg: "#483b97",           // manifest background_color
+  manifestBg: PALETTE.space[950],  // manifest background_color
 } as const;
 
 // ─── IKONLAR & LOgO ───────────────────────────────────────────────────────
 
 export const BRAND_ICONS = {
   favicon: "/media/favicon.ico",
-  appleTouchIcon: "/media/logo.webp",
+  appleTouchIcon: "/media/favicon-180.png",
   safariPinnedTab: "/media/favicon.ico",
+  /** Krom X/S wordmark — navbar/footer/OG (eski bronza versiyon: /media/logo-bronze.webp) */
   logo: "/media/logo.webp",
+  /** Rozet logosu (kare, asfalt zeminli) — filigran ve PWA ikonları */
+  mark: "/media/logo-steel.webp",
   homebar: "/media/homebar.webp",
   ogImage: "/media/xipsoft-seo.webp",
-  // PWA ikonlari
-  icon192: "/media/logo.webp",
-  icon384: "/media/logo.webp",
-  icon512: "/media/logo.webp",
+  // PWA ikonlari (kare rozet — `maskable` için güvenli)
+  icon192: "/media/favicon-192.png",
+  icon384: "/media/favicon-512.png",
+  icon512: "/media/favicon-512.png",
 } as const;
+
+export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}${BRAND_ICONS.ogImage}`;
 
 // ─── SAYFA RENKLERI ────────────────────────────────────────────────────────
 
 export const PAgE_ACCENTS: Record<string, string> = {
-  home:        "#a78bfa",  // mor   — anasayfa
-  about:       "#a78bfa",  // mor   — hakkinda
-  references:  "#ddd6fe",  // cyan  — referanslar
-  services:    "#a78bfa",  // mor   — hizmetler
-  aboutWhy:    "#a78bfa",  // mor   — hakkinda neden xipsoft
-  refSectors:  "#ddd6fe",  // cyan  — referanslar sektorler
+  home:        BRAND_COLORS.primary,
+  about:       BRAND_COLORS.primary,
+  references:  BRAND_COLORS.secondary,
+  services:    BRAND_COLORS.primary,
+  aboutWhy:    BRAND_COLORS.primary,
+  refSectors:  BRAND_COLORS.secondary,
 } as const;
 
 // ─── KURUMSAL / YASAL BILgILER ─────────────────────────────────────────────

@@ -12,8 +12,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getRedisClient } from "@/lib/redis";
-import pool from "@/lib/database";
+import { getRedisClient } from "@/lib/redis/client";
+import pool from "@/lib/db/pool";
 
 const CACHE_TTL_SECONDS = 5 * 60;
 const CACHE_KEY_PREFIX = "ipblock";
@@ -42,6 +42,40 @@ export function isLoopbackIp(ip: string): boolean {
 
 function cacheKey(ip: string): string {
   return `${CACHE_KEY_PREFIX}:${ip}`;
+}
+
+// ── In-memory LRU cache (Redis'ten önce) ─────────────────────────────────────
+// Middleware her istekte çalışır; Redis'e gitmemiş her yeni IP DB'ye düşerdi.
+// IP kümesi sınırsız olduğundan sabit boyutlu LRU + TTL kullanılır.
+const MEM_CACHE_MAX = 5_000;
+const MEM_TTL_BLOCKED_MS = CACHE_TTL_SECONDS * 1000;   // 5 dk
+const MEM_TTL_ALLOWED_MS = 60 * 1000;                  // 1 dk (negatif kısa)
+
+const memCache = new Map<string, { blocked: boolean; expiresAt: number }>();
+
+function memGet(ip: string): boolean | null {
+  const entry = memCache.get(ip);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    memCache.delete(ip);
+    return null;
+  }
+  // LRU: en son kullanılanı sona taşı
+  memCache.delete(ip);
+  memCache.set(ip, entry);
+  return entry.blocked;
+}
+
+function memSet(ip: string, blocked: boolean): void {
+  if (memCache.size >= MEM_CACHE_MAX) {
+    // En eski (en az kullanılan) girişi düşür
+    const oldest = memCache.keys().next().value;
+    if (oldest !== undefined) memCache.delete(oldest);
+  }
+  memCache.set(ip, {
+    blocked,
+    expiresAt: Date.now() + (blocked ? MEM_TTL_BLOCKED_MS : MEM_TTL_ALLOWED_MS),
+  });
 }
 
 async function isIpCachedBlocked(ip: string): Promise<boolean | null> {
@@ -87,10 +121,20 @@ async function isIpBlockedInDb(ip: string): Promise<boolean> {
 export async function isIpBlocked(ip: string): Promise<boolean> {
   if (isLoopbackIp(ip)) return false;
 
-  const cached = await isIpCachedBlocked(ip);
-  if (cached !== null) return cached;
+  // 1. Bellek LRU — Redis/DB'ye hiç gitmeden cevap ver
+  const mem = memGet(ip);
+  if (mem !== null) return mem;
 
+  // 2. Redis
+  const cached = await isIpCachedBlocked(ip);
+  if (cached !== null) {
+    memSet(ip, cached);
+    return cached;
+  }
+
+  // 3. DB — yalnızca iki önbellek katmanında da yoksa
   const blocked = await isIpBlockedInDb(ip);
+  memSet(ip, blocked);
   await setIpCache(ip, blocked);
   return blocked;
 }
@@ -117,6 +161,14 @@ export async function blockIpIfNecessary(
 }
 
 export async function invalidateIpBlockCache(ip?: string): Promise<void> {
+  // 1. Bellek LRU — admin işlemi sonrası eski "izinli" cevabı servis edilmesin
+  if (ip) {
+    memCache.delete(ip);
+  } else {
+    memCache.clear();
+  }
+
+  // 2. Redis — best-effort
   const redis = getRedisClient();
   if (!redis) return;
   try {

@@ -25,9 +25,9 @@ const CRITICAL_PATHS = [
   "/",
   "/blog",
   "/hizmetler",
-  "/hizmetler/web-yazilim-tasarim",
-  "/hizmetler/mobil-uygulama-gelistirme",
-  "/hizmetler/seo-ve-dijital-pazarlama",
+  "/hizmetler/web-yazilim-tasarim1.html",
+  "/hizmetler/mobil-uygulama.html",
+  "/hizmetler/seo-dijital-pazarlama.html",
   "/contact-us",
   "/hakkimizda",
 ];
@@ -492,7 +492,7 @@ function buildSummaryHtml(ctx: {
             ? "#dc2626"
             : i.severity === "medium"
               ? "#a78bfa"
-              : "#0891b2"
+              : "#c4b5fd"
         };font-weight:600">${i.severity.toUpperCase()}</span></td><td><code>${escapeHtml(i.path)}</code></td><td>${escapeHtml(i.rule)}</td><td>${escapeHtml(i.detail)}</td></tr>`,
     )
     .join("");
@@ -529,41 +529,41 @@ function buildSummaryHtml(ctx: {
     .join("");
 
   return `<!doctype html><html><head><meta charset="utf-8"><title>Aylık SEO Raporu — XipSoft</title>
-<body style="font-family:Inter,system-ui,-apple-system,sans-serif;background:#0b0b12;color:#e5e7eb;padding:24px">
+<body style="font-family:Inter,system-ui,-apple-system,sans-serif;background:#050811;color:#cbd5e1;padding:24px">
 <div style="max-width:960px;margin:0 auto">
 <div style="background:linear-gradient(135deg,#a78bfa,#ddd6fe);-webkit-background-clip:text;background-clip:text;color:transparent">
 <h1 style="font-size:28px;margin:0 0 4px 0">XipSoft Aylık SEO Raporu</h1></div>
 <p style="color:#94a3b8;margin:0 0 24px 0">Üretilme: ${escapeHtml(ctx.generatedAt)} · ${escapeHtml(SITE_URL)}</p>
 
-<h2 style="font-size:18px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px;margin-bottom:12px">Kritik Sayfalar</h2>
+<h2 style="font-size:18px;border-bottom:1px solid rgba(203, 213, 225, 0.06);padding-bottom:8px;margin-bottom:12px">Kritik Sayfalar</h2>
 <table style="width:100%;border-collapse:collapse;margin-bottom:28px;font-size:13px">
 <thead><tr style="color:#94a3b8;text-align:left">
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Sayfa</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Performans</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">SEO</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">LCP (lab)</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">CLS (lab)</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">LCP p75 (alan)</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">CLS p75 (alan)</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">INP p75 (alan)</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Alan kaynağı</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Sayfa</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Performans</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">SEO</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">LCP (lab)</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">CLS (lab)</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">LCP p75 (alan)</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">CLS p75 (alan)</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">INP p75 (alan)</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Alan kaynağı</th>
 </tr></thead>
 <tbody>${pageRows}</tbody></table>
 
-<h2 style="font-size:18px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px;margin-bottom:12px">Google Search Console</h2>
+<h2 style="font-size:18px;border-bottom:1px solid rgba(203, 213, 225, 0.06);padding-bottom:8px;margin-bottom:12px">Google Search Console</h2>
 ${
   ctx.searchConsole
     ? `<p style="color:#94a3b8">Son 28 gün (${ctx.searchConsole.startDate} – ${ctx.searchConsole.endDate}) karşılaştırması: önceki 28 gün (${ctx.searchConsole.previousStartDate} – ${ctx.searchConsole.previousEndDate}). Sıralama kaybı ve CTR düşüşü görülen sayfalar:</p>${
         searchConsoleRows
           ? `<table style="width:100%;border-collapse:collapse;margin-bottom:28px;font-size:13px"><thead><tr style="color:#94a3b8;text-align:left">
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Sayfa</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Tıklama önce</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Tıklama şimdi</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Gösterim önce</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Gösterim şimdi</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">CTR önce</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">CTR şimdi</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Konum kaybı</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Sayfa</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Tıklama önce</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Tıklama şimdi</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Gösterim önce</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Gösterim şimdi</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">CTR önce</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">CTR şimdi</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Konum kaybı</th>
 </tr></thead><tbody>${searchConsoleRows}</tbody></table>`
           : `<p style="color:#ddd6fe">Belirtilen eşikleri aşan sayfa düşüşü bulunamadı.</p>`
       }`
@@ -574,21 +574,21 @@ ${
       }</p>`
 }
 
-<h2 style="font-size:18px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px;margin-bottom:12px">
+<h2 style="font-size:18px;border-bottom:1px solid rgba(203, 213, 225, 0.06);padding-bottom:8px;margin-bottom:12px">
 Sorunlar (top 30)
 </h2>
 ${
   issueRows
     ? `<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="color:#94a3b8;text-align:left">
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Şiddet</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Sayfa</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Kural</th>
-<th style="padding:8px;border-bottom:1px solid rgba(255,255,255,0.06)">Detay</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Şiddet</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Sayfa</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Kural</th>
+<th style="padding:8px;border-bottom:1px solid rgba(203, 213, 225, 0.06)">Detay</th>
 </tr></thead><tbody>${issueRows}</tbody></table>`
     : `<p style="color:#ddd6fe">✅ Kritik sorun bulunamadı.</p>`
 }
 
-<hr style="border-color:rgba(255,255,255,0.06);margin:32px 0 16px">
+<hr style="border-color:rgba(203, 213, 225, 0.06);margin:32px 0 16px">
 <p style="color:#64748b;font-size:12px">Bu rapor XipSoft SEO Otomasyonu (Task 10) tarafından aylık Vercel Cron ile üretilmiştir.</p>
 </div></body></html>`;
 }

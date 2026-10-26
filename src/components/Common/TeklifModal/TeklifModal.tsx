@@ -1,39 +1,13 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, useEffect } from "react";
-import { X, Send, CheckCircle, Loader2, MessageCircle, Mail, Phone } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
 import TitleText from "@/components/Common/TitleText/TitleText";
 import { submitTeklifAction } from "@/app/_actions/teklif-actions";
-import { trackTeklifSubmit, trackTeklifOpen, trackWhatsAppClick } from "@/utils/analytics";
-
-// ── global state ──────────────────────────────────────────────────────────────
-type TeklifModalState = { open: boolean; service?: string };
-type Listener = (s: TeklifModalState) => void;
-const listeners = new Set<Listener>();
-let globalState: TeklifModalState = { open: false };
-
-export const teklifModal = {
-  open: (service?: string) => {
-    globalState = { open: true, service };
-    listeners.forEach((l) => l(globalState));
-    trackTeklifOpen(service);
-  },
-  close: () => {
-    globalState = { open: false };
-    listeners.forEach((l) => l(globalState));
-  },
-};
-
-function useTeklifModalState() {
-  const [state, setState] = useState(globalState);
-  useEffect(() => {
-    listeners.add(setState);
-    return () => { listeners.delete(setState); };
-  }, []);
-  return state;
-}
+import { trackTeklifSubmit, trackWhatsAppClick } from "@/utils/analytics";
+import { teklifModal, useTeklifModalState } from "./teklif-modal-store";
 
 type Step = "form" | "done";
 type ContactMethod = "whatsapp" | "email" | "telegram";
@@ -136,10 +110,10 @@ export default function TeklifModal() {
     `Merhaba XipSoft, ${form.service || "hizmetleriniz"} hakkında bilgi almak istiyorum. Adım: ${form.name}`
   )}`;
 
-  const CONTACT_OPTIONS: { id: ContactMethod; label: string; icon: typeof Mail; desc: string }[] = [
-    { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, desc: "Hızlı yanıt" },
-    { id: "email",    label: "E-posta",  icon: Mail,          desc: "info@xipsoft.net" },
-    { id: "telegram", label: "Telegram", icon: Send,          desc: "@xipsoft" },
+  const CONTACT_OPTIONS: { id: ContactMethod; label: string; icon: string; desc: string }[] = [
+    { id: "whatsapp", label: "WhatsApp", icon: "message-circle", desc: "Hızlı yanıt" },
+    { id: "email",    label: "E-posta",  icon: "mail",           desc: "info@xipsoft.net" },
+    { id: "telegram", label: "Telegram", icon: "send",           desc: "@xipsoft" },
   ];
 
   return (
@@ -168,7 +142,7 @@ export default function TeklifModal() {
               <button onClick={teklifModal.close}
                 aria-label="Teklif formunu kapat"
                 className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors">
-                <X className="w-4 h-4" aria-hidden="true" />
+                <XipIcon name="x" className="w-4 h-4" aria-hidden="true" />
               </button>
 
               <div className="p-6 pt-8">
@@ -178,7 +152,7 @@ export default function TeklifModal() {
                   {step === "form" && (
                     <motion.div key="form" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
                       <div className="mb-5">
-                        <TitleText tag="h2" variant="section" className="text-xl mb-1">{t("title")}</TitleText>
+                        <TitleText tag="h2" variant="brand" className="text-xl mb-1">{t("title")}</TitleText>
                         <p className="text-zinc-500 text-sm">{t("subtitle")}</p>
                       </div>
 
@@ -242,7 +216,7 @@ export default function TeklifModal() {
                         <div>
                           <label className={labelCls}>Size nasıl ulasalım?</label>
                           <div className="grid grid-cols-3 gap-2">
-                            {CONTACT_OPTIONS.map(({ id, label, icon: Icon, desc }) => (
+                            {CONTACT_OPTIONS.map(({ id, label, icon, desc }) => (
                               <button key={id} type="button"
                                 onClick={() => setContactMethod(id)}
                                 className={cn(
@@ -251,7 +225,7 @@ export default function TeklifModal() {
                                     ? "border-violet-500 bg-violet-500/10 text-white"
                                     : "border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-zinc-600"
                                 )}>
-                                <Icon className="w-4 h-4" />
+                                <XipIcon name={icon} className="w-4 h-4" />
                                 <span>{label}</span>
                                 <span className="text-[10px] text-zinc-600">{desc}</span>
                               </button>
@@ -261,7 +235,7 @@ export default function TeklifModal() {
 
                         <button type="submit" disabled={loading}
                           className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-cyan-400 to-violet-500 hover:from-cyan-300 hover:to-violet-400 transition-all disabled:opacity-60">
-                          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                          {loading ? <XipIcon name="loader" className="w-4 h-4 animate-spin" glow="strong" /> : <XipIcon name="send" className="w-4 h-4" glow="strong" />}
                           {loading ? t("submitting") : t("submit")}
                         </button>
 
@@ -279,7 +253,7 @@ export default function TeklifModal() {
                     <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                       className="flex flex-col items-center gap-5 py-6 text-center">
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, delay: 0.1 }}>
-                        <CheckCircle className="w-14 h-14 text-emerald-400" />
+                        <XipIcon name="check-circle" className="w-14 h-14 text-emerald-400" glow="strong" />
                       </motion.div>
                       <div>
                         <h3 className="-display font-bold text-xl text-white mb-2">Talebiniz Alındı!</h3>
@@ -310,21 +284,21 @@ export default function TeklifModal() {
                           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"
                             onClick={() => trackWhatsAppClick("teklif_modal")}
                             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white bg-emerald-600/20 border border-emerald-600/30 hover:bg-emerald-600/30 transition-all">
-                            <MessageCircle className="w-4 h-4 text-emerald-400" />
+                            <XipIcon name="message-circle" className="w-4 h-4 text-emerald-400" glow="none" />
                             WhatsApp'tan Yaz
                           </a>
                         )}
                         {contactMethod === "telegram" && (
                           <a href="https://t.me/xipsoft" target="_blank" rel="noopener noreferrer"
                             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white bg-blue-600/20 border border-blue-600/30 hover:bg-blue-600/30 transition-all">
-                            <Send className="w-4 h-4 text-blue-400" />
+                            <XipIcon name="send" className="w-4 h-4 text-blue-400" glow="none" />
                             Telegram'dan Yaz
                           </a>
                         )}
                         {contactMethod === "email" && (
                           <a href="mailto:info@xipsoft.net"
                             className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white bg-violet-600/20 border border-violet-600/30 hover:bg-violet-600/30 transition-all">
-                            <Mail className="w-4 h-4 text-violet-400" />
+                            <XipIcon name="mail" className="w-4 h-4 text-violet-400" glow="none" />
                             info@xipsoft.net
                           </a>
                         )}

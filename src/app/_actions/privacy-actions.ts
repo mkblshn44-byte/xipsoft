@@ -1,7 +1,16 @@
 "use server";
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { getServerActionContext } from "@/lib/api-guard";
+import QRCode from "qrcode";
+import {
+  TOTP_DIGITS,
+  TOTP_PERIOD_SECONDS,
+  decodeBase32,
+  generateTotpSecret,
+  verifyTotp,
+} from "@/lib/totp";
+import { decryptSecret, encryptSecret, isWrappedSecret } from "@/lib/secret-box";
 
 // Session'dan userId alır — client'tan userId kabul etmez
 async function getAuthenticatedUserId(): Promise<number | null> {
@@ -85,37 +94,25 @@ export async function enableTwoFactorAction(
   if (!userId) return { success: false, error: "Oturum açmanız gerekiyor" };
 
   try {
-    const crypto = await import("crypto");
-    // RFC 4648 base32 — TOTP uyumlu secret
-    const secretBytes = crypto.randomBytes(20);
-    const base32Chars = "ABCDEFgHIJKLMNOPQRSTUVWXYZ234567";
-    let secret = "";
-    for (let i = 0; i < secretBytes.length; i += 5) {
-      const c = secretBytes.slice(i, i + 5);
-      const [b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0] = c;
-      secret += base32Chars[(b0 >> 3) & 31];
-      secret += base32Chars[((b0 & 7) << 2) | ((b1 >> 6) & 3)];
-      secret += base32Chars[(b1 >> 1) & 31];
-      secret += base32Chars[((b1 & 1) << 4) | ((b2 >> 4) & 15)];
-      secret += base32Chars[((b2 & 15) << 1) | ((b3 >> 7) & 1)];
-      secret += base32Chars[(b3 >> 2) & 31];
-      secret += base32Chars[((b3 & 3) << 3) | ((b4 >> 5) & 7)];
-      secret += base32Chars[b4 & 31];
-    }
-    secret = secret.slice(0, 32);
+    const secret = generateTotpSecret();
 
     // Secret'ı DB'ye kaydet (henüz aktif degil — verifyTwoFactorAction'da aktif edilecek)
     await pool.query(
       `UPDATE users SET two_factor_secret = $1, two_factor_enabled = false, updated_at = NOW() WHERE id = $2`,
-      [secret, userId]
+      [encryptSecret(secret), userId]
     );
 
     const issuer = encodeURIComponent("XipSoft");
     const account = encodeURIComponent(`user-${userId}`);
-    const otpauthUrl = `otpauth://totp/${issuer}:${account}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`;
+    const otpauthUrl = `otpauth://totp/${issuer}:${account}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=${TOTP_DIGITS}&period=${TOTP_PERIOD_SECONDS}`;
+    // QR YERİNDE üretilir: üçüncü taraf QR servisine gitseydi secret + hesap
+    // adı HTTPS query olarak dışarıya sızardı (karşı taraf loglar).
+    const qrCodeUrl = await QRCode.toDataURL(otpauthUrl, { margin: 2, width: 240 });
 
-    return { success: true, secret, qrCodeUrl };
+    // `secret` bilinçli olarak döndürülmüyor: server action sonucu RSC payload'ı
+    // ile istemciye serialize edilir → düz metin TOTP anahtarı ağ/React log'unda
+    // görünür olurdu. Kurulum için yalnızca QR gerekiyor.
+    return { success: true, qrCodeUrl };
   } catch (err) {
     console.error("enableTwoFactorAction error:", err);
     return { success: false, error: "Sunucu hatası" };
@@ -143,41 +140,24 @@ export async function verifyTwoFactorAction(
       return { success: false, error: "2FA yapılandırması bulunamadı" };
     }
 
-    const secret = rows[0].two_factor_secret as string;
+    const stored = rows[0].two_factor_secret as string;
+    const secret = decryptSecret(stored);
 
-    // RFC 6238 TOTP dogrulama
-    const crypto = await import("crypto");
-    const timeStep = Math.floor(Date.now() / 1000 / 30);
-    let verified = false;
-
-    for (const offset of [-1, 0, 1]) {
-      const counter = timeStep + offset;
-      const counterBuf = Buffer.alloc(8);
-      counterBuf.writeBigInt64BE(BigInt(counter));
-
-      // Base32 decode
-      const base32Chars = "ABCDEFgHIJKLMNOPQRSTUVWXYZ234567";
-      const secretUpper = secret.toUpperCase().replace(/=+$/, "");
-      let bits = 0, value = 0;
-      const secretBytes: number[] = [];
-      for (const char of secretUpper) {
-        const idx = base32Chars.indexOf(char);
-        if (idx === -1) continue;
-        value = (value << 5) | idx;
-        bits += 5;
-        if (bits >= 8) {
-          secretBytes.push((value >> (bits - 8)) & 255);
-          bits -= 8;
-        }
-      }
-      const secretBuf = Buffer.from(secretBytes);
-      const hmac = crypto.createHmac("sha1", secretBuf).update(counterBuf).digest();
-      const off = hmac[hmac.length - 1]! & 0xf;
-      const otp = ((hmac.readUInt32BE(off) & 0x7fffffff) % 1_000_000).toString().padStart(6, "0");
-      if (otp === token) { verified = true; break; }
+    if (decodeBase32(secret) === null) {
+      return { success: false, error: "2FA yapılandırması bozuk, sıfırla" };
     }
 
-    if (!verified) return { success: false, error: "geçersiz dogrulama kodu" };
+    if (!verifyTotp(secret, token)) {
+      return { success: false, error: "geçersiz dogrulama kodu" };
+    }
+
+    // Eski düz metin satırları ilk doğrulamada sarılır: ayrı migrate koşusu gerekmez.
+    if (!isWrappedSecret(stored)) {
+      await pool.query(
+        `UPDATE users SET two_factor_secret = $1, updated_at = NOW() WHERE id = $2`,
+        [encryptSecret(secret), userId]
+      );
+    }
 
     await pool.query(
       `UPDATE users SET two_factor_enabled = true, updated_at = NOW() WHERE id = $1`,

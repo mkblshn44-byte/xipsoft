@@ -1,19 +1,27 @@
-import { displayFont, bodyFont, monoFont } from "@/fonts/fonts";
+import { displayFont, bodyFont, navbarFont } from "@/fonts/fonts";
 import { cn } from "@/utils";
+import { ldJson } from "@/lib/ld-json";
 import type { Metadata, Viewport } from "next";
-import APP_CONFIg, { BRAND, BRAND_COMPANY, SITE_URL, defaultFont } from "@/config/brand.config";
+import APP_CONFIG, {
+  BRAND,
+  BRAND_COLORS,
+  DEFAULT_OG_IMAGE_URL,
+  SITE_URL,
+  defaultFont,
+} from "@/config/brand.config";
 import Favicons from "@/components/Favicons/Favicons";
 // GoogleAnalytics kaldırıldı — AnalyticsScripts (site layout'ta lazyOnload) tek merkez
 // afterInteractive + lazyOnload çift yükleme → LCP olumsuz etkileniyordu
 import "@/styles/globals.scss";
 import "@/styles/home-lcp.css";
 import "@/styles/colors-glass.css";
-import IntlMessagesProvider from "@/components/Common/IntlProvider/IntlMessagesProvider";
-import { getLocale, getMessages } from "next-intl/server";
+import { routing } from "@/i18n/routing";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { AuctionProvider } from "@/context/AuctionContext";
+import { siteGraphSchema } from "@/lib/schema/site";
+import { gtagId as primarygtagId, metricaId } from "@/lib/analytics-config";
 
 // Next'in otomatik enjekte ettiği viewport meta'sı ile layout.tsx içindeki manuel
 // <meta name="viewport"> (viewport-fit=cover) çakışıyordu → çift `<meta>` tag'i.
@@ -24,131 +32,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const Og_IMAgE = {
-  url: `${SITE_URL}/media/xipsoft-seo.webp`,
+const OG_IMAGE = {
+  url: DEFAULT_OG_IMAGE_URL,
   width: 1200,
   height: 630,
   alt: BRAND.name,
-  type: "image/png",
-};
-
-const localBusinessSchema = {
-  "@context": "https://schema.org",
-  "@type": "ProfessionalService",
-  "@id": `${SITE_URL}/#localbusiness`,
-  name: BRAND.name,
-  url: SITE_URL,
-  image: `${SITE_URL}/media/xipsoft-seo.webp`,
-  description: APP_CONFIg.description,
-  telephone: BRAND_COMPANY.phone,
-  email: BRAND_COMPANY.email,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: BRAND_COMPANY.address,
-    addressLocality: BRAND_COMPANY.city,
-    postalCode: BRAND_COMPANY.postalCode,
-    addressCountry: BRAND_COMPANY.countryCode,
-  },
-  geo: {
-    "@type": "GeoCoordinates",
-    latitude: BRAND_COMPANY.geo.lat,
-    longitude: BRAND_COMPANY.geo.lng,
-  },
-  openingHoursSpecification: {
-    "@type": "OpeningHoursSpecification",
-    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    opens: "09:00",
-    closes: "18:00",
-  },
-  priceRange: "$$",
-  foundingDate: String(BRAND_COMPANY.foundingYear),
-  areaServed: [
-    { "@type": "City", name: "İstanbul" },
-    { "@type": "Country", name: "Turkey" },
-  ],
-  serviceArea: {
-    "@type": "GeoCircle",
-    geoMidpoint: {
-      "@type": "GeoCoordinates",
-      latitude: BRAND_COMPANY.geo.lat,
-      longitude: BRAND_COMPANY.geo.lng,
-    },
-    geoRadius: "50000",
-  },
-  parentOrganization: { "@id": `${SITE_URL}/#organization` },
-};
-
-// WebSite şeması — SiteSearch + Sitelinks SearchBox
-const webSiteSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "@id": `${SITE_URL}/#website`,
-  name: BRAND.name,
-  url: SITE_URL,
-  description: APP_CONFIg.description,
-  inLanguage: ["tr-TR", "en-US"],
-  publisher: { "@id": `${SITE_URL}/#organization` },
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${SITE_URL}/blog?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
-};
-
-// Organization şeması — sosyal medya profilleri ile
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "@id": `${SITE_URL}/#organization`,
-  name: BRAND.name,
-  legalName: BRAND_COMPANY.legalName,
-  url: SITE_URL,
-  logo: {
-    "@type": "ImageObject",
-    url: `${SITE_URL}/media/xipsoft-seo.webp`,
-    width: 1200,
-    height: 630,
-  },
-  foundingDate: String(BRAND_COMPANY.foundingYear),
-  numberOfEmployees: { "@type": "QuantitativeValue", value: "20-50" },
-  description: APP_CONFIg.description,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: BRAND_COMPANY.address,
-    addressLocality: BRAND_COMPANY.city,
-    addressRegion: "İstanbul",
-    postalCode: BRAND_COMPANY.postalCode,
-    addressCountry: BRAND_COMPANY.countryCode,
-  },
-  areaServed: [
-    { "@type": "Country", name: "Turkey" },
-    { "@type": "Country", name: "Azerbaijan" },
-    { "@type": "Country", name: "Germany" },
-  ],
-  contactPoint: [
-    {
-      "@type": "ContactPoint",
-      telephone: BRAND_COMPANY.phone,
-      email: BRAND_COMPANY.email,
-      contactType: "customer service",
-      areaServed: "TR",
-      availableLanguage: ["Turkish", "English"],
-    },
-    {
-      "@type": "ContactPoint",
-      email: BRAND_COMPANY.email,
-      contactType: "technical support",
-      areaServed: "TR",
-    },
-  ],
-  sameAs: [
-    "https://www.linkedin.com/company/xipsoft",
-    "https://github.com/xipsoft",
-    "https://twitter.com/xipsoft",
-  ],
+  type: "image/webp",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -156,15 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(SITE_URL),
     // Template kısaltıldı: uzun BRAND.name yerine "XipSoft" — SERP'te title taşması önlenir
     // Google title'ı 50-60 karakter civarında kesiyor; kısa suffix daha fazla içerik karakterine yer bırakır
-    title: { default: APP_CONFIg.title, template: `%s | XipSoft` },
-    description: APP_CONFIg.description,
-    keywords: [
-      "web yazılım", "mobil uygulama geliştirme", "siber Güvenlik",
-      "seo hizmetleri", "masaüstü yazılım", "dijital pazarlama",
-      "xipsoft", "yazılım teknoloji sistemleri",
-      "istanbul yazılım şirketi", "web tasarım istanbul",
-      "next.js geliştirme", "react geliştirme", "flutter mobil uygulama",
-    ],
+    title: { default: APP_CONFIG.title, template: `%s | XipSoft` },
+    description: APP_CONFIG.description,
     authors: [{ name: BRAND.name, url: SITE_URL }],
     creator: BRAND.name,
     publisher: BRAND.name,
@@ -186,17 +68,17 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       type: "website", url: SITE_URL,
-      title: APP_CONFIg.title, description: APP_CONFIg.description,
+      title: APP_CONFIG.title, description: APP_CONFIG.description,
       siteName: BRAND.name, locale: "tr_TR",
       alternateLocale: ["en_US"],
-      images: [Og_IMAgE],
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       site: "@xipsoft",
       creator: "@xipsoft",
-      title: APP_CONFIg.title, description: APP_CONFIg.description,
-      images: [Og_IMAgE],
+      title: APP_CONFIG.title, description: APP_CONFIG.description,
+      images: [OG_IMAGE],
     },
     // Google Search Console doğrulama
     verification: {
@@ -206,22 +88,34 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [locale, messages] = await Promise.all([
-    getLocale(),
-    getMessages(),
-  ]);
-
+// ISR/CDN cache için kök layout TALEPSİZ (request-read'siz) olmalı.
+//
+// Eski hali: `await Promise.all([getLocale(), getMessages()])`. İkisi de
+// src/i18n/request.ts içindeki `requestLocale`'u okur; o değer middleware'in
+// set ettiği `x-next-intl-locale` header'ından gelir → header okuması = route
+// ağacının TAMAMI dinamik opt-in. Sonuç: (site)/page.tsx'teki
+// `export const revalidate = 300` hiçbir zaman cache'lenebilir yanıt üretemiyordu
+// (prod'da ölçüldü: `Cache-Control: private, no-cache, no-store`,
+// `X-Vercel-Cache: MISS`).
+//
+// Provider artık src/app/[locale]/layout.tsx içinde (setRequestLocale'dan
+// SONRA), yani statik render bozulmadan locale'e özel messages üretiliyor —
+// prerender çıktısı doğrulandı: /en "Software Development", /de "Entwicklung".
+//
+// `<html lang>` bilinçli olarak sabit: Next.js'te kök layout, kendi segmentinin
+// ALTINDAKİ dinamik parametreleri (burada [locale]) almaz — `params` boş kalır.
+// Locale'e özgü `lang`'u IntlMessagesProvider hydrate sonrası eşitliyor.
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const cls = cn(
     displayFont.variable,
     bodyFont.variable,
-    monoFont.variable,
+    navbarFont.variable,
     "min-h-screen scroll-smooth overflow-x-hidden",
   );
 
   return (
     <html
-      lang={locale}
+      lang={routing.defaultLocale}
       data-theme="obsidian"
       data-site-font={defaultFont}
       className="dark overflow-x-hidden"
@@ -229,43 +123,49 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head suppressHydrationWarning>
         <Favicons />
+        {/* manifest: non-blocking — tarayıcı onu critical path dışında işler */}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#a78bfa" />
-        {/* NOT: res.cloudinary.com preconnect'i KALDIRILDI. Blog/ürün görselleri
-            next/image ile `/_next/image` üzerinden servis ediliyor; tarayıcı
-            res.cloudinary.com'a doğrudan bağlanmadığı için bu preconnect
-            kullanılmıyordu (PSI: "Kullanılmayan ön bağlantı"). */}
-        {/* DNS Prefetch — preconnect açamadığımız ikincil kaynaklar */}
+        <meta name="theme-color" content={BRAND_COLORS.themeColor} />
+        {/* DNS prefetch for third-parties loaded later.
+            preconnect YALNIZCA gerçekten bağlantı kurulacak host için: gaId
+            null iken (dev/preview veya geçersiz GA id) GTM script'i hiç
+            yüklenmiyor, boş el sıkışma Lighthouse "unused preconnect"
+            uyarısı veriyordu. Karar AnalyticsScripts ile aynı modülden
+            gelir (src/lib/analytics-config.ts). */}
+        {primarygtagId && (
+          <link rel="preconnect" href="https://www.googletagmanager.com" />
+        )}
+        {metricaId && <link rel="preconnect" href="https://mc.yandex.ru" />}
         <link rel="dns-prefetch" href="//www.google-analytics.com" />
+        <link rel="dns-prefetch" href="//pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="//challenges.cloudflare.com" />
+        {/* NOT: https://xipsoft.net preconnect kaldırıldı — same-origin;
+            Lighthouse "unused preconnect" uyarısı veriyordu (±0 fayda). */}
         <link rel="alternate" type="application/rss+xml" title="XipSoft Blog RSS" href="/blog/feed.xml" />
+        {/* Site geneli varlık grafiği (Organization + WebSite + LocalBusiness) —
+            tek @graph bloğu, tek kaynak: `@/lib/schema/site`. Sayfalar bu
+            düğümleri tekrar basmaz; yalnızca sayfaya özel şemalarını ekler.
+
+            `suppressHydrationWarning`: Bazı tarayıcı eklentileri (ör. reklam
+            engelleyiciler) bu <script> etiketine `src` ekleyip içeriğini
+            boşaltıyor → React sahte "hydration mismatch" uyarısı basıyordu.
+            İçerik sunucuda deterministik üretildiği için bu uyarı bastırılır. */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: ldJson(siteGraphSchema()) }}
         />
       </head>
       <body className={cls} suppressHydrationWarning>
         {/* GoogleAnalytics buradan kaldırıldı — AnalyticsScripts (lazyOnload) site layout'ta tek noktadan yönetiliyor */}
-        {/* Dil sırası önemli: LanguageProvider (localStorage locale) → IntlMessagesProvider
-            (locale'e göre messages json'unu istemci tarafında yükler) → geri kalan provider'lar */}
+        {/* Dil sırası: LanguageProvider URL'den locale'i türetir; IntlMessagesProvider
+            locale'e göre messages paketini yükler — o provider artık [locale]/layout'ta. */}
         <LanguageProvider>
-          <IntlMessagesProvider serverLocale={locale} serverMessages={messages}>
-            <AuthProvider>
-              <CartProvider>
-                <AuctionProvider>
-                  {children}
-                </AuctionProvider>
-              </CartProvider>
-            </AuthProvider>
-          </IntlMessagesProvider>
+          <AuthProvider>
+            <CartProvider>
+              <AuctionProvider>{children}</AuctionProvider>
+            </CartProvider>
+          </AuthProvider>
         </LanguageProvider>
       </body>
     </html>

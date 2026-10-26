@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, MessageCircle } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import MarkdownContent from "@/components/Common/MarkdownContent/MarkdownContent";
 import TitleText from "@/components/Common/TitleText/TitleText";
 import FaqSection from "@/components/seo/FaqSection";
-import type { CentralLocation, PublishedPage } from "@/lib/pages";
+import type { CentralLocation, PublishedPage } from "@/lib/pages/types";
+import { servicePath } from "@/lib/content-path";
 
 export default function PageTemplate({ page, location }: { page: PublishedPage; location: CentralLocation }) {
   const lokalSss = page.lokalSss ?? [];
@@ -14,7 +15,7 @@ export default function PageTemplate({ page, location }: { page: PublishedPage; 
   // Generate breadcrumb items
   const breadcrumbs = [
     { label: "Ana Sayfa", href: "/" },
-    { label: location.serviceTitle, href: `/hizmetler/${location.serviceSlug}` },
+    { label: location.serviceTitle, href: servicePath(location.serviceSlug) },
     { label: location.locationName, href: undefined },
   ];
 
@@ -62,11 +63,11 @@ export default function PageTemplate({ page, location }: { page: PublishedPage; 
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Link
-              href="/teklif"
-              className="inline-flex items-center gap-2 rounded-btn px-6 py-3 text-body-md font-semibold text-white bg-brand-secondary hover:bg-brand-secondary-light active:bg-brand-secondary-dark shadow-btn hover:shadow-btn-hover transition-all duration-normal"
+              href="/contact-us"
+              className="site-cta-primary inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold shadow-[0_6px_20px_rgba(167, 139, 250,0.14)] transition-all duration-200 hover:-translate-y-0.5"
             >
               Teklif Al
-              <ArrowRight className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+              <XipIcon name="arrow-right" glow="strong" halo="red" className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
             </Link>
             <a
               href="https://wa.me/905444548444"
@@ -74,7 +75,7 @@ export default function PageTemplate({ page, location }: { page: PublishedPage; 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-btn border-2 border-brand-secondary px-6 py-3 text-body-md font-semibold text-brand-secondary hover:bg-brand-secondary hover:text-white transition-all duration-normal"
             >
-              <MessageCircle className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+              <XipIcon name="message-circle" glow="soft" className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
               Bize Ulaşın
             </a>
           </div>
@@ -103,7 +104,7 @@ export default function PageTemplate({ page, location }: { page: PublishedPage; 
       {lokalSss.length > 0 && (
         <section className="px-container sm:px-6 lg:px-8 py-section-lg lg:py-section-xl bg-brand-neutral-bgAlt">
           <div className="mx-auto max-w-3xl">
-            <TitleText tag="h2" variant="section" className="mb-10 text-center text-brand-text-primary">
+            <TitleText tag="h2" variant="brand" className="mb-10 text-center text-brand-text-primary">
               Sıkça Sorulan Sorular
             </TitleText>
             <FaqSection items={lokalSss} showHeading={false} />

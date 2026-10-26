@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Turnstile } from "@marsidev/react-turnstile";
 import type { TurnstileInstance } from "@marsidev/react-turnstile";
-import { Mail, Lock, User, UserPlus, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { registerAction } from "@/app/_actions/auth/register";
 
 const IS_LOCAL_DEV = process.env.NODE_ENV === "development";
@@ -78,7 +78,7 @@ export default function RegisterPageClient() {
       {/* ── Sağ: Register formu ── */}
       <div className="relative flex flex-col w-full lg:w-1/2 xl:w-2/5 bg-zinc-950 overflow-y-auto">
         {/* Arka plan desen */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(124,58,237,0.12)_0%,_transparent_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(156,124,34,0.12)_0%,_transparent_60%)] pointer-events-none" />
 
         {/* Geri butonu */}
         <div className="hidden lg:flex px-8 pt-8 z-10">
@@ -86,7 +86,7 @@ export default function RegisterPageClient() {
             href="/"
             className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <XipIcon name="arrow-left" className="w-4 h-4" />
             Ana sayfaya dön
           </Link>
         </div>
@@ -118,7 +118,7 @@ export default function RegisterPageClient() {
                   Kullanıcı Adı
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="user" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type="text"
                     value={displayName}
@@ -137,7 +137,7 @@ export default function RegisterPageClient() {
                   Email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="mail" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type="email"
                     value={email}
@@ -156,7 +156,7 @@ export default function RegisterPageClient() {
                   Şifre
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="lock" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -172,7 +172,7 @@ export default function RegisterPageClient() {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <XipIcon name="eye-off" className="w-4 h-4" /> : <XipIcon name="eye" className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -183,7 +183,7 @@ export default function RegisterPageClient() {
                   Şifre Tekrar
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="lock" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
@@ -199,7 +199,7 @@ export default function RegisterPageClient() {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
                     tabIndex={-1}
                   >
-                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirm ? <XipIcon name="eye-off" className="w-4 h-4" /> : <XipIcon name="eye" className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -223,12 +223,12 @@ export default function RegisterPageClient() {
               <button
                 type="submit"
                 disabled={loading || (!IS_LOCAL_DEV && !turnstileToken)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-900/30"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-space-950 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-900/30"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <UserPlus className="w-4 h-4" />
+                  <XipIcon name="user-plus" className="w-4 h-4" glow="strong" />
                 )}
                 {loading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
               </button>

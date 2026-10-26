@@ -3,6 +3,7 @@
  */
 
 import { SITE_URL } from "@/lib/site-url";
+import { DEFAULT_OG_IMAGE_URL } from "@/config/brand.config";
 import { SCHEMA_CONTEXT } from "./shared";
 
 export function BlogSchemaFromDb(post: {
@@ -74,14 +75,14 @@ export function BlogSchemaFromDb(post: {
           }),
         }
       : undefined,
-    image: post.image || `${SITE_URL}/media/xipsoft-seo.webp`,
+    image: post.image || DEFAULT_OG_IMAGE_URL,
     mainEntityOfPage: { "@type": "WebPage", "@id": `${pageUrl}#webpage` },
     publisher: {
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
       name: "XipSoft Yazılım ve Teknoloji Sistemleri",
       url: SITE_URL,
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/media/xipsoft-seo.webp` },
+      logo: { "@type": "ImageObject", url: DEFAULT_OG_IMAGE_URL },
     },
     isPartOf: { "@id": `${SITE_URL}/blog#blog` },
     // Task 13: E-E-A-T citations — her bir dış kaynak CreativeWork olarak şemaya eklenir

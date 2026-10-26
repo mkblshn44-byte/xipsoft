@@ -1,212 +1,262 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
-import { Server, Globe, Smartphone, Cloud, Database, Wrench } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { PALETTE } from "@/config/palette";
 import IceButton from "@/components/Ui/IceButton/IceButton";
 import TitleText from "@/components/Common/TitleText/TitleText";
-import type { LucideIcon } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 
-// ─── Renk Sabitleri — tek kaynak ──────────────────────────────────────────
-// Kartlar V (mor) ve C (cyan) arasında dönüşümlü renk alır.
-const V = PALETTE.neon[500];  // #a78bfa
-const C = PALETTE.accent.cyan; // #ddd6fe
+// ─── Renk Sabitleri ────────────────────────────────────────────────────────
+const V = PALETTE.neon[500];
+const C = PALETTE.accent.cyan;
 
-// ─── Veri ──────────────────────────────────────────────────────────────────
-// color: V veya C — başka renk yok.
-const STACK = [
+// ─── Teknoloji Yığını Veri Yapısı (Büyük Kart + Rozet Odaklı) ───────────────
+interface TechCardData {
+  name: string;
+  badge: string;
+  svgIcon: React.ReactNode;
+}
+
+interface TechCategory {
+  title: string;
+  color: string;
+  items: TechCardData[];
+}
+
+const TECH_CATEGORIES: TechCategory[] = [
   {
-    icon: Globe      as LucideIcon,
-    color: C,
-    label: "Frontend",
-    items: ["React", "Next.js", "Vue", "Stencil", "PWA", "WebComponents"],
-  },
-  {
-    icon: Server     as LucideIcon,
+    title: "MOBİL",
     color: V,
-    label: "Backend",
-    items: ["Node.js", "Python", "Django", "FastAPI", "Laravel", "REST / GraphQL"],
+    items: [
+      {
+        name: "Flutter",
+        badge: "Pixel-perfect UI",
+        svgIcon: (
+          <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M14.314 0L2.3 12 6.1 15.8 21.9 0h-7.586z" fill="#54C5F8" />
+            <path d="M14.214 11.2L8.5 16.9l3.8 3.8 3.8-3.8 3.8 3.8 3.8-3.8-9.486-5.7z" fill="#01579B" />
+            <path d="M12.3 20.7l3.8 3.3h7.6l-7.6-7.1-3.8 3.8z" fill="#29B6F6" />
+          </svg>
+        ),
+      },
+      {
+        name: "React Native",
+        badge: "Native UI",
+        svgIcon: (
+          <svg className="w-16 h-16" viewBox="-11.5 -10.23174 23 20.46348" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="0" cy="0" r="2.05" fill="#61DAFB" />
+            <g stroke="#61DAFB" strokeWidth="1" fill="none">
+              <ellipse rx="11" ry="4.2" />
+              <ellipse rx="11" ry="4.2" transform="rotate(60)" />
+              <ellipse rx="11" ry="4.2" transform="rotate(120)" />
+            </g>
+          </svg>
+        ),
+      },
+    ],
   },
   {
-    icon: Smartphone as LucideIcon,
+    title: "FRONTEND",
     color: C,
-    label: "Mobil",
-    items: ["Flutter", "React Native", "iOS", "Android", "Offline-first", "SSL Pinning"],
+    items: [
+      {
+        name: "Next.js",
+        badge: "App Router & ISR",
+        svgIcon: (
+          <svg className="w-16 h-16 text-white" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="90" cy="90" r="85" fill="black" stroke="white" strokeWidth="6" />
+            <path d="M149.508 157.52L69.017 54H54V126H67.5V70.898L136.2 159.208C140.916 158.858 145.36 158.28 149.508 157.52Z" fill="white" />
+            <path d="M115.5 54H129V126H115.5V54Z" fill="white" />
+          </svg>
+        ),
+      },
+      {
+        name: "React",
+        badge: "Server Components",
+        svgIcon: (
+          <svg className="w-16 h-16" viewBox="-11.5 -10.23174 23 20.46348" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="0" cy="0" r="2.05" fill="#61DAFB" />
+            <g stroke="#61DAFB" strokeWidth="1" fill="none">
+              <ellipse rx="11" ry="4.2" />
+              <ellipse rx="11" ry="4.2" transform="rotate(60)" />
+              <ellipse rx="11" ry="4.2" transform="rotate(120)" />
+            </g>
+          </svg>
+        ),
+      },
+    ],
   },
   {
-    icon: Cloud      as LucideIcon,
+    title: "BACKEND",
     color: V,
-    label: "Altyapı",
-    items: ["Docker", "AWS", "GCP", "Vercel", "Nginx", "CI/CD"],
+    items: [
+      {
+        name: "Node.js",
+        badge: "High-throughput API",
+        svgIcon: (
+          <svg className="w-16 h-16" viewBox="0 0 256 289" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#5FA04E" d="M128 0L0 73.9v141.2L128 289l128-73.9V73.9L128 0z" />
+          </svg>
+        ),
+      },
+      {
+        name: "Python",
+        badge: "AI & Fast Processing",
+        svgIcon: (
+          <svg className="w-16 h-16" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#3776AB" d="M63.2 2c-15.5 0-24.8 6.8-24.8 20.1v14.7h25.3v3.6H17.8C4.7 40.4 0 48.9 0 64.3c0 15.2 5.1 23.9 18.2 23.9h10.8V74.8c0-14.8 12.6-27.1 27.6-27.1h25.1V22.1C81.7 8.8 78.7 2 63.2 2z" />
+            <path fill="#FFD43B" d="M64.8 126c15.5 0 24.8-6.8 24.8-20.1V91.2H64.3v-3.6h25.9c13.1 0 17.8-8.5 17.8-23.9 0-15.2-5.1-23.9-18.2-23.9H99v13.4c0 14.8-12.6 27.1-27.6 27.1H46.3v25.6c0 13.3 3 20.1 18.5 20.1z" />
+          </svg>
+        ),
+      },
+    ],
   },
-  {
-    icon: Database   as LucideIcon,
-    color: C,
-    label: "Veritabanı",
-    items: ["PostgreSQL", "Redis", "MongoDB", "Kafka", "RabbitMQ", "Sharding"],
-  },
-  {
-    icon: Wrench     as LucideIcon,
-    color: V,
-    label: "Araçlar",
-    items: ["Git", "GitHub Actions", "Sentry", "Firebase", "OWASP", "SIEM"],
-  },
-] as const;
+];
 
-const ENTRY_DIRS = ["left", "right", "top", "left", "right", "top"] as const;
+/**
+ * Şerit verisi: kategori kartları TEK sıraya düzleştirilir. Akış artık grup
+ * satırları hâlinde değil, yan yana sağdan sola aktığı için kategori başlığı ve
+ * rengi her kartın üstündeki rozete taşınır (grup bilgisi kaybolmaz).
+ */
+type TechStripItem = TechCardData & { category: string; color: string };
 
-// ─── Tek Kart ──────────────────────────────────────────────────────────────
+const TECH_STRIP: TechStripItem[] = TECH_CATEGORIES.flatMap((category) =>
+  category.items.map((item) => ({
+    ...item,
+    category: category.title,
+    color: category.color,
+  })),
+);
 
-function StackCard({ group, index }: { group: (typeof STACK)[number]; index: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry?.isIntersecting) { setVisible(true); observer.disconnect(); } },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  const Icon = group.icon;
-  const c = group.color;
-
-  const dir = ENTRY_DIRS[index];
-  const initial =
-    dir === "left"  ? { opacity: 0, x: -32, y: 12, scale: 0.97 }
-    : dir === "right" ? { opacity: 0, x: 32,  y: 12, scale: 0.97 }
-    :                   { opacity: 0, x: 0,   y: -28, scale: 0.97 };
+// ─── Teknoloji Kart Bileşeni ────────────────────────────────────────────────
+function BigTechCard({ item }: { item: TechStripItem }) {
+  const { color } = item;
 
   return (
-    <motion.div
-      ref={ref}
-      initial={initial}
-      animate={visible ? { opacity: 1, x: 0, y: 0, scale: 1 } : initial}
-      transition={{ duration: 0.7, delay: visible ? index * 0.06 : 0, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative"
+    <div
+      className="home-liquid-glass tech-card-reveal group relative flex w-[248px] shrink-0 flex-col items-center justify-center overflow-hidden rounded-3xl border border-white/[0.09] px-6 pb-8 pt-14 text-center shadow-[0_8px_32px_rgba(0,0,0,0.37)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-white/20 sm:w-[268px]"
+      style={{
+        background: `radial-gradient(ellipse at 50% 110%, ${color}12, transparent 65%), linear-gradient(145deg, rgba(255,255,255,0.045), rgba(9,10,24,0.84) 70%)`,
+      }}
     >
-      {/* Liquid glass kart */}
-      <div className="relative flex flex-col gap-4 p-6 rounded-2xl overflow-hidden transition-all duration-500 bg-white/[0.02] backdrop-blur-md border border-white/[0.06] shadow-[0_4px_24px_rgba(2,6,23,0.14)] hover:-translate-y-1.5 hover:border-white/[0.11] hover:shadow-[0_8px_40px_rgba(2,6,23,0.22)]">
+      {/* Kategori Rozeti — grup başlığı şeride taşındı */}
+      <span
+        className="absolute left-5 top-5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest"
+        style={{ color, background: `${color}14`, border: `1px solid ${color}33` }}
+      >
+        {item.category}
+      </span>
 
-        {/* Hover üst kenar parlaması */}
-        <div
-          className="absolute inset-x-0 top-0 h-[1.5px] rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{ background: `linear-gradient(90deg, transparent, ${c}80, transparent)` }}
-        />
+      {/* Üst Vurgu Çizgisi */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
+      />
 
-        {/* Hover iç glow */}
-        <div
-          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none rounded-2xl"
-          style={{ background: `radial-gradient(ellipse 90% 55% at 50% 0%, ${c}12, transparent 68%)` }}
-        />
+      {/* Arka Plan Glow */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none rounded-3xl"
+        style={{ background: `radial-gradient(circle at 50% 50%, ${color} 0%, transparent 70%)` }}
+      />
 
-        {/* İkon + başlık */}
-        <div className="flex items-center gap-3 relative z-10">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105"
-            style={{ background: `${c}10`, border: `1px solid ${c}25` }}
-          >
-            <Icon className="w-5 h-5" style={{ color: c }} strokeWidth={1.5} />
-          </div>
-          <span
-            className="text-xs font-bold uppercase tracking-widest transition-colors duration-300"
-            style={{ color: `${c}cc` }}
-          >
-            {group.label}
-          </span>
-        </div>
-
-        {/* Ayraç */}
-        <div
-          className="h-px w-full opacity-20 relative z-10"
-          style={{ background: `linear-gradient(90deg, ${c}40, transparent)` }}
-        />
-
-        {/* Teknoloji badge'leri */}
-        <div className="flex flex-wrap gap-1.5 relative z-10">
-          {group.items.map((item) => (
-            <span
-              key={item}
-              className="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all duration-300 bg-white/[0.04] border border-white/[0.06] text-zinc-500 group-hover:text-zinc-300 group-hover:bg-white/[0.06] group-hover:border-white/[0.10]"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-
-        {/* Alt köşe dekor */}
-        <div
-          className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none blur-2xl"
-          style={{ background: c }}
-        />
+      {/* İkon / Logo */}
+      <div className="relative mb-4 transform transition-transform duration-500 group-hover:scale-110 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)] [&_svg]:h-14 [&_svg]:w-14 sm:[&_svg]:h-16 sm:[&_svg]:w-16">
+        {item.svgIcon}
       </div>
-    </motion.div>
+
+      {/* Teknoloji Başlığı */}
+      <h3 className="text-xl font-bold text-white mb-3 tracking-tight sm:text-2xl">
+        {item.name}
+      </h3>
+
+      {/* Onay Rozeti */}
+      <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.1] text-xs font-mono text-zinc-300">
+        <XipIcon name="check-circle" glow="soft" className="w-4 h-4 text-emerald-400 shrink-0" />
+        <span>{item.badge}</span>
+      </div>
+    </div>
   );
 }
 
-// ─── Ana bileşen ───────────────────────────────────────────────────────────
-
+// ─── Ana Bölüm ──────────────────────────────────────────────────────────────
 export default function TechStackSection() {
-  const headerRef = useRef<HTMLDivElement>(null);
-  const [headerVisible, setHeaderVisible] = useState(false);
   const t = useTranslations("home.techStack");
 
-  useEffect(() => {
-    const el = headerRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry?.isIntersecting) { setHeaderVisible(true); observer.disconnect(); } },
-      { threshold: 0.2 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  // Sabit hız: kart başına ~4,5 sn (en yavaş 28 sn) — `TechMarquee` ile aynı kural.
+  const durationSeconds = Math.max(28, TECH_STRIP.length * 4.5);
 
   return (
-    <section className="py-16 lg:py-24 relative overflow-hidden px-4 sm:px-6 max-w-full">
-
+    <section className="py-16 lg:py-24 relative">
       {/* Başlık */}
-      <motion.div
-        ref={headerRef}
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={headerVisible ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <TitleText tag="h2" variant="silver" className="mb-3">
-          {t("title")}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center mb-16 home-reveal">
+        <TitleText tag="h2" variant="brand" className="mb-4">
+          TEKNOLOJİ YIĞINIMIZ
         </TitleText>
-        <p className="text-ink-muted text-base max-w-xl mx-auto">{t("subtitle")}</p>
-      </motion.div>
-
-      {/* 3×2 grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
-        {STACK.map((group, i) => (
-          <StackCard key={group.label} group={group} index={i} />
-        ))}
+        <p className="text-ink-muted text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+          Endüstri standardı araçlarla, projenize en uygun teknolojiyi seçiyor ve uyguluyoruz.
+        </p>
       </div>
 
-      {/* CTA */}
-      <motion.p
-        className="text-center mt-12 text-ink-muted text-sm"
-        initial={{ opacity: 0 }}
-        animate={headerVisible ? { opacity: 1 } : {}}
-        transition={{ delay: 0.5 }}
-      >
-        {t("cta")}{" "}
-        <IceButton label="ücretsiz teklif alın" size="sm" className="inline-flex" />
-      </motion.p>
+      {/* ── TEKNOLOJİ ŞERİDİ ───────────────────────────────────────────────────
+          Kartlar yan yana TEK sırada durur ve sağdan sola sonsuz akar.
+          Akış saf CSS (`animate-tech-marquee`, bkz. tailwind.config.ts): JS
+          timer/kuyruk yok → ana thread boş kalır, içerik JS kapalıyken de akar.
+          Track iki kopyadan oluşur ve -50% kaydırılır → dikişsiz döngü; kopya
+          `aria-hidden` olduğu için ekran okuyucu içeriği BİR KEZ duyar.
+          Üzerine gelince akış durur; incelemek isteyen okumaya devam edebilir.
+          ≤768px'te globals.scss tüm animasyonları söndürür → şerit sarılı
+          statik ızgaraya döner ve kopya gizlenir (aksi hâlde taşan kartlar
+          erişilmez kalırdı). Tam genişlik (full-bleed) için üst kapsayıcıda
+          `overflow-hidden` YOKTUR; kırpma şeridin kendi kabında yapılır. */}
+      <div className="relative ml-[50%] w-screen -translate-x-1/2 overflow-hidden">
+        {/* DİKKAT: track'te `gap` YOK. İki kopya kendi iç boşluğunu (`gap-6`) ve
+            aradaki boşluğu (`pr-6`) taşır; track'e gap eklenirse -50% kaydırma
+            bir turu tam kapatmaz ve her döngüde ~12px zıplama olur. */}
+        <div
+          className="flex w-max animate-tech-marquee py-2 hover:[animation-play-state:paused] max-md:w-full max-md:flex-wrap max-md:justify-center max-md:animate-none motion-reduce:w-full motion-reduce:flex-wrap motion-reduce:animate-none motion-reduce:justify-center"
+          style={{ animationDuration: `${durationSeconds}s` }}
+        >
+          <div className="flex shrink-0 gap-6 pr-6 max-md:w-full max-md:flex-wrap max-md:justify-center">
+            {TECH_STRIP.map((item) => (
+              <BigTechCard key={item.name} item={item} />
+            ))}
+          </div>
 
-      {/* Ambient arka plan */}
+          {/* Kopya şerit — yalnızca dikişsiz akış için. */}
+          <div
+            aria-hidden="true"
+            className="flex shrink-0 gap-6 pr-6 max-md:hidden motion-reduce:hidden"
+          >
+            {TECH_STRIP.map((item) => (
+              <BigTechCard key={`echo-${item.name}`} item={item} />
+            ))}
+          </div>
+        </div>
+
+        {/* Kenar solmaları: kartlar viewport kenarında sert kesilmesin.
+            Sarılı (mobil / reduced-motion) modda içeriği kestikleri için kapalı. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 max-md:hidden"
+          style={{ background: "linear-gradient(90deg, #050811 0%, rgba(5, 8, 17,0) 100%)" }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 max-md:hidden"
+          style={{ background: "linear-gradient(270deg, #050811 0%, rgba(5, 8, 17,0) 100%)" }}
+        />
+      </div>
+
+      {/* Alt CTA */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center mt-16 text-ink-muted text-sm md:text-base home-reveal flex flex-col sm:flex-row items-center justify-center gap-3">
+        <span>Sonsuza dek süren bir mimari için</span>
+        <IceButton label="ücretsiz teklif alın" size="sm" className="inline-flex" />
+      </div>
+
+      {/* Arka Plan Ortam Işığı */}
       <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-80 h-40 rounded-full pointer-events-none blur-[80px]"
-        style={{ background: `${V}08` }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full pointer-events-none blur-[140px] opacity-20"
+        style={{ background: V }}
       />
     </section>
   );

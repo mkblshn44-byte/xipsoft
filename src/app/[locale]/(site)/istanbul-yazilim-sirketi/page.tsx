@@ -1,14 +1,21 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { SITE_URL } from "@/lib/site-url";
-import { APP_CONFIg, BRAND_COMPANY, BRAND_COLORS } from "@/config/brand.config";
+import { PALETTE } from "@/config/palette";
+import { ldJson } from "@/lib/ld-json";
+import {
+  APP_CONFIG,
+  BRAND_COMPANY,
+  BRAND_COLORS,
+  DEFAULT_OG_IMAGE_URL,
+} from "@/config/brand.config";
 import { getPageFaqs, getPageMeta, type PageMeta } from "@/lib/page-content";
 import TitleText from "@/components/Common/TitleText/TitleText";
 
 export async function generateMetadata(): Promise<Metadata> {
   const meta = await getPageMeta("istanbul-yazilim-sirketi");
-  const title = meta?.title || APP_CONFIg.title;
-  const description = meta?.description || APP_CONFIg.description;
+  const title = meta?.title || APP_CONFIG.title;
+  const description = meta?.description || APP_CONFIG.description;
 
   return {
     title: {
@@ -25,17 +32,17 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       url: `${SITE_URL}/istanbul-yazilim-sirketi`,
-      title: meta?.ogTitle || APP_CONFIg.title,
-      description: meta?.ogDescription || APP_CONFIg.description,
+      title: meta?.ogTitle || APP_CONFIG.title,
+      description: meta?.ogDescription || APP_CONFIG.description,
       locale: "tr_TR",
       siteName: "XipSoft Yazılım ve Teknoloji Sistemleri",
-      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: "XipSoft - İstanbul Yazılım Şirketi" }],
+      images: [{ url: DEFAULT_OG_IMAGE_URL, width: 1200, height: 630, alt: "XipSoft - İstanbul Yazılım Şirketi" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: meta?.ogTitle || APP_CONFIg.title,
-      description: meta?.ogDescription || APP_CONFIg.description,
-      images: [`${SITE_URL}/media/xipsoft-seo.webp`],
+      title: meta?.ogTitle || APP_CONFIG.title,
+      description: meta?.ogDescription || APP_CONFIG.description,
+      images: [DEFAULT_OG_IMAGE_URL],
     },
   };
 }
@@ -45,7 +52,10 @@ function buildJsonLd(meta: PageMeta | null) {
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "@id": `${SITE_URL}/#localbusiness`,
+    // Kök layout'taki `local-business.ts` şeması `${SITE_URL}/#localbusiness`
+    // @id'sini zaten yayınlıyor; aynı @id üzerinde farklı @type vermek Google
+    // tarafında çakışma üretiyor. Bu sayfa kendi düğümünü kullanır.
+    "@id": `${SITE_URL}/istanbul-yazilim-sirketi#localbusiness`,
     name: "XipSoft Yazılım ve Teknoloji Sistemleri",
     url: SITE_URL,
     telephone: BRAND_COMPANY.phone,
@@ -60,7 +70,7 @@ function buildJsonLd(meta: PageMeta | null) {
     },
     geo: { "@type": "GeoCoordinates", latitude: 41.0682, longitude: 28.9862 },
     openingHours: "Mo-Fr 09:00-18:00",
-    description: meta?.jsonLd?.businessDescription || APP_CONFIg.description,
+    description: meta?.jsonLd?.businessDescription || APP_CONFIG.description,
     sameAs: [
       "https://www.linkedin.com/company/xipsoft",
       "https://twitter.com/xipsoft",
@@ -82,9 +92,9 @@ const STACK_ITEMS = [
   { title: "Next.js 16+", color: BRAND_COLORS.secondary, desc: "SSR, ISR ve Edge Runtime ile yuksek performansli web uygulamalari. Core Web Vitals odakli gelistirme ile LCP suresini 2.5 saniyenin altina indiriyoruz." },
   { title: "PostgreSQL & NeonDB", color: BRAND_COLORS.primary, desc: "Serverless veritabani optimizasyonu. EXPLAIN ANALYZE ile sorgu plani analizi, index stratejisi ve %40'a varan hiz kazanimlari." },
   { title: "Tailwind CSS", color: BRAND_COLORS.accent, desc: "Responsive ve ozellestirilebilir arayuzler. Mobil oncelikli tasarim, dark/light mode destegi ve erisilebilirlik standartlari." },
-  { title: "React Native / Swift / Kotlin", color: BRAND_COLORS.gold, desc: "iOS ve Android icin native performansli mobil uygulamalar. App Store ve google Play yayin surecleri dahil." },
-  { title: "Siber guvenlik", color: "#ddd6fe", desc: "Penetrasyon testi, guvenlik denetimi, OWASP Top 10 uyumlulugu ve guvenli kod gelistirme danismanligi." },
-  { title: "SEO & Dijital Pazarlama", color: "#c4b5fd", desc: "Teknik SEO, icerik stratejisi, google Search Console optimizasyonu ve Core Web Vitals iyilestirme." },
+  { title: "React Native / Swift / Kotlin", color: BRAND_COLORS.accentDeep, desc: "iOS ve Android icin native performansli mobil uygulamalar. App Store ve google Play yayin surecleri dahil." },
+  { title: "Siber guvenlik", color: PALETTE.neon[300], desc: "Penetrasyon testi, guvenlik denetimi, OWASP Top 10 uyumlulugu ve guvenli kod gelistirme danismanligi." },
+  { title: "SEO & Dijital Pazarlama", color: PALETTE.neon[400], desc: "Teknik SEO, icerik stratejisi, google Search Console optimizasyonu ve Core Web Vitals iyilestirme." },
 ];
 
 const DISTRICTS = [
@@ -94,7 +104,7 @@ const DISTRICTS = [
 
 const DISTRICT_COLORS = [
   BRAND_COLORS.secondary, BRAND_COLORS.primary, BRAND_COLORS.accent,
-  BRAND_COLORS.gold, "#ddd6fe", "#c4b5fd",
+  BRAND_COLORS.accentDeep, PALETTE.neon[300], PALETTE.neon[400],
 ];
 
 export default async function IstanbulYazilimSirketiPage() {
@@ -116,8 +126,8 @@ export default async function IstanbulYazilimSirketiPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(faqJsonLd) }} />
 
       <div className="min-h-screen relative">
         {/* Ambient arka plan */}
@@ -125,8 +135,8 @@ export default async function IstanbulYazilimSirketiPage() {
           className="absolute inset-0 pointer-events-none"
           style={{
             background: `
-              radial-gradient(ellipse 70% 50% at 50% 0%, rgba(34,211,238,0.10) 0%, transparent 60%),
-              radial-gradient(ellipse 50% 40% at 0% 100%, rgba(167,139,250,0.08) 0%, transparent 55%)
+              radial-gradient(ellipse 70% 50% at 50% 0%, rgba(167, 139, 250,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 40% at 0% 100%, rgba(167, 139, 250,0.08) 0%, transparent 55%)
             `,
           }}
         />
@@ -134,8 +144,8 @@ export default async function IstanbulYazilimSirketiPage() {
           className="absolute inset-0 pointer-events-none opacity-[0.028]"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(34,211,238,0.5) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(34,211,238,0.5) 1px, transparent 1px)
+              linear-gradient(rgba(167, 139, 250,0.12) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(167, 139, 250,0.12) 1px, transparent 1px)
             `,
             backgroundSize: "60px 60px",
           }}
@@ -154,7 +164,7 @@ export default async function IstanbulYazilimSirketiPage() {
 
           {/* Hero */}
           <div className="mb-16">
-            <TitleText tag="h1" variant="silver" className="mb-6 !text-[clamp(2.2rem,6vw,4.5rem)] !leading-tight">
+            <TitleText tag="h1" variant="hero" className="mb-6 !text-[clamp(2.2rem,6vw,4.5rem)] !leading-tight">
               Istanbul&apos;un<br />Yazilim Sirketi
             </TitleText>
             <p className="text-zinc-400 max-w-2xl leading-relaxed text-lg">
@@ -167,7 +177,7 @@ export default async function IstanbulYazilimSirketiPage() {
 
           {/* Teknoloji Stack */}
           <section aria-labelledby="stack-heading" className="mb-20">
-            <TitleText tag="h2" variant="section" className="mb-8">
+            <TitleText tag="h2" variant="brand" className="mb-8">
               Istanbul Firmalarina Ozel<br />Teknoloji Stack&apos;imiz
             </TitleText>
 
@@ -175,7 +185,7 @@ export default async function IstanbulYazilimSirketiPage() {
               {STACK_ITEMS.map((item) => (
                 <div
                   key={item.title}
-                  className="group relative p-6 rounded-2xl overflow-hidden transition-all duration-500 bg-white/[0.02] backdrop-blur-md border border-white/[0.06] shadow-[0_4px_24px_rgba(2,6,23,0.12)] hover:-translate-y-1.5 hover:border-white/[0.11]"
+                  className="group relative p-6 rounded-2xl overflow-hidden transition-all duration-500 bg-white/[0.02] backdrop-blur-md border border-white/[0.06] shadow-[0_4px_24px_rgba(5, 8, 17,0.12)] hover:-translate-y-1.5 hover:border-white/[0.11]"
                 >
                   <div
                     className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl"
@@ -201,11 +211,11 @@ export default async function IstanbulYazilimSirketiPage() {
 
           {/* Neden Xipsoft */}
           <section aria-labelledby="why-heading" className="mb-20">
-            <TitleText tag="h2" variant="section" className="mb-6">
+            <TitleText tag="h2" variant="brand" className="mb-6">
               Neden Isletmeler<br />Xipsoft&apos;u Tercih Ediyor?
             </TitleText>
 
-            <div className="group relative p-7 rounded-2xl overflow-hidden transition-all duration-500 bg-white/[0.02] backdrop-blur-md border border-white/[0.06] shadow-[0_4px_24px_rgba(2,6,23,0.12)] hover:border-white/[0.11]">
+            <div className="group relative p-7 rounded-2xl overflow-hidden transition-all duration-500 bg-white/[0.02] backdrop-blur-md border border-white/[0.06] shadow-[0_4px_24px_rgba(5, 8, 17,0.12)] hover:border-white/[0.11]">
               <div
                 className="absolute top-0 left-0 right-0 h-[1.5px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl"
                 style={{ background: `linear-gradient(90deg, transparent, ${BRAND_COLORS.secondary}70, transparent)` }}
@@ -227,7 +237,7 @@ export default async function IstanbulYazilimSirketiPage() {
 
           {/* Hizmet Verilen Ilceler */}
           <section aria-labelledby="districts-heading" className="mb-20">
-            <TitleText tag="h2" variant="section" className="mb-6">
+            <TitleText tag="h2" variant="brand" className="mb-6">
               Hizmet Verdigimiz Ilceler
             </TitleText>
             <ul className="flex flex-wrap gap-2.5" role="list">
@@ -251,14 +261,14 @@ export default async function IstanbulYazilimSirketiPage() {
             aria-labelledby="cta-heading"
             className="relative rounded-3xl p-10 md:p-14 overflow-hidden"
             style={{
-              background: "linear-gradient(160deg, rgba(34,211,238,0.07), rgba(167,139,250,0.05), rgba(255,255,255,0.02))",
-              border: "1px solid rgba(34,211,238,0.14)",
+              background: "linear-gradient(160deg, rgba(167, 139, 250,0.06), rgba(18, 20, 28,0.06), rgba(255,255,255,0.02))",
+              border: "1px solid rgba(203, 213, 225, 0.08)",
             }}
           >
             <div className="absolute inset-0 pointer-events-none"
-              style={{ background: "radial-gradient(ellipse at center, rgba(34,211,238,0.07) 0%, transparent 70%)" }} />
+              style={{ background: "radial-gradient(ellipse at center, rgba(167, 139, 250,0.06) 0%, transparent 70%)" }} />
 
-            <TitleText tag="h2" variant="silver" className="relative z-10 mb-3 !text-[clamp(1.5rem,3vw,2.25rem)]">
+            <TitleText tag="h2" variant="brand" className="relative z-10 mb-3 !text-[clamp(1.5rem,3vw,2.25rem)]">
               Istanbul&apos;da Yazilim<br />Ihtiyaciniz mi Var?
             </TitleText>
             <p className="relative z-10 text-zinc-400 mb-7 leading-relaxed max-w-xl">
@@ -268,15 +278,14 @@ export default async function IstanbulYazilimSirketiPage() {
             <div className="relative z-10 flex flex-wrap gap-3">
               <Link
                 href="/contact-us"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm text-zinc-950 transition-all hover:scale-[1.03] active:scale-95"
-                style={{ background: "linear-gradient(135deg, #ddd6fe, #a78bfa)", boxShadow: "0 0 22px rgba(34,211,238,0.35)" }}
+                className="site-cta-primary inline-flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold shadow-[0_6px_20px_rgba(167, 139, 250,0.14)] transition-all duration-200 hover:-translate-y-0.5"
               >
                 Ucretsiz Teklif Al
               </Link>
               <Link
-                href="/hizmetler/web-yazilim-tasarim"
+                href="/hizmetler/web-yazilim-tasarim1.html"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-semibold text-sm transition-all hover:scale-[1.02]"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "rgba(255,255,255,0.75)" }}
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(203, 213, 225, 0.10)", color: "rgba(255,255,255,0.75)" }}
               >
                 Hizmetlerimizi Incele
               </Link>

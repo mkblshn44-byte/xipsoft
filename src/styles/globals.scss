@@ -3,6 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 /* ─── SAFE AREA (iPhone notch / Dynamic Island) ─────────── */
 :root {
   --safe-top:    env(safe-area-inset-top, 0px);
@@ -18,9 +19,33 @@ body {
   max-width: 100vw;
 }
 
+/* Mobil menü açıkken kaydırma kilidi — Navbar JS tarafından toggle edilir.
+   `documentElement` üzerinde class toggle (inline style yazma aksine)
+   tarayıcı stil motorunda toplu işlenir → forced reflow üretmez. */
+html.overflow-hidden-mobile,
+html.overflow-hidden-mobile body {
+  overflow: hidden;
+}
+
 /* iOS Safari momentum scroll */
 body {
   -webkit-overflow-scrolling: touch;
+}
+
+/* ─── GLİF: WEBFONT ALT KÜMESİ TETİKLEMESİN ────────────────
+   next/font, istenen subset'lerden fazlasının @font-face kuralını da basar.
+   → ve ✓ latin/latin-ext kapsamı dışında kaldığı için Chrome bu gliflerde
+   Open Sans'ın hiç kullanılmayan alt küme dosyalarını indiriyordu (2 dosya =
+   74 KB, kritik yolda). Bu aile için daha SONRA tanımlanan unicode-range
+   kuralı, Chrome'un yüz-eşleştirmede ters sırada taraması sayesinde önce
+   gelir: glif yerel fontla çizilir, indirme tamamen durur (içerik/DB metni
+   dahil her yerde). */
+@font-face {
+  font-family: "Open Sans";
+  font-weight: 300 800;
+  font-style: normal;
+  src: local("Arial"), local("Liberation Sans"), local("Roboto"), local("Helvetica Neue");
+  unicode-range: U+2190-2193, U+2713-2714;
 }
 
 body {
@@ -42,35 +67,35 @@ body {
 .font-body {
   font-family: var(--font-body), sans-serif;
 }
-.-mono,
-.font-mono {
-  font-family: var(--font-mono), monospace;
-}
+/* mono: Tailwind varsayılan stack (ui-monospace, Menlo, Consolas, ...) kullanılır */
 
-/* ─── BAŞLIKLAR — TitleText variantları glass efekti ─────── */
+/* ─── BAŞLIKLAR — TitleText variantları çelik efekti ─────── */
 .glass-heading {
   display: inline-block;
   font-family: var(--font-display), system-ui, sans-serif;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 900;
+  font-weight: 700;
   color: transparent !important;
+  /* Fırçalanmış krom: sert ışık bandı metal kenar okuması verir */
   background: linear-gradient(
-    180deg,
+    178deg,
     #ffffff 0%,
-    #f1f5f9 30%,
-    #e2e8f0 50%,
-    #f1f5f9 70%,
-    #ffffff 100%
+    #e2e8f0 16%,
+    #64748b 38%,
+    #f8fafc 50%,
+    #94a3b8 68%,
+    #cbd5e1 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent !important;
-  text-shadow: 0 0 24px rgba(255,255,255,0.18), 0 0 28px rgba(148,163,184,0.10);
+  text-shadow: 0 1px 0 rgba(5, 8, 17, 0.55);
 }
 
 .navbar, .-navbar {
-  font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  /* Navbar tipografisi — Orbitron (--font-navbar). Tek kaynak: src/fonts/fonts.ts */
+  font-family: var(--font-navbar), system-ui, sans-serif !important;
   font-weight: 400;
   letter-spacing: 0.04em;
   text-rendering: optimizeLegibility;
@@ -80,15 +105,11 @@ body {
 
 /* ─── BASE BODY — Koyu (Varsayılan) ─────────────────────── */
 body {
-  background-color: #04050d;
+  background-color: #050811;
   background-image:
-    radial-gradient(circle at 15% 12%, rgba(255,255,255,0.18), transparent 18%),
-    radial-gradient(circle at 80% 20%, rgba(167,139,250,0.16), transparent 15%),
-    radial-gradient(circle at 25% 75%, rgba(34,211,238,0.12), transparent 12%),
-    radial-gradient(circle at 70% 80%, rgba(245,158,11,0.10), transparent 16%),
-    radial-gradient(circle at 50% 40%, rgba(255,255,255,0.08), transparent 8%),
-    radial-gradient(circle at 85% 50%, rgba(255,255,255,0.06), transparent 5%),
-    linear-gradient(180deg, #02030a 0%, #050611 30%, #020209 100%);
+    radial-gradient(ellipse at 15% 12%, rgba(167, 139, 250,0.06), transparent 42%),
+    radial-gradient(ellipse at 85% 82%, rgba(18, 20, 28, 0.52), transparent 48%),
+    linear-gradient(180deg, #050811 0%, #070b16 48%, #0b0f19 100%);
   background-attachment: scroll; /* fixed mobilde iOS'ta paint sorununa yol açar */
   background-repeat: no-repeat;
   background-size: cover;
@@ -98,6 +119,9 @@ body {
   font-family: var(--font-body), sans-serif;
 }
 
+/* ZEMİN DOKUSU — yıldız nokta alanı kaldırıldı; yerine fırçalanmış çelik
+   çizgileri + çok soluk devre ızgarası geldi (logodaki metalik fırça izleri ve
+   arka plandaki elektronik hatlar). */
 body::before {
   content: "";
   position: fixed;
@@ -105,33 +129,80 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(circle, rgba(255,255,255,0.22) 0%, transparent 1.15%),
-    radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 1.5%),
-    radial-gradient(circle, rgba(255,255,255,0.14) 0%, transparent 2px);
-  background-size: 160px 160px, 120px 120px, 260px 260px;
-  opacity: 0.24;
+    repeating-linear-gradient(96deg, rgba(226, 232, 240, 0.035) 0 1px, transparent 1px 5px),
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: auto, 96px 96px, 96px 96px;
+  opacity: 0.6;
+}
+
+/* ─── SİTE ZEMİN IŞIĞI ─────────────────────────────────────
+   ÖNCE: sol-alt ve sağ-üst köşelerden gelen geniş KIRMIZI (rose) parıltılar
+   vardı. Plan gereği kırmızı yalnızca belirgin LED çizgilerinde kullanılır;
+   hero bitimindeki geniş kırmızı ışık ve sağdan/soldan gelen ışık lekeleri
+   KALDIRILDI. Yerine çok düşük yoğunluklu mavi parıltı ve gece mavisi zemin kalır. */
+.site-ambient-led {
+  background-image:
+    radial-gradient(ellipse 55% 42% at 0% 100%, rgba(167, 139, 250, 0.06), transparent 72%);
 }
 
 /* ─── /blog TEMA DEGİŞKENLERİ ────────────────────────────── */
 :root,
 html[class="dark"],
 html.dark {
-  ---bg:             #05071a;
-  ---text:           #e4e4e7;
-  --blob-1: rgba(251, 191, 36,  0.22);
-  --blob-2: rgba(251, 113, 133, 0.16);
-  --blob-3: rgba(167, 139, 250, 0.14);
-  --blob-4: rgba(99,  60,  180, 0.10);
-  --blob-5: rgba(34,  211, 238, 0.06);
+  ---bg:             #050811;
+  ---text:           #ffffff;
+  --blob-1: rgba(167, 139, 250, 0.10);
+  --blob-2: rgba(167, 139, 250, 0.08);
+  --blob-3: rgba(18, 20, 28, 0.24);
+  --blob-4: rgba(86, 103, 113, 0.10);
+  --blob-5: rgba(255, 255, 255, 0.025);
   background-color: var(---bg);
   color: var(---text);
+}
+
+/* ─── BLOG DETAY — YAZI İÇİ GÖRSELLER ────────────────────── */
+/* Tüm yazılarda standart: editörden gelen içerik <img> etiketleri de
+   yuvarlatılmış köşeli görünür (kapak görseli zaten `rounded-2xl`). */
+.blog-content-body img {
+  border-radius: var(--radius-card);
+  height: auto;
+  max-width: 100%;
+}
+
+@media print {
+  body.blog-print-mode * {
+    visibility: hidden !important;
+  }
+
+  body.blog-print-mode .blog-article-print-area,
+  body.blog-print-mode .blog-article-print-area * {
+    visibility: visible !important;
+  }
+
+  body.blog-print-mode .blog-article-print-area {
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  body.blog-print-mode .blog-article-print-area * {
+    color: #111 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
 }
 
 
 /* ─── NAVBAR ─────────────────────────────────────────────── */
 nav:not(footer nav), .navbar {
-  backdrop-filter: blur(24px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.08);
   box-shadow:
     0 4px 8px -1px rgba(0, 0, 0, 0.15),
     0 2px 4px -1px rgba(0, 0, 0, 0.08),
@@ -157,25 +228,24 @@ nav [data-nav-link]:hover a span,
 nav [data-nav-link]:hover a.-navbar,
 nav button.-navbar:hover,
 nav button.-navbar:hover span {
-  background: linear-gradient(135deg, #a78bfa, #ddd6fe) !important;
+  background: linear-gradient(135deg, #a78bfa, #c4b5fd) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
-  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.55));
+  filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.18));
   text-shadow: none;
 }
-
 
 /* ─── SCROLLBAR ──────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 
 :root::-webkit-scrollbar-track,
-html.dark::-webkit-scrollbar-track { background: #09090b; }
+html.dark::-webkit-scrollbar-track { background: var(--metal-shadow, #050811); }
 :root::-webkit-scrollbar-thumb,
-html.dark::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+html.dark::-webkit-scrollbar-thumb { background: var(--titanium-700, #334155); border-radius: 3px; }
 :root::-webkit-scrollbar-thumb:hover,
-html.dark::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+html.dark::-webkit-scrollbar-thumb:hover { background: var(--titanium-500, #64748b); }
 
 /* ─── PRISM BORDER HOVER ─────────────────────────────────── */
 .prism-border-gradient {
@@ -187,7 +257,7 @@ html.dark::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, #ddd6fe 0%, #a78bfa 50%, #fb7185 100%);
+  background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #7c3aed 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -208,7 +278,7 @@ html.dark::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(167,139,250,0.08) 50%, rgba(34,211,238,0.06) 100%);
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(167, 139, 250,0.06) 50%, rgba(167, 139, 250,0.04) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -225,8 +295,8 @@ html.dark::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
   opacity: 0;
   transition: opacity 0.4s ease;
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(34,211,238,0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(251,113,133,0.02) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 0%, rgba(167, 139, 250,0.035) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(18, 20, 28,0.04) 0%, transparent 50%);
   pointer-events: none;
 }
 .profile-card:hover {
@@ -238,21 +308,21 @@ html.dark::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
 /* ─── Blog CARD gLASS — Liquid glass ───────────────── */
 .Blog-card-glass {
   background: var(--color-card-bg);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid var(--color-border);
+  backdrop-filter: var(--glass-blur-card);
+  -webkit-backdrop-filter: var(--glass-blur-card);
+  border: 1px solid var(--color-glass-border);
 }
 
 /* ─── ORTAK BÖLÜM BAŞLIK STİLİ ───────────────────────────── */
 .section-title-glow {
   display: inline-block;
   /* Solid (dolu) color by default, overridable with --section-title-color */
-  color: var(--section-title-color, #8b5cf6);
+  color: var(--section-title-color, #a78bfa);
   background: none !important;
   -webkit-background-clip: unset !important;
   background-clip: unset !important;
   /* Stronger, colored glow to emphasize the filled color */
-  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 28px rgba(139, 92, 246, 0.18);
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 28px rgba(167, 139, 250, 0.12);
   letter-spacing: 0.01em;
 }
 
@@ -301,9 +371,9 @@ hr.section-divider,
   padding: 1px;
   background: linear-gradient(
     135deg,
-    rgba(249, 115, 22, 0.25) 0%,
-    rgba(167, 139, 250, 0.20) 50%,
-    rgba(34, 211, 238, 0.15) 100%
+    rgba(167, 139, 250, 0.08) 0%,
+    rgba(167, 139, 250, 0.10) 50%,
+    rgba(18, 20, 28, 0.08) 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -315,6 +385,110 @@ hr.section-divider,
 }
 .card-led-border:hover::before {
   opacity: 1;
+}
+
+/* ─── "DAHA FAZLASI" — ölçülü 3B etiket ───────────────────── */
+/* Gösterge metni düz durmasın: hafif geriye yatık (rotateX) +
+   katmanlı gölge/ışık ile ölçülü bir derinlik. Kontrast korunur. */
+.scroll-indicator-label {
+  display: inline-block;
+  transform: perspective(700px) rotateX(16deg);
+  transform-origin: 50% 100%;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.45),
+    0 8px 18px rgba(0, 0, 0, 0.55),
+    0 0 20px rgba(255, 255, 255, 0.14);
+}
+
+/* ─── İKON ARKA IŞIĞI — BEYAZ / KIRMIZI LED ───────────────── */
+/* İkonların ARKASINDAN ışık vuruyormuş gibi görünmesi için ortak
+   yardımcılar. İkonun kendi rengi korunur; ışık ikonun arkasındadır.
+   İki ton vardır:
+   • varsayılan → BEYAZ hâle (ikincil arayüz ikonları)
+   • `halo="red"` → KIRMIZI LED hâle (birincil/öne çıkan ikonlar:
+     CTA, LED gösterge, hızlı eylem).
+   `drop-shadow` çizginin etrafında yumuşak bir hâle üretir; iki
+   katmanlı kullanım "yakın çekirdek + geniş hâle" derinliği verir. */
+.xip-icon--glow-soft {
+  filter:
+    drop-shadow(0 0 2.5px rgba(255, 255, 255, 0.42))
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.26));
+}
+
+.xip-icon--glow-strong {
+  filter:
+    drop-shadow(0 0 3px rgba(255, 255, 255, 0.55))
+    drop-shadow(0 0 11px rgba(255, 255, 255, 0.34))
+    drop-shadow(0 0 22px rgba(255, 255, 255, 0.18));
+}
+
+/* KIRMIZI LED hâle — yalnızca `halo="red"` ikonlarda. */
+.xip-icon--halo-red.xip-icon--glow-soft {
+  filter:
+    drop-shadow(0 0 2.5px rgba(255, 59, 78, 0.5))
+    drop-shadow(0 0 8px rgba(255, 59, 78, 0.32));
+}
+
+.xip-icon--halo-red.xip-icon--glow-strong {
+  filter:
+    drop-shadow(0 0 3px rgba(255, 59, 78, 0.6))
+    drop-shadow(0 0 11px rgba(255, 59, 78, 0.4))
+    drop-shadow(0 0 22px rgba(255, 59, 78, 0.22));
+}
+
+/* İkon çipinin/kabının ARKASINA radyal ışık.
+   Konteynere eklenir (ör. hizmet kartı ikon kutusu, navbar menü ikonu).
+   `icon-backlight--red` → kırmızı LED varyantı. */
+.icon-backlight {
+  position: relative;
+  isolation: isolate;
+}
+
+.icon-backlight::before {
+  content: "";
+  position: absolute;
+  inset: -38%;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.22) 38%,
+    transparent 72%
+  );
+  filter: blur(9px);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+/* Kırmızı LED çip ışığı — `.icon-backlight::before`'dan sonra gelmeli. */
+.icon-backlight--red::before {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 59, 78, 0.58) 0%,
+    rgba(255, 59, 78, 0.24) 38%,
+    transparent 72%
+  );
+}
+
+.icon-backlight:hover::before,
+.group:hover .icon-backlight::before {
+  opacity: 0.85;
+}
+
+/* Mobil: filtreler (özellikle drop-shadow/blur) GPU'yu yorar → kapat.
+   Masaüstü/tablet görünümü korunur. */
+@media (max-width: 768px) {
+  .xip-icon--glow-soft,
+  .xip-icon--glow-strong {
+    filter: none !important;
+  }
+
+  .icon-backlight::before,
+  .icon-backlight--red::before {
+    display: none !important;
+  }
 }
 
 /* ─── ADMIN INPUT UTILITY ──────────────────────────────────── */
@@ -419,116 +593,6 @@ hr.section-divider,
 }
 
 /* ═══════════════════════════════════════════════════════════
-   HERO — UZAY DERİNLİK / PARALLAX PORTAL EFEKTİ
-   Scroll aşağı indikçe genişleyen perspektif tüneli.
-   Compositor-only (transform + opacity) — INP/TBT dostu.
-   ═══════════════════════════════════════════════════════════ */
-
-/* ── Nebula halkası: ışıklı daire büyüyüp solar alır ──────── */
-@keyframes nebulaRingPulse {
-  0%, 100% { transform: scale(1);    opacity: 0.18; }
-  50%       { transform: scale(1.06); opacity: 0.28; }
-}
-
-/* ── Tünel parçacıkları: merkezden dışa fışkırır ──────────── */
-@keyframes tunnelParticle {
-  0%   { transform: translate(var(--px, 0), var(--py, 0)) scale(0.3); opacity: 0; }
-  15%  { opacity: var(--pop, 0.9); }
-  85%  { opacity: var(--pop, 0.6); }
-  100% { transform: translate(calc(var(--px, 0) * 3.5), calc(var(--py, 0) * 3.5)) scale(1.8); opacity: 0; }
-}
-
-/* ── Portal ışık halkası: nefes alır ─────────────────────── */
-@keyframes portalGlow {
-  0%, 100% { box-shadow: 0 0 60px 12px var(--pg-color, rgba(167,139,250,0.15)),
-                          0 0 120px 30px var(--pg-color2, rgba(34,211,238,0.08)); }
-  50%       { box-shadow: 0 0 90px 24px var(--pg-color, rgba(167,139,250,0.28)),
-                          0 0 180px 60px var(--pg-color2, rgba(34,211,238,0.14)); }
-}
-
-/* ── Yatay ışık taraması: hero içinden geçer ─────────────── */
-@keyframes lightSweep {
-  0%   { transform: translateX(-100%) skewX(-12deg); opacity: 0; }
-  8%   { opacity: 1; }
-  92%  { opacity: 1; }
-  100% { transform: translateX(200%) skewX(-12deg); opacity: 0; }
-}
-
-/* ── Derinlik vignette: scroll ile yoğunlaşır ──────────────
-   JS ile --scroll-progress (0→1) enjekte edilir           */
-.hero-depth-vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background: radial-gradient(
-    ellipse 70% 60% at 50% 50%,
-    transparent 20%,
-    rgba(2, 3, 10, calc(0.55 + var(--scroll-progress, 0) * 0.35)) 100%
-  );
-  z-index: 1;
-  transition: background 0.1s linear;
-}
-
-/* ── Nebula halkaları ──────────────────────────────────────── */
-.hero-nebula-ring {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  border: 1px solid var(--ring-color, rgba(167,139,250,0.12));
-  animation: nebulaRingPulse var(--ring-dur, 6s) ease-in-out var(--ring-delay, 0s) infinite;
-  will-change: transform, opacity;
-}
-
-/* ── Portal merkez ışığı ───────────────────────────────────── */
-.hero-portal-glow {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: portalGlow 5s ease-in-out infinite;
-  will-change: box-shadow;
-  --pg-color: rgba(167,139,250,0.15);
-  --pg-color2: rgba(34,211,238,0.08);
-}
-
-/* ── Işık tarama çizgisi ───────────────────────────────────── */
-.hero-light-sweep {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 40%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255,255,255,0.025) 40%,
-    rgba(255,255,255,0.055) 50%,
-    rgba(255,255,255,0.025) 60%,
-    transparent 100%
-  );
-  pointer-events: none;
-  animation: lightSweep 8s ease-in-out var(--sweep-delay, 3s) infinite;
-  will-change: transform, opacity;
-}
-
-/* ── Paralaks container: scroll'a göre scale ──────────────────
-   JS ile --scroll-scale (1→1.06) ve --scroll-y enjekte edilir */
-.hero-parallax-bg {
-  transition: transform 0.05s linear;
-  transform: scale(var(--scroll-scale, 1)) translateY(calc(var(--scroll-y, 0) * -0.18px));
-  will-change: transform;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-nebula-ring,
-  .hero-portal-glow,
-  .hero-light-sweep,
-  .hero-parallax-bg { animation: none !important; transform: none !important; }
-}
-
-/* ═══════════════════════════════════════════════════════════
    NEON LANDING (neonblack-main) — Hero giriş animasyonları
    Animasyonlar tailwind.config.ts içinde tanımlı; erişilebilirlik
    için prefers-reduced-motion altında devre dışı bırakılır.
@@ -569,8 +633,7 @@ hr.section-divider,
   .card-led-border,
   .prism-border-gradient,
   .profile-card,
-  .Blog-card-glass,
-  .hero-portal-glow {
+  .Blog-card-glass {
     box-shadow: none !important;
   }
 
@@ -579,7 +642,7 @@ hr.section-divider,
   .navbar {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background-color: rgba(4, 5, 13, 0.97) !important;
+    background-color: rgba(5, 8, 17, 0.97) !important;
   }
 
   /* Hero animasyonları — hemen görünür */
@@ -593,24 +656,15 @@ hr.section-divider,
     will-change: auto !important;
   }
 
-  /* Scanline ve parallax efektleri gizle */
-  .hero-scanline,
-  .hero-light-sweep,
-  .hero-nebula-ring,
-  .hero-portal-glow {
+  /* Hareketli yüzey efektleri mobilde gizli */
+  .hero-scanline {
     display: none !important;
-  }
-
-  /* Parallax arka plan — scroll transform kaldır */
-  .hero-parallax-bg {
-    transform: none !important;
-    transition: none !important;
   }
 
   /* Body arka plan gradyanını sadeleştir */
   body {
     background-image: none !important;
-    background-color: #04050d !important;
+    background-color: #050811 !important;
   }
 
   body::before {
@@ -644,6 +698,207 @@ hr.section-divider,
   .card-glow,
   .liquid-glow {
     display: none !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBİL İSTİSNA — Navbar logosu 180° dönüş animasyonu
+   Yukarıdaki mobil kural tüm animasyonları kapatır (performans).
+   Logo dönüşü tek ve küçük bir GPU transform'u olduğu için mobilde
+   açık bırakılır. `prefers-reduced-motion: no-preference` koşulu
+   sayesinde hareket azaltma tercih eden kullanıcılarda yine kapalı
+   kalır (bkz. dosya sonundaki evrensel reduced-motion kuralı).
+
+   DİKKAT: Değerler tailwind.config.ts → animation["logo-flip"] ile
+   AYNI tutulmalıdır (70s / cubic-bezier(0.65, 0, 0.35, 1)).
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .animate-logo-flip {
+    animation: logo-flip 70s cubic-bezier(0.65, 0, 0.35, 1) infinite !important;
+    will-change: transform !important;
+  }
+
+  /* "Daha fazlası" göstergesi: aşağı ilerleyen beyaz ışık + ok.
+     Yalnızca transform/opacity → mobilde de ucuz; kapatmayız.
+     DİKKAT: Değerler tailwind.config.ts ile AYNI tutulmalıdır. */
+  .animate-scroll-line {
+    animation: scroll-line 2s cubic-bezier(0.65, 0, 0.35, 1) infinite !important;
+    will-change: transform !important;
+  }
+
+  .animate-scroll-arrow {
+    animation: scroll-arrow 1.9s cubic-bezier(0.65, 0, 0.35, 1) infinite !important;
+    will-change: transform, opacity !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVBAR — HİZMETLER MEGA MENÜSÜ (tam genişlik panel)
+   Açılış/kapanış geçişleri saf CSS: JS animasyon kütüphanesi yok.
+   • Panel: yukarıdan süzülür (opacity + translateY).
+   • Kartlar: `--i` sırasına göre 40ms arayla belirir (açılışta gecikmeli,
+     kapanışta gecikmesiz → hızlı ve net kapanma).
+   • Kapalıyken `visibility: hidden` → panel bağlantıları sekme sırasından
+     ve erişilebilirlik ağacından çıkar; kapanış animasyonu bitince gizlenir.
+   DİKKAT: kartların renk geçişi de burada tanımlı (Tailwind `transition-colors`
+   kullanılmıyor) çünkü aynı elemana iki `transition` kuralı çakışırdı.
+   Sıralama: bu blok `@tailwind utilities` sonrasında gelir → kazanır.
+   ═══════════════════════════════════════════════════════════ */
+.services-mega {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.24s;
+}
+
+.services-mega[data-open="true"] {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.2s ease,
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0s;
+}
+
+.services-mega__card {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.22s ease,
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.services-mega[data-open="true"] .services-mega__card {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(var(--i, 0) * 40ms);
+}
+
+/* Üst LED çizgisi: panel her açılışta soldan sağa süpürülür. */
+.services-mega__led {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+@keyframes services-led-sweep {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.services-mega[data-open="true"] .services-mega__led {
+  animation: services-led-sweep 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .services-mega,
+  .services-mega[data-open="true"],
+  .services-mega__card,
+  .services-mega[data-open="true"] .services-mega__card {
+    transition-delay: 0s !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   "TEKLİF AL" BUTONU — tbg-12 keyframe'lerinden uyarlama
+
+   KAYNAK: kullanıcının gönderdiği tbg-12 dosyasındaki `tbg12-sq1/2/3`
+   (squash & stretch) ve `tbg12-glint` (ışık süpürmesi) keyframe'leri.
+   Değerler korundu; yalnızca isimler `xip-btn-*` oldu.
+
+   KAPSAM: SADECE opt-in — bu sınıflar yalnızca "Teklif Al" CTA'larında
+   kullanılır (`.btn-glint` + `.btn-squash`). Site genelindeki diğer
+   butonlara uygulanmaz.
+
+   Neden çakışmaz:
+   • Squash, `transform` yerine bağımsız `scale` özelliğini kullanır →
+     Tailwind'in `scale-*` / `hover:scale-*` (transform) kurallarıyla ve
+     motion'ın `whileTap` animasyonuyla toplanır, birbirini ezmez.
+   • Glint, `::after` katmanında `translate` özelliğiyle çalışır.
+
+   NOT: 768px altında globals'ın mobil kuralı tüm animasyonları kapatır
+   (performans); reduced-motion tercihinde de evrensel kural devreye girer.
+   ═══════════════════════════════════════════════════════════ */
+@keyframes xip-btn-squash {
+  40% {
+    scale: 1.16 0.82;
+  }
+
+  70% {
+    scale: 0.94 1.08;
+  }
+
+  100% {
+    scale: 1 1;
+  }
+}
+
+@keyframes xip-btn-glint {
+  from {
+    translate: -140% 0;
+  }
+
+  to {
+    translate: 240% 0;
+  }
+}
+
+/* Basılma anı — squash & stretch */
+.btn-squash:active {
+  animation: xip-btn-squash 0.5s ease;
+}
+
+/* Kılıç kesiği — tek geçişlik, hızlı ve net (hover/focus anında) */
+.btn-glint {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glint::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 55%;
+  pointer-events: none;
+  opacity: 0;
+  translate: -140% 0;
+  transform: skewX(-18deg);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(221, 214, 254, 0.22) 42%,
+    rgba(255, 255, 255, 0.55) 52%,
+    rgba(221, 214, 254, 0.10) 62%,
+    transparent 100%
+  );
+}
+
+.btn-glint:hover::after,
+.btn-glint:focus-visible::after {
+  opacity: 1;
+  animation: xip-btn-glint 0.5s cubic-bezier(0.85, 0, 0.15, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-glint::after {
+    opacity: 0 !important;
+    animation: none !important;
   }
 }
 

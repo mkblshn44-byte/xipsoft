@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { verifySessionCookie } from "@/lib/security";
-import { queryOne } from "@/lib/database";
+import { queryOne } from "@/lib/db/pool";
 
 export async function getMeAction(): Promise<any | null> {
   try {

@@ -2,7 +2,7 @@
  * pages/location.ts — Merkezi konum (hizmet × il/ilçe) çözümü.
  */
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { unstable_cache } from "next/cache";
 import { CENTRAL_LOCATION_COLUMNS } from "./sql";
 import { normalizeSlug } from "./hash";
@@ -19,7 +19,7 @@ async function queryCentralLocationBySlug(
        FROM services s
        JOIN locations l ON l.is_active = TRUE
        LEFT JOIN locations parent ON parent.id = l.parent_id AND parent.is_active = TRUE
-       WHERE s.slug = $1 AND s.is_active = TRUE
+       WHERE s.slug = $1 AND s.row_type = 'main' AND s.is_active = TRUE
          AND (
            l.slug = $2
            OR (
@@ -58,7 +58,7 @@ export function getCentralLocationBySlug(
 
   return unstable_cache(
     () => queryCentralLocationBySlug(normalizedService, normalizedLocation),
-    ["central-location-v2", normalizedService, normalizedLocation],
+    ["central-location-v3", normalizedService, normalizedLocation],
     { revalidate: 3600, tags: ["local-pages", "services", "sitemap"] },
   )();
 }
@@ -68,7 +68,7 @@ export function getCentralLocationBySlug(
  * `CentralLocation` bilgisini çözer.
  *
  * Neden gerekli: URL'deki ilçe kısmı parent il slug'ını da içerir
- * (ör. `/hizmetler/web-yazilim-tasarim/elazig-palu` → locations.slug = "palu").
+ * (ör. `/hizmetler/web-yazilim-tasarim1/elazig-palu.html` → locations.slug = "palu").
  * `getCentralLocationBySlug` bu durumda eşleşmez; sayfanın `location_id`'si
  * doğru satıra işaret ettiği için ID tabanlı çözüm her durumda çalışır.
  */
@@ -83,7 +83,7 @@ async function queryCentralLocationByIds(
        FROM services s
        JOIN locations l ON l.id = $2::uuid AND l.is_active = TRUE
        LEFT JOIN locations parent ON parent.id = l.parent_id AND parent.is_active = TRUE
-       WHERE s.id = $1::int AND s.is_active = TRUE
+       WHERE s.id = $1::int AND s.row_type = 'main' AND s.is_active = TRUE
        ORDER BY l.slug, l.id
        LIMIT 1`,
       [serviceId, locationId],

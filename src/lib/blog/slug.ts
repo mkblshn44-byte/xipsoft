@@ -5,7 +5,7 @@
  * ile reddedilir (SQL injection koruması).
  */
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { slugify } from "@/utils/slugify";
 
 /** Slug üretimi — slugify() üzerinden tek kaynak; max 80 karakter. */

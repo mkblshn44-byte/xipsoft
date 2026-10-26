@@ -1,13 +1,16 @@
 /**
  * Service City SEO (formerly db-service-city)
- * Hizmet + Şehir bazlı özgün SEO içeriği — /hizmetler/[hizmet]/[sehir]
+ * Hizmet + Şehir bazlı SEO verisi — /hizmetler/[hizmet]/[sehir]
+ *
+ * Tek kaynak: `services` (ana hizmet satırı) + şehir adı harmanı. Şehre özel
+ * özgün metinler artık buradan değil `pages` (`kind='location'`) satırının
+ * `lokal_aciklama` / `lokal_sss` alanlarından gelir.
  */
 
 import { unstable_cache } from "next/cache";
-import pool from "./pool";
 import type { ServicePageData } from "./services";
 import { queryServiceFromDB } from "./services";
-import { isIndexableLocation, isKeepableLocation } from "@/config/priority-locations";
+import { serviceLocationPath } from "@/lib/content-path";
 
 export interface ServiceCitySeoLocalFaq {
   question: string;
@@ -15,12 +18,8 @@ export interface ServiceCitySeoLocalFaq {
 }
 
 /**
- * Bir /hizmetler/[hizmet-adi]/[sehir-adi] URL'i için veritabanından çekilen
- * veya dinamik olarak üretilen sayfa verisi.
- *
- * DB'de `service_city_seo` tablosunda bu hizmet+şehir çifti için yayınlanmış
- * bir satır varsa doğrudan döndürülür. Yoksa DB'deki ana hizmet verisi şehir
- * adı/slug'ı ile harmanlanarak oluşturulur.
+ * Bir /hizmetler/[hizmet-adi]/[sehir-adi] URL'i için DB'deki ana hizmet verisi
+ * ile şehir adı/slug'ı harmanlanarak üretilen sayfa verisi.
  */
 export interface ServiceCityData {
   serviceSlug: string;
@@ -47,7 +46,10 @@ export interface ServiceCityData {
   /** Şehre özel SSS listesi */
   lokalSss: ServiceCitySeoLocalFaq[];
 
-  /** DB'de yayınlanmış özgün satır var mı (true) yoksa fallback üretildi mi (false) */
+  /**
+   * Şehre özel DB satırından mı geldi (true) yoksa harmanlandı mı (false).
+   * `service_city_seo` okuma yolu kaldırıldığı için daima `false`.
+   */
   isCustom: boolean;
   /** Sayfa index'lenebilir mi (false → noindex) */
   isIndexed: boolean;
@@ -58,38 +60,8 @@ export interface ServiceCityData {
 }
 
 /**
- * DB satırını `ServiceCityData` tipine dönüştürür.
- */
-function mapCityRowToData(
-  row: Record<string, unknown>,
-  service: ServicePageData,
-): ServiceCityData {
-  const r = row as any;
-  return {
-    serviceSlug: r.service_slug,
-    citySlug: r.city_slug,
-    cityName: r.city_name,
-    locationType: r.location_type ?? "province",
-    lokalGiris: r.lokal_giris ?? null,
-    ekonomikProfil: r.ekonomik_profil ?? null,
-    sektorelVurgu: r.sektorel_vurgu ?? null,
-    bolgeselOzellik: r.bolgesel_ozellik ?? null,
-    metaTitle: r.meta_title ?? `${r.city_name} ${service.title} | XipSoft`,
-    metaDescription:
-      r.meta_description ??
-      `${r.city_name} bölgesinde profesyonel ${service.title.toLocaleLowerCase("tr")} hizmetleri. Yerel ihtiyaçlara özel çözümler için XipSoft.`,
-    ozelMetaDesc: r.ozel_meta_desc ?? null,
-    lokalSss: Array.isArray(r.lokal_sss) ? r.lokal_sss : [],
-    isCustom: true,
-    isIndexed: r.is_indexed !== false,
-    canonicalUrl: r.canonical_url ?? null,
-    service,
-  };
-}
-
-/**
  * DB'den gelen ana hizmet verisi ile şehir adını harmanlayarak dinamik
- * `ServiceCityData` üretir. `service_city_seo`'da o çift için satır yoksa devreye girer.
+ * `ServiceCityData` üretir.
  */
 function buildFallbackCityData(
   service: ServicePageData,
@@ -102,7 +74,7 @@ function buildFallbackCityData(
   const serviceLower = service.title.toLocaleLowerCase("tr");
   const metaTitle = `${cityName} ${service.title} | XipSoft`;
   const metaDescription = `${cityName} ${areaSuffix} profesyonel ${serviceLower} hizmetleri. Yerel ihtiyaçlara özel, hızlı ve güvenli ${serviceLower} çözümleri için XipSoft'tan teklif alın.`;
-  const canonical = siteUrl ? `${siteUrl}/hizmetler/${service.slug}/${citySlug}` : null;
+  const canonical = siteUrl ? `${siteUrl}${serviceLocationPath(service.slug, citySlug)}` : null;
 
   return {
     serviceSlug: service.slug,
@@ -137,43 +109,13 @@ function buildFallbackCityData(
 }
 
 /**
- * Belirli bir hizmet + şehir çifti için `service_city_seo` tablosundan
- * yayınlanmış satırı çeker.
- *
- * DB'de satır yoksa `null` döner (çağıran fallback üretir).
- */
-async function queryServiceCityFromDB(
-  serviceSlug: string,
-  citySlug: string,
-): Promise<Record<string, unknown> | null> {
-  if (!process.env.DATABASE_URL) return null;
-  try {
-    const { rows } = await pool.query(
-      `SELECT *
-         FROM service_city_seo
-        WHERE service_slug = $1
-          AND city_slug    = $2
-          AND status       = 'published'
-        LIMIT 1`,
-      [serviceSlug, citySlug],
-    );
-    return rows[0] ?? null;
-  } catch (error) {
-    // DB hatası sayfayı 500'e düşürmemeli: fallback içeriğe izin ver.
-    console.warn(
-      "[ServiceCitySEO] City lookup unavailable:",
-      error instanceof Error ? error.message : error,
-    );
-    return null;
-  }
-}
-
-/**
  * Hizmet + şehir çifti için merkezi veri sağlayıcı.
  *
- * Öncelik sırası:
- *  1. `service_city_seo` tablosunda yayınlanmış özgün satır → döndür
- *  2. Satır yok → DB'deki ana hizmet verisi + şehir adı harmanlama → döndür
+ * Tek kaynak: DB'deki ana hizmet satırı (`services`) + şehir adı harmanı.
+ * Eskiden burada `service_city_seo` tablosuna bakılıyordu; tablo ölçülen 0
+ * satır içeriyordu ve görünür içeriği hiç etkilemiyordu (şablon metni
+ * `PageTemplate`e `pages.lokal_aciklama`/`lokal_sss` üzerinden gelir), bu
+ * yüzden okuma yolu kaldırıldı.
  *
  * Sunucu bileşenleri bu fonksiyonu çağırır; şehir bazlı statik page.tsx
  * dosyaları KESINLIKLE oluşturulmaz.
@@ -189,18 +131,12 @@ async function queryServiceCityData(
   const service = await queryServiceFromDB(serviceSlug);
   if (!service) return null;
 
-  // DB'den şehre özel satırı ara
-  const row = await queryServiceCityFromDB(serviceSlug, citySlug);
-  if (row) return mapCityRowToData(row, service);
-
-  // Fallback: DB ana hizmet verisi + şehir adı harmanı
   return buildFallbackCityData(service, citySlug, cityName, locationType, siteUrl);
 }
 
 /**
  * `unstable_cache` sarmalıyla önbelleklenmiş versiyon.
- * Sayfa route handler'larından çağrılır; 1 saatte bir yenilenir,
- * admin panelinden `revalidateTag("service-city-seo")` ile anlık temizlenir.
+ * Sayfa route handler'larından çağrılır; 1 saatte bir yenilenir.
  */
 export function getServiceCityData(
   serviceSlug: string,
@@ -211,7 +147,7 @@ export function getServiceCityData(
 ): Promise<ServiceCityData | null> {
   return unstable_cache(
     () => queryServiceCityData(serviceSlug, citySlug, cityName, locationType, siteUrl),
-    ["service-city-data", serviceSlug, citySlug],
+    ["service-city-data-v2", serviceSlug, citySlug],
     {
       revalidate: 3600,
       tags: ["service-city-seo", "services", `service:${serviceSlug}`, `city:${citySlug}`],
@@ -219,72 +155,3 @@ export function getServiceCityData(
   )();
 }
 
-export interface PublishedServiceCity {
-  serviceSlug: string;
-  citySlug: string;
-  updatedAt: Date;
-  canonicalUrl: string | null;
-}
-
-export async function getAllPublishedServiceCities(): Promise<PublishedServiceCity[]> {
-  if (!process.env.DATABASE_URL) return [];
-  try {
-    const { rows } = await pool.query<{
-      service_slug: string;
-      city_slug: string;
-      updated_at: Date;
-      canonical_url: string | null;
-      is_indexed: boolean;
-      location_type: string;
-      location_slug: string | null;
-      parent_slug: string | null;
-      location_matches: number;
-    }>(
-      `SELECT sc.service_slug, sc.city_slug, sc.updated_at, sc.canonical_url,
-              sc.is_indexed, sc.location_type,
-              l.slug AS location_slug,
-              parent.slug AS parent_slug,
-              COUNT(l.id) OVER (
-                PARTITION BY sc.service_slug, sc.city_slug
-              )::int AS location_matches
-         FROM service_city_seo sc
-         LEFT JOIN locations l
-           ON l.slug = sc.city_slug
-          AND l.location_type = sc.location_type
-          AND l.is_active = TRUE
-         LEFT JOIN locations parent
-           ON parent.id = l.parent_id
-          AND parent.is_active = TRUE
-        WHERE sc.status = 'published'
-          AND sc.is_indexed = TRUE
-          AND LENGTH(BTRIM(COALESCE(sc.lokal_giris, ''))) >= 200
-        ORDER BY sc.updated_at DESC`,
-    );
-    return rows
-      .filter((row) => {
-        if (row.location_matches !== 1 || !row.location_slug) return false;
-        const decision = {
-          locationType: row.location_type,
-          sourceType: "manual",
-          isCustom: true,
-          isIndexed: row.is_indexed,
-          localIntroLength: 200,
-          parentLocationSlug: row.parent_slug,
-          locationSlug: row.location_slug,
-        };
-        return isKeepableLocation(decision) && isIndexableLocation(decision);
-      })
-      .map((row) => ({
-        serviceSlug: row.service_slug,
-        citySlug: row.city_slug,
-        updatedAt: row.updated_at,
-        canonicalUrl: row.canonical_url,
-      }));
-  } catch (error) {
-    console.warn(
-      "[ServiceCitySEO] Published city lookup unavailable:",
-      error instanceof Error ? error.message : error,
-    );
-    return [];
-  }
-}

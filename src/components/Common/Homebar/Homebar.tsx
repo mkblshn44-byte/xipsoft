@@ -6,7 +6,7 @@ import React, { useState, useEffect, useContext } from 'react'
 
 import Image from 'next/image'
 
-import { User } from 'lucide-react'
+import XipIcon from "@/components/Ui/Icon"
 
 import { useLanguage } from '@/hooks/useLanguage'
 
@@ -18,7 +18,7 @@ import { cn } from "@/utils"
 
 
 
-const UserIcon = () => <User className="w-4 h-4" />
+const UserIcon = () => <XipIcon name="user" className="w-4 h-4" glow="none" />
 
 
 

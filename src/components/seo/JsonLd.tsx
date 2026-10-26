@@ -9,13 +9,13 @@
  *   <JsonLd schemas={[serviceSchema(...), breadcrumbSchema(...), faqSchema(...)]} />
  */
 
+import { ldJson } from "@/lib/ld-json";
+
 type Schema = Record<string, unknown> | null | undefined;
 
 function isSchema(value: Schema): value is Record<string, unknown> {
   return Boolean(value);
-}
-
-export default function JsonLd({
+}export default function JsonLd({
   schemas,
   id,
 }: {
@@ -32,7 +32,7 @@ export default function JsonLd({
         <script
           key={id ? `${id}-${index}` : index}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: ldJson(schema) }}
         />
       ))}
     </>

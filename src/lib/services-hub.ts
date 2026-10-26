@@ -5,7 +5,7 @@
  * açıklamalar, özellikler ve SSS içerikleri `services` tablosundan gelir.
  * Statik/gömülü içerik TUTULMAZ; DB erişilemezse boş liste döner.
  */
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { unstable_cache } from "next/cache";
 import type { ServiceHubCategory, ServiceHubItem } from "@/types/common";
 import { normalizeBrandColor } from "@/lib/brand-color";
@@ -122,6 +122,7 @@ async function queryServicesHubData(): Promise<ServicesHubData> {
               features, faq_items, metadata
        FROM services
        WHERE is_active = true
+         AND row_type = 'main'
        ORDER BY sort_order ASC, id ASC`,
     );
 
@@ -146,7 +147,7 @@ export function getServicesHubData(): Promise<ServicesHubData> {
   // Admin panelinden hizmet güncellendiğinde revalidateTag("services") ile
   // önbellek anında tazelenir. Anahtar sürümü (v2) DB şeması/içeriği
   // değiştiğinde eski Data Cache kopyasının sızmasını engeller.
-  return unstable_cache(queryServicesHubData, ["services-hub-v2"], {
+  return unstable_cache(queryServicesHubData, ["services-hub-v3"], {
     revalidate: 3600,
     tags: ["services", "sitemap"],
   })();

@@ -1,15 +1,15 @@
 "use client";
 /**
  * Scrollgrid3DCards
- * motion/react ile kartlar 3D'den gelip grid'e yerlesir.
+ * Kart grid'i. Giriş animasyonu CSS (`home-reveal`) ile yapılır; böylece
+ * JS çalışmasa da (SSR / no-JS) kartlar görünür kalır.
  * Tıklanabilir, hover efektli, href destekli.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "motion/react";
-import type { ElementType } from "react";
+import XipIcon from "@/components/Ui/Icon";
 
 export interface CardItem {
-  icon: ElementType;
+  /** XipSoft özel ikon adı (ör. "globe", "shield-check"). */
+  icon: string;
   color: string;
   title: string;
   desc: string;
@@ -20,46 +20,15 @@ export interface CardItem {
 interface Props {
   items: CardItem[];
   columns?: number;
-  /** type3: Z-derinliginden gelir | type1: yandan gelir */
+  /** @deprecated Giriş yönü artık CSS ile sabit; geriye dönük uyumluluk için duruyor. */
   animType?: "type1" | "type3";
   /** Tüm kartlara tek renk border/glow (kart rengi override) */
   uniformColor?: string;
 }
 
-export default function Scrollgrid3DCards({ items, columns = 4, animType = "type3", uniformColor }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [revealedIndexes, setRevealedIndexes] = useState<number[]>([]);
-
-  const directionMap = useMemo(() => {
-    const dirs = ["left", "right", "top"] as const;
-    return items.map((_, index) => dirs[index % dirs.length]);
-  }, [items]);
-
-  useEffect(() => {
-    const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
-    if (!cards.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          const index = Number(entry.target.getAttribute("data-card-index"));
-          if (!Number.isNaN(index)) {
-            setRevealedIndexes((prev) => (prev.includes(index) ? prev : [...prev, index]));
-          }
-        });
-      },
-      { threshold: 0.18, rootMargin: "90px 0px -40px 0px" }
-    );
-
-    cards.forEach((card) => observer.observe(card));
-    return () => observer.disconnect();
-  }, [items.length]);
-
+export default function Scrollgrid3DCards({ items, columns = 4, uniformColor }: Props) {
   return (
     <div
-      ref={containerRef}
       style={{
         display: "grid",
         placeItems: "center",
@@ -78,24 +47,13 @@ export default function Scrollgrid3DCards({ items, columns = 4, animType = "type
         }}
       >
         {items.map((item, i) => {
-          const Icon = item.icon;
           const cardColor = uniformColor ?? item.color;
-
-          const direction = directionMap[i];
-          const isVisible = revealedIndexes.includes(i);
-
-          const getInitial = () => {
-            if (direction === "left") return { opacity: 0, x: -28, y: 12, scale: 0.96 };
-            if (direction === "right") return { opacity: 0, x: 28, y: 12, scale: 0.96 };
-            return { opacity: 0, y: 24, scale: 0.96 };
-          };
-          const getAnimate = () => ({ opacity: 1, x: 0, y: 0, scale: 1 });
 
           const cardInner = (
             <div
-              className="group relative w-full h-full flex flex-col gap-3 p-5 rounded-[1.25rem] cursor-pointer select-none card"
+              className="group relative w-full h-full flex flex-col gap-3 p-5 cursor-pointer select-none card home-service-card"
               style={{
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(2,6,23,0.12)",
+                boxShadow: "inset 0 1px 0 rgba(203, 213, 225,0.10), 0 4px 24px rgba(5, 8, 17,0.55)",
                 height: "100%",
               }}
             >
@@ -109,15 +67,15 @@ export default function Scrollgrid3DCards({ items, columns = 4, animType = "type
                 </div>
               )}
 
-              {/* Ikon */}
+              {/* Ikon — arkasına beyaz ışık vurmuş yuva */}
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative z-10"
+                className="icon-backlight w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative z-10"
                 style={{
                   background: "rgba(255,255,255,0.06)",
                   border: `1px solid ${cardColor}40`,
                 }}
               >
-                <Icon className="w-5 h-5" style={{ color: cardColor }} strokeWidth={1.5} />
+                <XipIcon name={item.icon} glow="strong" className="w-5 h-5" style={{ color: cardColor }} />
               </div>
 
               {/* Metin */}
@@ -135,22 +93,11 @@ export default function Scrollgrid3DCards({ items, columns = 4, animType = "type
           );
 
           return (
-            <motion.div
+            <div
               key={`${item.title}-${i}`}
-              ref={(node) => {
-                cardRefs.current[i] = node;
-              }}
-              data-card-index={i}
-              initial={getInitial()}
-              animate={isVisible ? getAnimate() : getInitial()}
-              transition={{
-                duration: 0.65,
-                delay: isVisible ? Math.min(i * 0.045, 0.24) : 0,
-                ease: [0.22, 1, 0.36, 1],
-              }}
+              className="home-reveal"
               style={{
                 aspectRatio: "1.5",
-                borderRadius: "1.25rem",
                 transformStyle: "preserve-3d",
               }}
             >
@@ -161,7 +108,7 @@ export default function Scrollgrid3DCards({ items, columns = 4, animType = "type
               ) : (
                 cardInner
               )}
-            </motion.div>
+            </div>
           );
         })}
       </div>

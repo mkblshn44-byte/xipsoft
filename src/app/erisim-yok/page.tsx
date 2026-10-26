@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldX } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 
 export const metadata: Metadata = {
   title: "Geçiş Yok",
@@ -20,7 +20,7 @@ export default function NoAccessPage() {
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
       <div className="w-full max-w-md text-center">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-red-500/10 border border-red-500/20 mb-6">
-          <ShieldX className="w-10 h-10 text-red-400" />
+          <XipIcon name="shield-x" className="w-10 h-10 text-red-400" glow="none" />
         </div>
 
         <h1 className="text-3xl font-extrabold text-white mb-3 tracking-tight">

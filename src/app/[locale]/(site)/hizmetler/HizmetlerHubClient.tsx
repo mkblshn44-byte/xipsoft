@@ -3,34 +3,25 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  Globe, Smartphone, Bot, Shield, Monitor, ShoppingCart,
-  Cloud, GitBranch, BarChart2, PieChart, Layers, CheckCircle,
-  ArrowRight, Search, Sparkles, MessageCircle,
-  Code2, Zap, Lock, Cpu
-} from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import type { ServiceHubItem } from "@/types/common";
-import { teklifModal } from "@/components/Common/TeklifModal/TeklifModal";
-import { BRAND_COMPANY, BRAND_COLORS } from "@/config/brand.config";
+import { servicePath } from "@/lib/content-path";
 import FaqSection from "@/components/seo/FaqSection";
+import GlassServiceCard from "@/components/Ui/GlassServiceCard";
+import ScrollIndicator from "@/components/Ui/ScrollIndicator";
+import IceButton from "@/components/Ui/IceButton/IceButton";
 
-const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
-  Globe,
-  Smartphone,
-  Bot,
-  Shield,
-  Monitor,
-  ShoppingCart,
-  Cloud,
-  GitBranch,
-  BarChart2,
-  PieChart,
-  Layers,
-  Code2,
-  Zap,
-  Lock,
-  Cpu,
-};
+// XipSoft ÖZEL ikon seti. Değerler doğrudan `XipIcon` adıdır; listede
+// olmayan bir `service.icon` gelirse "Globe"a düşülür (uydurma ikon yok).
+const ICON_COMPONENTS = new Set<string>([
+  "Globe", "Smartphone", "Bot", "Shield", "Monitor", "ShoppingCart", "Cloud",
+  "GitBranch", "BarChart2", "PieChart", "Layers", "Code2", "Zap", "Lock", "Cpu",
+]);
+
+/** `service.icon` → doğrulanmış ikon adı (güvenli varsayılan: Globe). */
+function resolveIconName(name?: string): string {
+  return name && ICON_COMPONENTS.has(name) ? name : "Globe";
+}
 
 const CATEGORIES = [
   { id: "all", label: "Tüm Hizmetler" },
@@ -68,9 +59,9 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse 70% 45% at 50% 0%, rgba(167,139,250,0.12) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 90% 40%, rgba(34,211,238,0.08) 0%, transparent 55%),
-            radial-gradient(ellipse 60% 45% at 10% 80%, rgba(251,191,36,0.06) 0%, transparent 60%)
+            radial-gradient(ellipse 70% 45% at 50% 0%, rgba(167, 139, 250,0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 90% 40%, rgba(167, 139, 250,0.06) 0%, transparent 55%),
+            radial-gradient(ellipse 60% 45% at 10% 80%, rgba(167, 139, 250,0.06) 0%, transparent 60%)
           `,
         }}
       />
@@ -107,7 +98,7 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
             transition={{ duration: 0.4 }}
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs font-mono tracking-wider uppercase mb-5"
           >
-            <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+            <XipIcon name="sparkles" className="w-3.5 h-3.5 text-violet-400" glow="strong" />
             <span>Uçtan Uca Teknoloji Mimarisi</span>
           </motion.div>
 
@@ -135,6 +126,10 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
           </motion.p>
         </header>
 
+        <div className="mb-10 -mt-8 flex justify-center">
+          <ScrollIndicator href="#service-list" label="Hizmetleri keşfet" />
+        </div>
+
         {/* Filter & Search Bar */}
         <div className="mb-12 flex flex-col md:flex-row gap-4 items-center justify-between border-y border-white/[0.08] py-6">
           {/* Category Tabs */}
@@ -159,7 +154,7 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
 
           {/* Search Box */}
           <div className="relative w-full md:w-72">
-            <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <XipIcon name="search" glow="none" className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
@@ -171,94 +166,42 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
         </div>
 
         {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+        <div id="service-list" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20 scroll-mt-24">
           <AnimatePresence mode="popLayout">
             {filteredServices.map((service, index) => {
-              const Icon = ICON_COMPONENTS[service.icon] || Globe;
+              const iconName = resolveIconName(service.icon);
               return (
-                <motion.article
+                <motion.div
                   layout
                   key={service.slug}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.35, delay: index * 0.04 }}
-                  className="group relative flex flex-col justify-between rounded-2xl p-7 bg-zinc-900/60 border border-white/[0.08] backdrop-blur-xl transition-all duration-300 hover:border-white/[0.2] hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 overflow-hidden"
                 >
-                  {/* Subtle top indicator */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: `linear-gradient(90deg, transparent, ${service.color}, transparent)` }}
+                  <GlassServiceCard
+                    title={service.title}
+                    description={service.shortDesc}
+                    icon={<XipIcon name={iconName} className="h-8 w-8" glow="strong" />}
+                    href={servicePath(service.slug)}
+                    accentColor={service.color}
+                    eyebrow={service.categoryLabel}
+                    badge={service.popular ? "Öne Çıkan" : undefined}
+                    features={service.features}
+                    footer={
+                      <div className="flex w-full items-center justify-between gap-3 border-t border-white/[0.07] pt-5">
+                        <Link
+                          href={servicePath(service.slug)}
+                          className="inline-flex items-center gap-2 text-xs font-semibold text-white transition-colors hover:text-violet-200"
+                        >
+                          <span>Detayları İncele</span>
+                          <XipIcon name="arrow-right" className="h-3.5 w-3.5" />
+                        </Link>
+                        <IceButton label="Teklif Al" service={service.title} size="sm" />
+                      </div>
+                    }
                   />
-
-                  <div>
-                    {/* Header: Icon & Badge */}
-                    <div className="flex items-center justify-between gap-3 mb-5">
-                      <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-                        style={{
-                          background: `${service.color}15`,
-                          border: `1px solid ${service.color}35`,
-                          color: service.color,
-                        }}
-                      >
-                        <Icon className="w-6 h-6" />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {service.popular && (
-                          <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/30">
-                            Öne Çıkan
-                          </span>
-                        )}
-                        <span className="text-[11px] font-mono text-zinc-500 uppercase">
-                          {service.categoryLabel}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Title */}
-                    <h2 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-                      <Link href={`/hizmetler/${service.slug}`}>
-                        {service.title}
-                      </Link>
-                    </h2>
-
-                    {/* Short Description */}
-                    <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                      {service.shortDesc}
-                    </p>
-
-                    {/* Feature Bullets */}
-                    <ul className="space-y-2.5 mb-8">
-                      {service.features.map((feat) => (
-                        <li key={feat} className="flex items-start gap-2.5 text-xs text-zinc-300">
-                          <CheckCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: service.color }} />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Card Actions */}
-                  <div className="pt-5 border-t border-white/[0.06] flex items-center justify-between gap-3">
-                    <Link
-                      href={`/hizmetler/${service.slug}`}
-                      className="inline-flex items-center gap-2 text-xs font-semibold text-white group-hover:text-cyan-400 transition-colors"
-                    >
-                      <span>Detayları İncele</span>
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => teklifModal.open(service.title)}
-                      className="text-xs px-3 py-1.5 rounded-lg font-medium text-zinc-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-all"
-                    >
-                      Teklif Al
-                    </button>
-                  </div>
-                </motion.article>
+                </motion.div>
               );
             })}
           </AnimatePresence>
@@ -270,7 +213,7 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
             <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 font-semibold mb-2 block">
               Mühendislik Standartlarımız
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4 brand-gradient-text">
               Neden XipSoft ile Çalışmalısınız?
             </h2>
             <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
@@ -329,7 +272,7 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
         {/* CTA Conversion Banner */}
         <section className="rounded-3xl p-8 sm:p-14 text-center bg-gradient-to-r from-violet-900/30 via-cyan-900/20 to-blue-900/30 border border-white/[0.12] backdrop-blur-2xl relative overflow-hidden">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4 brand-gradient-text">
               Yeni Projenizi Hayata Geçirmeye Hazır mısınız?
             </h2>
             <p className="text-sm sm:text-base text-zinc-300 mb-8 leading-relaxed">
@@ -338,13 +281,7 @@ export default function HizmetlerHubClient({ services, faq }: HizmetlerHubClient
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <button
-                type="button"
-                onClick={() => teklifModal.open("Hizmetler Hub Sayfası")}
-                className="site-cta-primary px-6 py-3.5 text-sm font-bold transition-all hover:scale-[1.03]"
-              >
-                Ücretsiz Teklif Alın
-              </button>
+              <IceButton label="Ücretsiz Teklif Alın" service="Hizmetler Hub Sayfası" size="lg" />
 
               <Link
                 href="/contact-us"

@@ -1,4 +1,5 @@
 import type { SerializedEditorState, SerializedLexicalNode, SerializedTextNode } from "lexical";
+import { sanitizeRenderedHtml } from "@/lib/html-sanitize";
 
 interface LexicalNode extends SerializedLexicalNode {
   type: string;
@@ -56,6 +57,40 @@ function applyTextFormat(format: number | undefined, text: string): string {
   return result;
 }
 
+/** Blog gövdesindeki paragraf sınıfı — iki üretim yolu da BUNU kullanır. */
+const PARAGRAPH_CLASS = "text-zinc-300 text-base sm:text-lg leading-relaxed mb-6";
+
+/** Bu eşiğin altındaki blok bölünmez (kısa paragraflara dokunulmaz). */
+const FLAT_BLOCK_MIN_CHARS = 700;
+/** Bölünen blokta tek paragraf için hedef uzunluk. */
+const FLAT_BLOCK_TARGET_CHARS = 450;
+
+/**
+ * Aralarında boş satır OLMAYAN uzun metni cümle sonlarından paragraflara böler.
+ *
+ * NEDEN? AI üretimi yazılar tek bir Lexical paragrafı (4-5 bin karakter, hiç
+ * `\n\n` yok) olarak kaydedilebiliyor. Bölünmezse sayfa boşluksuz bir metin
+ * duvarı oluyor — okunabilirlik ve tarama davranışı ciddi düşüyor.
+ * Cümle sonundan kestiği için anlam bütünlüğü korunur.
+ */
+function splitFlatBlock(text: string): string[] {
+  if (text.length < FLAT_BLOCK_MIN_CHARS) return [text];
+  const sentences = text.match(/[^.!?…]+(?:[.!?…]+["')\]]?\s+|$)/g);
+  if (!sentences || sentences.length < 3) return [text];
+
+  const parts: string[] = [];
+  let current = "";
+  for (const sentence of sentences) {
+    if (current && current.length + sentence.length > FLAT_BLOCK_TARGET_CHARS) {
+      parts.push(current.trim());
+      current = "";
+    }
+    current += sentence;
+  }
+  if (current.trim()) parts.push(current.trim());
+  return parts.length > 1 ? parts : [text];
+}
+
 function parseMarkdownToHtml(md: string): string {
   if (!md) return "";
   let html = md;
@@ -94,7 +129,9 @@ function parseMarkdownToHtml(md: string): string {
       ) {
         return trimmed;
       }
-      return `<p class="text-zinc-300 text-base sm:text-lg leading-relaxed mb-6">${trimmed.replace(/\r?\n/g, "<br/>")}</p>`;
+      return splitFlatBlock(trimmed)
+        .map((part) => `<p class="${PARAGRAPH_CLASS}">${part.replace(/\r?\n/g, "<br/>")}</p>`)
+        .join("\n\n");
     })
     .join("\n\n");
 }
@@ -135,10 +172,19 @@ function renderNode(node: LexicalNode): string {
   // If paragraph contains single text node with newlines
   if (node.type === "paragraph" && childNodes.length === 1) {
     const firstChild = childNodes[0];
-    if (firstChild && firstChild.type === "text") {
+    if (firstChild && firstChild.type === "text" && !(firstChild as any).marks) {
       const txt = firstChild.text ?? "";
       if (txt.includes("\n\n") || txt.includes("\r\n\r\n")) {
         return parseMarkdownToHtml(txt);
+      }
+      // Tek blok hâlinde gelen uzun metin: cümle sonlarından paragraflara böl.
+      const flat = splitFlatBlock(txt);
+      if (flat.length > 1) {
+        const attrs = buildAttrs(node);
+        const format = (firstChild as SerializedTextNode).format;
+        return flat
+          .map((part) => `<p class="${PARAGRAPH_CLASS}"${attrs}>${applyTextFormat(format, part)}</p>`)
+          .join("\n\n");
       }
     }
   }
@@ -151,7 +197,7 @@ function renderNode(node: LexicalNode): string {
 
     case "paragraph": {
       const attrs = buildAttrs(node);
-      return `<p class="text-zinc-300 text-base sm:text-lg leading-relaxed mb-6"${attrs}>${children || "<br/>"}</p>`;
+      return `<p class="${PARAGRAPH_CLASS}"${attrs}>${children || "<br/>"}</p>`;
     }
 
     case "heading": {
@@ -223,7 +269,20 @@ function buildAttrs(node: LexicalNode): string {
   return attrs.join("");
 }
 
+/**
+ * Lexical / TipTap durumundan HTML üretir.
+ *
+ * ⚠ GÜVENLİK: Dönen HTML `dangerouslySetInnerHTML` ile basıldığı için
+ * ÜRETİLEN HER YOL DOMPurify'den geçirilir (`sanitizeRenderedHtml`).
+ * Markdown ve ham-string yolları daha önce hiçbir şey kaçırmıyordu;
+ * bkz. `src/lib/html-sanitize.ts` içindeki açıklama.
+ */
 export function lexicalStateToHtml(state: any): string {
+  return sanitizeRenderedHtml(renderContentToHtml(state));
+}
+
+/** `lexicalStateToHtml`'in sanitize EDİLMEMİŞ çalışma gövdesi. */
+function renderContentToHtml(state: any): string {
   if (!state) return "";
 
   // String format (JSON string or Markdown or HTML)
@@ -232,7 +291,7 @@ export function lexicalStateToHtml(state: any): string {
     if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
       try {
         const parsed = JSON.parse(trimmed);
-        return lexicalStateToHtml(parsed);
+        return renderContentToHtml(parsed);
       } catch {
         return parseMarkdownToHtml(state);
       }

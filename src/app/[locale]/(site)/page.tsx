@@ -2,17 +2,14 @@ import type { Metadata } from "next";
 import HomePageComponent from "./HomePageComponents";
 import {
   faqSchema,
-  localBusinessSchema,
-  organizationSchema,
-  webPageSchema,
-  websiteSchema,
-} from "@/lib/schema-helpers";
+  webPageSchema
+} from "@/lib/schema/site";
 import JsonLd from "@/components/seo/JsonLd";
 import Container from "@/components/Common/Container/Container";
 import FaqSection from "@/components/seo/FaqSection";
 import { getPageFaqs, getPageMeta } from "@/lib/page-content";
 import { buildPageMetadata } from "@/lib/seo-helpers";
-import APP_CONFIg, { SITE_URL } from "@/config/brand.config";
+import APP_CONFIG, { DEFAULT_OG_IMAGE_URL, SITE_URL } from "@/config/brand.config";
 
 export const revalidate = 300;
 
@@ -20,8 +17,8 @@ const OG_IMAGE_ALT = `XipSoft | Kurumsal Web Tasarım, Özel Yazılım & Siber G
 
 export async function generateMetadata(): Promise<Metadata> {
   const meta = await getPageMeta("home");
-  const title = meta?.title || APP_CONFIg.title;
-  const description = meta?.description || APP_CONFIg.description;
+  const title = meta?.title || APP_CONFIG.title;
+  const description = meta?.description || APP_CONFIG.description;
   const shareTitle = meta?.ogTitle || title;
   const shareDescription = meta?.ogDescription || description;
 
@@ -42,7 +39,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     other: {
       // LCP kritik görsellerin ön yüklemesi: tarayıcıya önce bunları almasını söylüyoruz
-      "image": `${SITE_URL}/media/xipsoft-seo.webp`,
+      "image": DEFAULT_OG_IMAGE_URL,
     },
   };
 }
@@ -51,11 +48,10 @@ export default async function HomePage() {
   const homeMeta = await getPageMeta("home");
   const faqItems = await getPageFaqs("home");
 
-  // ── JSON-LD: Organization + WebSite + LocalBusiness + WebPage + Breadcrumb + FAQ ─
+  // ── JSON-LD: WebPage + Breadcrumb + FAQ ──────────────────────────────────
+  // Organization / WebSite / LocalBusiness düğümleri kök layout'ta site geneli
+  // tek @graph olarak basılır; burada tekrar üretilmez (aynı @id çakışması olmaz).
   const jsonLd = [
-    organizationSchema(),
-    websiteSchema(),
-    localBusinessSchema(),
     webPageSchema({
       name: "XipSoft | Kurumsal Web Tasarım, Özel Yazılım & Siber Güvenlik",
       description: "Next.js 15 ile yüksek hızlı kurumsal web siteleri, özel yazılım ve mobil uygulamalar. 15 yıl deneyim, 200+ proje. İstanbul merkezli — ücretsiz analiz alın.",

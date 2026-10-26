@@ -1,6 +1,6 @@
 "use server";
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { getServerActionContext } from "@/lib/api-guard";
 
 // Whitelist: kullanıcının güncelleyebilecegi alanlar — bunların dısındaki

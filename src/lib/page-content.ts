@@ -5,8 +5,9 @@
  * `xip_dynamic_content` tablosunda `content_type = 'page_faq'` olarak tutulur.
  * Kod içinde statik SSS metni TUTULMAZ.
  */
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { unstable_cache } from "next/cache";
+import { pageCacheKey, withPageCache } from "@/lib/redis/page-cache";
 import type { HomeHeroCopy } from "@/types/common";
 
 export interface PageFaqItem {
@@ -62,11 +63,13 @@ export async function queryDynamicContentFaq(
 
 /** Bir sayfa kategorisinin SSS'lerini DB'den döndürür (1 saat cache). */
 export function getPageFaqs(category: string): Promise<PageFaqItem[]> {
-  return unstable_cache(
-    () => queryPageFaqs(category),
-    ["page-faq", category],
-    { revalidate: 3600, tags: ["page-content", `page-faq:${category}`] },
-  )();
+  return withPageCache(pageCacheKey("cat", `faq:${category}`), () =>
+    unstable_cache(
+      () => queryPageFaqs(category),
+      ["page-faq", category],
+      { revalidate: 3600, tags: ["page-content", `page-faq:${category}`] },
+    )(),
+  );
 }
 
 /** `{urun}` placeholder'ını gerçek ürün adıyla değiştirir. */
@@ -144,10 +147,12 @@ async function queryPageMeta(key: string): Promise<PageMeta | null> {
  * Kayıt yoksa `null` döner; çağıran taraf kendi güvenli varsayılanını uygular.
  */
 export function getPageMeta(key: string): Promise<PageMeta | null> {
-  return unstable_cache(
-    () => queryPageMeta(key),
-    ["page-meta", key],
-    { revalidate: 3600, tags: ["page-content", `page-meta:${key}`] },
-  )();
+  return withPageCache(pageCacheKey("cat", `meta:${key}`), () =>
+    unstable_cache(
+      () => queryPageMeta(key),
+      ["page-meta", key],
+      { revalidate: 3600, tags: ["page-content", `page-meta:${key}`] },
+    )(),
+  );
 }
 

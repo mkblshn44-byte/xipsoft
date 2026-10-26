@@ -47,6 +47,8 @@ export interface PublishedPage {
   lokalSss: LocalFaqItem[] | null;
   canonicalUrl: string | null;
   ogImageUrl: string | null;
+  /** DB'den gelen ham JSON-LD şemaları (`pages.schema_markup`); yoksa null. */
+  schemaMarkup: Record<string, unknown>[] | null;
   status: "draft" | "review" | "published" | "paused";
   /**
    * Sayfanın üretim kaynağı. `manual` = elle yazılmış özgün içerik (indexlenir);

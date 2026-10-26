@@ -34,8 +34,8 @@ export default function SiteLayoutGuard({ children }: { children: React.ReactNod
           isAuthPage
             ? ""
             : isHome
-            ? "min-h-[calc(100vh-142px)]"
-            : "min-h-[calc(100vh-142px)] pt-24"
+              ? "site-ambient-led min-h-[calc(100vh-142px)]"
+              : "site-ambient-led min-h-[calc(100vh-142px)] pt-24"
         }
       >
         {children}

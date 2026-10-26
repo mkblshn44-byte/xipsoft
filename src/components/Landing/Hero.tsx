@@ -7,7 +7,7 @@
  * - shadcn token sınıfları XipSoft `neon` paletine çevrildi
  *   (`bg-background` → `bg-neon-bg`, `text-primary` → `text-neon-primary` …).
  * - `var(--primary)` / `var(--accent)` gölgeleri sabit marka renklerine
- *   (violet `#a78bfa`, cyan `#ddd6fe`) dönüştürüldü.
+ *   cyan tonlarına dönüştürüldü.
  * - İki varyant destekler:
  *   · `variant="home"` (varsayılan): tam ekran (h-svh) anasayfa hero'su.
  *   · `variant="page"`             : alt sayfalar için kompakt (~68vh) hero.
@@ -22,11 +22,12 @@
  */
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import dynamic from "next/dynamic";
 import type { HomeHeroCopy } from "@/types/common";
 import { cn } from "@/utils";
-import { teklifModal } from "@/components/Common/TeklifModal/TeklifModal";
+import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
+import ScrollIndicator from "@/components/Ui/ScrollIndicator";
 
 // SpaceCanvas: WebGL2 shader + RAF loop — büyük, sadece hero'da kullanılır.
 // Lazy load ile initial bundle'dan ayrılır; hydration sırasında main thread
@@ -56,7 +57,7 @@ export interface HeroContent extends Partial<HomeHeroCopy> {
   title?: string;
   /** Birincil CTA hedefi (`onCtaPrimary` yoksa kullanılır). */
   ctaPrimaryHref?: string;
-  /** İkincil CTA hedefi (varsayılan alt sayfa: `/hizmetler/web-yazilim-tasarim`). */
+  /** İkincil CTA hedefi (varsayılan alt sayfa: `/hizmetler/web-yazilim-tasarim1.html`). */
   ctaSecondaryHref?: string;
   /** İstatistik şeridi (alt sayfa hero'sunda gösterilir). */
   stats?: HeroStat[];
@@ -107,33 +108,39 @@ export default function Hero({
   const ctaPrimaryHref = copy?.ctaPrimaryHref ?? (isHome ? "/teklif" : undefined);
   const ctaSecondaryHref =
     copy?.ctaSecondaryHref ??
-    (isHome ? DEFAULTS.ctaSecondaryHref : "/hizmetler/web-yazilim-tasarim");
+    (isHome ? DEFAULTS.ctaSecondaryHref : "/hizmetler/web-yazilim-tasarim1.html");
   const stats = copy?.stats ?? [];
 
   // Animasyon gecikmeleri: anasayfa sinematik, alt sayfalar daha hızlı.
   const delay = (home: string, page: string) => (isHome ? home : page);
 
   const primaryCls =
-    "group inline-flex items-center gap-2 rounded-full bg-neon-primary px-7 py-3.5 text-sm font-medium text-neon-bg shadow-[0_0_32px_-4px_#a78bfa] transition-shadow hover:shadow-[0_0_48px_0_#a78bfa]";
+    "site-cta-primary group inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-bold shadow-[0_6px_20px_rgba(167, 139, 250,0.14)] transition-all duration-200 hover:-translate-y-0.5";
   const secondaryCls =
     "inline-flex items-center rounded-full border border-neon-fg/15 px-7 py-3.5 text-sm font-medium text-neon-fg backdrop-blur transition-colors hover:border-neon-accent hover:text-neon-accent";
 
   const primaryInner = (
     <>
       {ctaPrimary}
-      <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+      <XipIcon name="arrow-right" glow="strong" halo="red" className="size-4 transition-transform group-hover:translate-x-1" />
     </>
   );
 
   return (
     <section
       className={cn(
-        "relative isolate flex w-full justify-center overflow-hidden bg-neon-bg",
+        "site-ambient-led relative isolate flex w-full justify-center overflow-hidden bg-neon-bg",
         isHome ? "h-svh min-h-[640px] items-start" : "min-h-[68vh] items-center",
         className,
       )}
     >
       <SpaceCanvas className="absolute inset-0 -z-10" />
+      {isHome && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-40 bg-gradient-to-b from-transparent to-space-950 sm:h-52"
+        />
+      )}
 
       <div
         className={cn(
@@ -141,13 +148,13 @@ export default function Hero({
           // artık absolute) en baştan tam genişlikte çizilir. Yazı tipi swap'ı
           // sırasında başlık satırlarının yeniden sarılması py-'yi değiştirmez;
           // kabın genişliği sabit kaldığı için kap-bazlı CLS oluşmaz.
-          "flex w-full flex-col items-center gap-6 px-6 text-center",
+          "relative z-10 flex w-full flex-col items-center gap-6 px-6 text-center",
           isHome
             ? "max-w-4xl pt-32 [@media(min-height:800px)]:pt-44"
             : "max-w-4xl py-24 lg:py-28",
         )}
       >
-        <h1 className="text-4xl font-semibold leading-tight tracking-tight text-balance text-neon-fg sm:text-6xl lg:text-7xl">
+        <h1 className="hero-title font-display text-4xl font-semibold leading-tight tracking-tight text-balance sm:text-6xl lg:text-7xl">
           {titleLine1 && (
             <span
               className={cn(
@@ -165,11 +172,7 @@ export default function Hero({
                 delay("[animation-delay:0.08s]", "[animation-delay:0.15s]"),
               )}
             >
-              {titleLine2 && (
-                <span className="text-neon-primary [text-shadow:0_0_28px_#a78bfa]">
-                  {titleLine2}
-                </span>
-              )}
+              {titleLine2 && <>{titleLine2}</>}
               {titleLine2 && titleLine3 ? " " : null}
               {titleLine3}
             </span>
@@ -249,17 +252,7 @@ export default function Hero({
         )}
       </div>
 
-      {isHome && (
-        <a
-          href="#home-content"
-          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 animate-hero-fade flex-col items-center gap-3 text-xs uppercase tracking-widest text-neon-fg/70 transition-colors [animation-delay:0.4s] hover:text-neon-accent [@media(min-height:800px)]:flex"
-        >
-          Keşfet
-          <span className="relative h-10 w-px overflow-hidden bg-neon-fg/20">
-            <span className="absolute inset-x-0 top-0 h-1/2 animate-scroll-line bg-neon-accent" />
-          </span>
-        </a>
-      )}
+      {isHome && <ScrollIndicator href="#home-content" placement="hero" />}
     </section>
   );
 }

@@ -19,11 +19,17 @@
  *
  * Blog slug listesi 5 dk bellek içi önbellekte tutulur; her istekte DB'ye
  * gidilmez. Middleware Node.js runtime'da çalıştığı için `pool` kullanılabilir.
+ *
+ * VERİ ÖNCELİĞİ (Kırık Link → Sayfa Aç): `/forum/...` (ve WP taksonomi
+ * kalıpları) artık mutlak yönlendirme değil. Admin o yolu yayınlanmış bir
+ * içerik ağacı düğümü olarak sahiplendiyse middleware DURUR ve isteği kök
+ * catch-all'a bırakır. Sahiplenilmeyen her eski URL eskisi gibi 301 görür.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { resolveSlugFromSet } from "@/lib/slug-candidates";
+import { isPublishedTreePath } from "@/lib/content-tree-policy";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -58,6 +64,7 @@ async function getPublishedBlogSlugs(): Promise<Set<string> | null> {
 
 /**
  * `/forum...` isteklerini işler:
+ *   - yolu yayınlı bir ağaç düğümü sahipleniyorsa → `null` (istek rotaya gider)
  *   - taşınmış bir eski thread ise → 301 `/blog/<slug>`
  *   - aksi halde (forum kökü, kategori, eşleşmeyen thread) → 301 `/blog`
  * `/forum` dışındaki yollar için `null` döner (diğer middleware adımları işler).
@@ -71,6 +78,20 @@ export async function handleLegacyForum(
   // `.html`, `.html.html` gibi ekleri temizle ve sondaki slash'ı at.
   let clean = pathname.replace(/(?:\.html)+$/i, "");
   if (clean.length > 1) clean = clean.replace(/\/+$/, "");
+
+  // 2FA bir admin route'udur; eski forum URL'lerini blog'a taşıyan catch-all'a
+  // düşmemelidir. Geçici yönlendirme kullanarak tarayıcıda kalıcı yanlış URL
+  // önbelleği oluşmasını önleriz.
+  if (clean === "/forum/verify-2fa") {
+    const target = req.nextUrl.clone();
+    target.pathname = "/admin/verify-2fa";
+    return NextResponse.redirect(target, 307);
+  }
+
+  // Admin bu eski forum adresini yayına almışsa yönlendirme YAPMA: istek kök
+  // catch-all'da DB içeriğiyle açılır. (`.html` kanoniği de aynı snapshot ile
+  // step 0'da korundu — iki karar tek kaynaktan gelir.)
+  if (await isPublishedTreePath(clean)) return null;
 
   const segments = clean.split("/").filter(Boolean); // ["forum", ...]
 
@@ -107,13 +128,17 @@ export async function handleLegacyForum(
  *
  * `.html` ekli varyantlar middleware adım 0'da temizlendiğinden burada
  * ekstra hop oluşmaz.
+ *
+ * YOL İSTİSNASI: admin bu kalıplardan birinin altında bir sayfayı yayına
+ * aldıysa (ör. `/page/hakkinda-imiz`) yayın, yönlendirmeden önce gelir;
+ * `isPublishedTreePath` `null` döndürür ve isteği rota çözer.
  */
 const LEGACY_ARCHIVE_PREFIXES = new Set(["category", "tag", "author", "page"]);
 
-export function handleLegacyWpPaths(
+export async function handleLegacyWpPaths(
   req: NextRequest,
   pathname: string
-): NextResponse | null {
+): Promise<NextResponse | null> {
   const clean = pathname
     .replace(/(?:\.(?:html|xml))+$/i, "")
     .replace(/\/+$/, "");
@@ -127,5 +152,6 @@ export function handleLegacyWpPaths(
     (firstSegment === "comments" && secondSegment === "feed");
 
   if (!isLegacyArchive && !isLegacyFeed) return null;
+  if (await isPublishedTreePath(clean)) return null;
   return NextResponse.redirect(new URL("/blog", req.url), 301);
 }

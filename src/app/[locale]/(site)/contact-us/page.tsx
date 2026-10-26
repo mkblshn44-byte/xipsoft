@@ -1,9 +1,12 @@
-import APP_CONFIg, { SITE_URL } from "@/config/brand.config";
+import APP_CONFIG, { DEFAULT_OG_IMAGE_URL, SITE_URL } from "@/config/brand.config";
 import { Metadata } from "next";
 import PageTransitionWrapper from "@/components/Animate/PageTransitionWrapper/PageTransitionWrapper";
 import ContactPageClient from "./ContactPageClient";
 import JsonLd from "@/components/seo/JsonLd";
-import { faqSchema, localBusinessSchema, webPageSchema } from "@/lib/schema-helpers";
+import {
+  faqSchema,
+  webPageSchema
+} from "@/lib/schema/site";
 import { getPageFaqs, getPageMeta } from "@/lib/page-content";
 
 // Static page - cache for 1 hour
@@ -11,8 +14,8 @@ export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const meta = await getPageMeta("contact");
-  const title = meta?.title || APP_CONFIg.title;
-  const description = meta?.description || APP_CONFIg.description;
+  const title = meta?.title || APP_CONFIG.title;
+  const description = meta?.description || APP_CONFIG.description;
 
   return {
     title: {
@@ -32,16 +35,16 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: "tr_TR",
       url: `${SITE_URL}/contact-us`,
-      siteName: APP_CONFIg.title,
+      siteName: APP_CONFIG.title,
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
-      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: "XipSoft İletişim" }],
+      images: [{ url: DEFAULT_OG_IMAGE_URL, width: 1200, height: 630, alt: "XipSoft İletişim" }],
     },
     twitter: {
       card: "summary_large_image",
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
-      images: [`${SITE_URL}/media/xipsoft-seo.webp`],
+      images: [DEFAULT_OG_IMAGE_URL],
     },
   };
 }
@@ -49,9 +52,10 @@ export async function generateMetadata(): Promise<Metadata> {
 const ContactUsPage = async () => {
   const faqItems = await getPageFaqs("contact");
 
-  // ── JSON-LD: LocalBusiness + WebPage + Breadcrumb + FAQ (tek kaynak) ──────
+  // ── JSON-LD: WebPage + Breadcrumb + FAQ ──────────────────────────────────
+  // LocalBusiness düğümü kök layout'taki site geneli @graph'tan gelir; burada
+  // tekrar üretilmez (aynı @id çakışması olmaz).
   const jsonLd = [
-    localBusinessSchema({ url: `${SITE_URL}/contact-us` }),
     webPageSchema({
       name: "İletişim | XipSoft",
       description:

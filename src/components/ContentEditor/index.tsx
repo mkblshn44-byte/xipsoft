@@ -320,12 +320,12 @@ export function ContentEditor({ value, onChange, placeholder }: ContentEditorPro
           padding: 0.4rem 1rem;
           margin: 0.75rem 0;
           color: rgb(161 161 170);
-          background: rgba(167,139,250,0.05);
+          background: rgba(167, 139, 250,0.05);
           border-radius: 0 0.5rem 0.5rem 0;
         }
         .lexical-code {
           background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.08);
+          border: 1px solid rgba(203, 213, 225, 0.08);
           border-radius: 0.5rem;
           padding: 0.75rem 1rem;
           font-family: ui-monospace, monospace;

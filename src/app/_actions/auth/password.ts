@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { verifySessionCookie } from "@/lib/security";
-import { queryOne, query } from "@/lib/database";
+import { queryOne, query } from "@/lib/db/pool";
 import bcrypt from "bcryptjs";
 import argon2 from "argon2";
 

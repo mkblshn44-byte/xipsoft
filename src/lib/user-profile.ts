@@ -7,7 +7,7 @@
  * önbelleklenir; metadata ve sayfa gövdesi tek DB isteğini paylaşır.
  */
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { unstable_cache } from "next/cache";
 import type { PublicUserProfile } from "@/types/user-profile";
 

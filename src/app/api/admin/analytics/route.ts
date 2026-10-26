@@ -6,8 +6,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { extractAuthContext, requireAdmin } from "@/lib/api-guard";
+import { ensureSiteVisitorAnalyticsSchema } from "@/lib/db/site-visitors";
 
 export const runtime = "nodejs";
 
@@ -17,8 +18,13 @@ export async function GET(req: NextRequest) {
   if (guard !== null && "status" in guard) return guard;
 
   try {
+    await ensureSiteVisitorAnalyticsSchema();
     const { searchParams } = new URL(req.url);
-    const days = Math.min(parseInt(searchParams.get("days") || "7", 10), 90);
+    // `?days=abc` → parseInt = NaN → "NaN days" SQL'i patlatıyordu; negatif ve
+    // 0 da geçiyordu. Artık her zaman 1..90 tam sayı, aşağıdaki INTERVAL
+    // interpolasyonu bu yüzden güvenli.
+    const parsedDays = Number.parseInt(searchParams.get("days") ?? "7", 10);
+    const days = Math.min(Math.max(Number.isFinite(parsedDays) ? parsedDays : 7, 1), 90);
 
     const interval = `${days} days`;
 
@@ -42,7 +48,9 @@ export async function GET(req: NextRequest) {
           COUNT(*) FILTER (WHERE is_bot = true)::int                        AS bot_visits,
           COUNT(*) FILTER (WHERE is_bot = false OR is_bot IS NULL)::int     AS human_visits,
           COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours')::int AS today_visits,
-          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '1 hour')::int   AS last_hour_visits
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '1 hour')::int   AS last_hour_visits,
+          AVG(duration_seconds)::float8                                        AS average_duration_seconds,
+          AVG(transfer_bytes)::float8                                          AS average_transfer_bytes
         FROM site_visitors
         WHERE created_at > NOW() - INTERVAL '${interval}'
       `),
@@ -100,7 +108,9 @@ export async function GET(req: NextRequest) {
         SELECT
           page_url             AS path,
           COUNT(*)::int        AS visits,
-          COUNT(DISTINCT ip_address)::int AS unique_ips
+          COUNT(DISTINCT ip_address)::int AS unique_ips,
+          AVG(duration_seconds)::float8 AS average_duration_seconds,
+          AVG(transfer_bytes)::float8 AS average_transfer_bytes
         FROM site_visitors
         WHERE created_at > NOW() - INTERVAL '${interval}'
         GROUP BY page_url
@@ -141,8 +151,9 @@ export async function GET(req: NextRequest) {
           COALESCE(country, cf_ipcountry) AS country,
           city,
           page_url                        AS path,
-          device_type, browser, os,
-          is_bot, user_agent, referrer,
+          device_type, browser, os, asn,
+          NULLIF(regexp_replace(cf_ray, '^.*-', ''), cf_ray) AS cf_colo,
+          is_bot, user_agent, referrer, duration_seconds, transfer_bytes,
           created_at
         FROM site_visitors
         ORDER BY created_at DESC

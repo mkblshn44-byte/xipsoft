@@ -63,7 +63,9 @@
     }
   },
   "XipSoftTypo": {
-    "subtitle": "XipSoft программное обеспечение и технологии"
+    "subtitle": "XipSoft программное обеспечение и технологии",
+    "sloganTitle": "РАЗРАБОТКА И ТЕХНОЛОГИИ",
+    "sloganDecor": "ТЕХНОЛОГИИ"
   },
   "nav": {
     "about": "О нас",

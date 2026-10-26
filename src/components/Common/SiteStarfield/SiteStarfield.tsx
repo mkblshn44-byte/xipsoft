@@ -24,8 +24,8 @@ export default function SiteStarfield() {
         // tek tek span/JS yerine tek bir gradyan yığını (paint maliyeti düşük).
         backgroundImage: [
           "radial-gradient(circle, rgba(255,255,255,0.95) 0 1px, transparent 1.7px)",
-          "radial-gradient(circle, rgba(196,176,255,0.85) 0 1px, transparent 1.9px)",
-          "radial-gradient(circle, rgba(103,232,249,0.70) 0 0.9px, transparent 1.7px)",
+          "radial-gradient(circle, rgba(221,214,254,0.85) 0 1px, transparent 1.9px)",
+          "radial-gradient(circle, rgba(196,181,253,0.70) 0 0.9px, transparent 1.7px)",
           "radial-gradient(circle, rgba(255,255,255,0.55) 0 1.4px, transparent 2.4px)",
         ].join(", "),
         backgroundSize: "90px 90px, 140px 140px, 190px 190px, 260px 260px",

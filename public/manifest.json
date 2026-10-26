@@ -4,19 +4,25 @@
   "description": "Profesyonel web yazılım, mobil uygulama, siber Güvenlik ve dijital pazarlama hizmetleri",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#050507",
-  "theme_color": "#6366f1",
+  "background_color": "#0f1113",
+  "theme_color": "#0f1113",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/media/favicon.ico",
-      "sizes": "48x48",
-      "type": "image/x-icon"
+      "src": "/media/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
     },
     {
-      "src": "/media/logo.webp",
+      "src": "/media/favicon-192.png",
       "sizes": "192x192",
-      "type": "image/webp",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/media/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {

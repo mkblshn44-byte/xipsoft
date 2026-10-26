@@ -36,7 +36,7 @@ export const RankglowAvatar: React.FC<RankglowAvatarProps> = ({
       }
       className={`rank-glow-avatar ${isNeon ? 'rank-neon' : ''} ${className}`}
     >
-      <img src={avatar ?? ''} alt={username} className="w-full h-full object-cover rounded-[10px]" />
+      <img src={avatar ?? ''} alt={username} className="w-full h-full object-cover rounded-lg" />
     </div>
   )
 }

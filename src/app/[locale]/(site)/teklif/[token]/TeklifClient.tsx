@@ -1,290 +1,244 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
-import { CheckCircle, Clock, XCircle, ExternalLink, Loader2 } from "lucide-react";
+import { motion } from "motion/react";
+import XipIcon from "@/components/Ui/Icon";
 import LedBorder from "@/components/Ui/LedBorder/LedBorder";
 import TitleText from "@/components/Common/TitleText/TitleText";
+import { BankTransferBlock, TeklifItemsTable } from "@/components/Teklif/TeklifSummary";
+import {
+  TEKLIF_STATUS_META,
+  formatTry,
+  stageIndex,
+  teklifItemsTotal,
+  type PublicTeklif,
+} from "@/lib/teklif-shared";
 
-type Status = "pending" | "quoted" | "rejected";
-
-interface QuoteData {
-  status: Status;
-  price: string | null;
-  payment_url: string | null;
-  payment_method: string | null;
-  name: string;
-  service: string;
-  email: string;
+interface TeklifClientProps {
+  token: string;
+  initial: PublicTeklif;
 }
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "905444548444";
+const POLL_INTERVAL_MS = 5000;
+const MAX_POLL_MS = 15 * 60 * 1000;
 
-export default function TeklifClient() {
-  const { token } = useParams<{ token: string }>();
-  const [data, setData] = useState<QuoteData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [timedOut, setTimedOut] = useState(false);
+export default function TeklifClient({ token, initial }: TeklifClientProps) {
+  const [data, setData] = useState<PublicTeklif>(initial);
+  const [deleted, setDeleted] = useState(false);
+  const startedAt = useRef(Date.now());
 
+  // Admin teklif hazırlarken sayfa canlı kalsın: yalnızca "pending/quoted"
+  // durumlarında poll edilir; terminal durumlarda gereksiz istek atılmaz.
   useEffect(() => {
-    if (!token) return;
+    if (data.status !== "pending" && data.status !== "quoted") return;
 
-    const startTime = Date.now();
-    const MAX_POLL_MS = 10 * 60 * 1000; // 10 dakika
-    let timeoutId: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout>;
+    let cancelled = false;
 
     const poll = async () => {
-      // 10 dakika geçtiyse durdur
-      if (Date.now() - startTime > MAX_POLL_MS) {
-        setTimedOut(true);
-        setLoading(false);
-        return;
-      }
-
+      if (cancelled) return;
+      if (Date.now() - startedAt.current > MAX_POLL_MS) return;
       try {
-        const res = await fetch(`/api/teklif?token=${token}&full=1`);
-        if (res.status === 404) { setNotFound(true); setLoading(false); return; }
-        const json = await res.json();
-        setData(json);
-        setLoading(false);
-        if (json.status === "pending") {
-          timeoutId = setTimeout(poll, 5000);
+        const res = await fetch(`/api/teklif?token=${token}&full=1`, { cache: "no-store" });
+        if (res.status === 404) {
+          setDeleted(true);
+          return;
+        }
+        if (res.ok) {
+          const json = (await res.json()) as PublicTeklif;
+          setData(json);
+          if (json.status !== "pending" && json.status !== "quoted") return;
         }
       } catch {
-        setLoading(false);
+        /* ağ hatasında sessizce tekrar dene */
       }
+      timer = setTimeout(poll, POLL_INTERVAL_MS);
     };
 
-    poll();
-    return () => clearTimeout(timeoutId);
-  }, [token]);
+    timer = setTimeout(poll, POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [token, data.status]);
 
-  if (loading) return <Screen><Loader2 className="w-10 h-10 text-violet-400 animate-spin" /></Screen>;
-  if (notFound) return <Screen><NotFoundCard /></Screen>;
-  if (timedOut) return <Screen><TimedOutCard onRetry={() => window.location.reload()} /></Screen>;
-  if (!data) return null;
+  if (deleted) {
+    return (
+      <Screen>
+        <div className="text-center">
+          <p className="text-sm text-zinc-500">Teklif bulunamadı veya süresi dolmuş.</p>
+          <Link href="/" className="mt-2 inline-block text-sm text-violet-400 hover:underline">
+            Ana Sayfaya Dön
+          </Link>
+        </div>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
-      <AnimatePresence mode="wait">
-        {data.status === "pending" && <PendingCard key="pending" name={data.name} service={data.service} />}
-        {data.status === "quoted" && <QuotedCard key="quoted" data={data} />}
-        {data.status === "rejected" && <RejectedCard key="rejected" />}
-      </AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-8"
+      >
+        <LedBorder variant="prism" />
+        <StatusIcon status={data.status} />
+
+        <TitleText tag="h1" variant="glass" className="mb-1">
+          {data.status === "pending" ? "Teklifiniz Hazırlanıyor" : "Teklifiniz"}
+        </TitleText>
+        <p className="mb-6 text-sm text-zinc-400">
+          Merhaba <span className="font-medium text-white">{data.name}</span>,{" "}
+          <span className="text-violet-400">{data.service}</span> talebiniz için:
+        </p>
+
+        <StatusBadge status={data.status} />
+
+        {/* Kalemler + toplam */}
+        <div className="mt-5">
+          <TeklifItemsTable items={data.items} />
+        </div>
+
+        {data.status === "pending" && (
+          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-zinc-500">
+            <motion.span
+              className="h-1.5 w-1.5 rounded-full bg-amber-400"
+              animate={{ opacity: [1, 0.2, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            Ekibimiz fiyatı belirliyor — bu sayfa otomatik güncellenir.
+          </div>
+        )}
+
+        {data.status === "rejected" && (
+          <p className="mt-5 text-sm text-zinc-400">
+            Üzgünüz, bu talep için şu an teklif veremiyoruz. Farklı bir hizmet için yeniden
+            deneyebilirsiniz.
+          </p>
+        )}
+
+        {/* Teklif hazır → ödemeye geç */}
+        {data.status === "quoted" && (
+          <div className="mt-6 space-y-4">
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-center">
+              <p className="mb-1 text-xs uppercase tracking-widest text-zinc-500">Teklif Tutarı</p>
+              <p className="bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-3xl font-black text-transparent">
+                {formatTry(data.price ?? teklifItemsTotal(data.items))}
+              </p>
+            </div>
+
+            <Link
+              href={`/odeme?token=${token}`}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-violet-500 py-3.5 text-sm font-bold text-zinc-950 transition-all hover:from-cyan-300 hover:to-violet-400"
+            >
+              Devam Et / Ödemeye Geç
+              <XipIcon name="arrow-right" className="h-4 w-4" glow="strong" />
+            </Link>
+
+            {data.payment_url && (
+              <a
+                href={data.payment_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-bold text-white transition-all hover:bg-zinc-700"
+              >
+                <XipIcon name="external-link" className="h-4 w-4" />
+                Kart ile Öde
+              </a>
+            )}
+
+            <BankTransferBlock referenceCode={data.reference_code} />
+          </div>
+        )}
+
+        {/* Ödeme sonrası aşamalar için takip sayfasına yönlendir */}
+        {stageIndex(data.status) > stageIndex("quoted") && (
+          <Link
+            href={`/takip/${token}`}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-violet-500 py-3.5 text-sm font-bold text-zinc-950 transition-all hover:from-cyan-300 hover:to-violet-400"
+          >
+            Süreç Takibine Git
+            <XipIcon name="arrow-right" className="h-4 w-4" glow="strong" />
+          </Link>
+        )}
+
+        <SaveButton data={data} />
+      </motion.div>
     </Screen>
+  );
+}
+
+function StatusIcon({ status }: { status: PublicTeklif["status"] }) {
+  const cls = "mx-auto mb-4 h-14 w-14";
+  if (status === "pending") return <XipIcon name="clock" className={`${cls} text-amber-400`} glow="strong" />;
+  if (status === "rejected") return <XipIcon name="x-circle" className={`${cls} text-red-400`} glow="strong" />;
+  return <XipIcon name="check-circle" className={`${cls} text-emerald-400`} glow="strong" />;
+}
+
+function StatusBadge({ status }: { status: PublicTeklif["status"] }) {
+  const meta = TEKLIF_STATUS_META[status];
+  const tone: Record<string, string> = {
+    warn: "border-amber-500/30 bg-amber-500/10 text-amber-300",
+    info: "border-violet-500/30 bg-violet-500/10 text-violet-300",
+    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
+    danger: "border-red-500/30 bg-red-500/10 text-red-300",
+  };
+  return (
+    <div className="flex justify-center">
+      <span
+        className={`rounded-full border px-3 py-1 text-xs font-semibold ${tone[meta.tone] ?? tone.info}`}
+      >
+        {meta.label}
+      </span>
+    </div>
+  );
+}
+
+function SaveButton({ data }: { data: PublicTeklif }) {
+  const [saved, setSaved] = useState(false);
+
+  const save = async () => {
+    const text = [
+      "XipSoft Teklif",
+      `Hizmet: ${data.service}`,
+      `Tutar: ${formatTry(data.price ?? teklifItemsTotal(data.items))}`,
+      `Referans: ${data.reference_code}`,
+      `Link: ${window.location.href}`,
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      /* pano izni yoksa sessizce geç */
+    }
+    setSaved(true);
+  };
+
+  return saved ? (
+    <div className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 py-3 text-sm text-emerald-400">
+      <XipIcon name="check" className="h-4 w-4" glow="none" />
+      Teklif bilgileri kopyalandı!
+    </div>
+  ) : (
+    <button
+      type="button"
+      onClick={save}
+      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 py-3 text-sm font-bold text-white transition-all hover:bg-zinc-700"
+    >
+      <XipIcon name="copy" className="h-4 w-4 text-zinc-400" />
+      Teklifi Kaydet (Kopyala)
+    </button>
   );
 }
 
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-obsidian flex items-center justify-center p-4">
-      {/* Prism glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-violet-600/10 blur-[120px] rounded-full" />
+    <div className="flex min-h-screen items-center justify-center bg-obsidian p-4">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-1/4 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/10 blur-[120px]" />
       </div>
       {children}
     </div>
   );
 }
-
-function PendingCard({ name, service }: { name: string; service: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-8 text-center relative overflow-hidden"
-    >
-      {prismBorder}
-      <div className="flex justify-center mb-5">
-        <div className="relative">
-          <Clock className="w-14 h-14 text-amber-400" />
-          <motion.div
-            className="absolute inset-0 rounded-full border-2 border-amber-400/30"
-            animate={{ scale: [1, 1.4, 1], opacity: [0.5, 0, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          />
-        </div>
-      </div>
-      <TitleText tag="h1" variant="glass" className="mb-2">Teklifiniz Hazırlanıyor</TitleText>
-      <p className="text-zinc-400 text-sm mb-6">
-        Merhaba <span className="text-white font-medium">{name}</span>, <br />
-        <span className="text-violet-400">{service}</span> için talebiniz alındı.<br />
-        Ekibimiz en kısa surede fiyat belirleyecek.
-      </p>
-      <div className="flex items-center justify-center gap-2 text-xs text-zinc-600">
-        <motion.div
-          className="w-1.5 h-1.5 rounded-full bg-amber-400"
-          animate={{ opacity: [1, 0.2, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        />
-
-        Bu sayfa otomatik güncelleniyor
-        Bu sayfa otomatik guncelleniyor
-      </div>
-    </motion.div>
-  );
-}
-
-function QuotedCard({ data }: { data: QuoteData }) {
-  const [saved, setSaved] = useState(false);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-      className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-8 text-center relative overflow-hidden"
-    >
-      {prismBorder}
-      <div className="flex justify-center mb-5">
-        <CheckCircle className="w-14 h-14 text-emerald-400" />
-      </div>
-      <TitleText tag="h1" variant="glass" className="mb-1">Teklifiniz Hazır!</TitleText>
-      <p className="text-zinc-500 text-sm mb-6">
-        Merhaba <span className="text-white font-medium">{data.name}</span>,{" "}
-        <span className="text-violet-400">{data.service}</span> için teklifiniz:
-      </p>
-
-      {/* Fiyat */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-6">
-        <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Teklif Tutarı</p>
-        <p className="text-3xl -black bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
-          {data.price}
-        </p>
-      </div>
-
-      <div className="space-y-3">
-        {/* Havale/EFT ödeme yöntemi */}
-        {data.payment_method === "havale" && (
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-5 mb-4">
-            <p className="text-xs text-amber-400 uppercase tracking-widest font-bold mb-3">💳 Havale / EFT ile Ödeme</p>
-            <div className="space-y-2.5 text-left">
-              <div className="flex items-start gap-2">
-                <span className="text-xs text-zinc-500 min-w-20 mt-0.5">Banka:</span>
-                <span className="text-sm font-bold text-white">{process.env.NEXT_PUBLIC_BANK_NAME || "Ziraat Bankası"}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-xs text-zinc-500 min-w-20 mt-0.5">IBAN:</span>
-                <span className="text-sm -mono font-bold text-white break-all">{process.env.NEXT_PUBLIC_BANK_IBAN || "TR..."}</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-xs text-zinc-500 min-w-20 mt-0.5">Ad Soyadı:</span>
-                <span className="text-sm font-bold text-white">{process.env.NEXT_PUBLIC_BANK_HOLDER || "XipSoft Yazılım Ltd. sti."}</span>
-              </div>
-              <div className="flex items-start gap-2 pt-2 border-t border-amber-500/20">
-                <span className="text-xs text-zinc-500 min-w-20 mt-0.5">Açıklama:</span>
-                <span className="text-sm -mono bg-zinc-900/50 text-amber-400 px-2 py-1 rounded text-center flex-1">
-                  XIPS-{data.name?.substring(0, 3).toUpperCase() || "REQ"}-{Date.now().toString().slice(-6).toUpperCase()}
-                </span>
-              </div>
-            </div>
-            <p className="text-[11px] text-amber-600/80 mt-3">
-              ✓ Lutfen havale/EFT yapıp açıklama koluna referans numarasını yazınız. <br />
-              Ödeme yaptıktan sonra tarafımızla Iletisime geçiniz.
-            </p>
-          </div>
-        )}
-
-        {/* Ödeme linki varsa — direkt ödeme */}
-        {data.payment_url && (
-          <a
-            href={data.payment_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-cyan-400 to-violet-500 hover:from-cyan-300 hover:to-violet-400 transition-all"
-          >
-            <ExternalLink className="w-4 h-4" />
-            Ödeme Yap
-          </a>
-        )}
-
-        {/* Teklifi Kaydet butonu */}
-        {!saved ? (
-          <button
-            onClick={() => {
-              const text = `XipSoft Teklif\nHizmet: ${data.service}\nTutar: ${data.price}\nLink: ${window.location.href}`;
-              navigator.clipboard?.writeText(text).catch(() => { });
-              setSaved(true);
-            }}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-bold text-sm text-white bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 transition-all"
-          >
-            <CheckCircle className="w-4 h-4 text-zinc-400" />
-            Teklifi Kaydet (Kopyala)
-          </button>
-        ) : (
-          <div className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
-            <CheckCircle className="w-4 h-4" />
-            Teklif bilgileri kopyalandı!
-          </div>
-        )}
-
-        <p className="text-xs text-zinc-600 pt-1">
-          Sorularınız için:{" "}
-          <a href="mailto:info@xipsoft.net" className="text-zinc-400 hover:text-white">
-            info@xipsoft.net
-          </a>
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
-function RejectedCard() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-8 text-center relative overflow-hidden"
-    >
-      {prismBorder}
-      <div className="flex justify-center mb-5">
-        <XCircle className="w-14 h-14 text-red-400" />
-      </div>
-      <TitleText tag="h1" variant="glass" className="mb-2">Teklif Verilmedi</TitleText>
-      <p className="text-zinc-400 text-sm mb-6">
-        uzgunuz, bu talep için su an teklif veremiyoruz.<br />
-        Farklı bir hizmet için tekrar deneyebilirsiniz.
-      </p>
-      <Link
-        href="/"
-        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-cyan-400 to-violet-500 hover:opacity-90 transition-all"
-      >
-        Ana Sayfaya Dön
-      </Link>
-    </motion.div>
-  );
-}
-
-function NotFoundCard() {
-  return (
-    <div className="text-center">
-      <p className="text-zinc-500 text-sm">Teklif bulunamadı veya suresi dolmus.</p>
-      <Link href="/" className="text-violet-400 text-sm hover:underline mt-2 inline-block">Ana Sayfaya Dön</Link>
-    </div>
-  );
-}
-
-function TimedOutCard({ onRetry }: { onRetry: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl p-8 text-center relative overflow-hidden"
-    >
-      {prismBorder}
-      <div className="flex justify-center mb-5">
-        <Clock className="w-14 h-14 text-zinc-500" />
-      </div>
-      <TitleText tag="h1" variant="glass" className="mb-2">Sayfa Zaman Asımına Ugradı</TitleText>
-      <p className="text-zinc-400 text-sm mb-6">
-        10 dakika içinde teklif gelmedi. Sayfayı yenileyerek tekrar kontrol edebilirsiniz.
-      </p>
-      <button
-        onClick={onRetry}
-        className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-zinc-950 bg-gradient-to-r from-cyan-400 to-violet-500 hover:opacity-90 transition-all"
-      >
-        Yenile
-      </button>
-    </motion.div>
-  );
-}
-
-const prismBorder = <LedBorder variant="prism" />;

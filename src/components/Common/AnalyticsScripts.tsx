@@ -2,17 +2,13 @@
 
 import Script from "next/script";
 import { useEffect } from "react";
-
-// PERF: Props kaldırıldı — env degerlerini burada okuyoruz.
-const gA_ID = process.env.NEXT_PUBLIC_gA_ID ?? null;
-const ADS_ID = process.env.NEXT_PUBLIC_gOOgLE_ADS_ID ?? null;
-const YANDEX_ID = process.env.NEXT_PUBLIC_YANDEX_METRICA_ID ?? null;
-const TURNSTILE_SITE = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-
-const gaId = gA_ID && /^g-[A-Z0-9]{4,}$/.test(gA_ID) ? gA_ID : null;
-const adsId = ADS_ID && /^AW-[0-9]{7,}$/.test(ADS_ID) ? ADS_ID : null;
-const metricaId = YANDEX_ID && /^[0-9]{5,}$/.test(YANDEX_ID) ? YANDEX_ID : null;
-const primarygtagId = gaId ?? adsId;
+import {
+  adsId,
+  gaId,
+  gtagId as primarygtagId,
+  metricaId,
+  turnstileSiteKey as TURNSTILE_SITE,
+} from "@/lib/analytics-config";
 
 /**
  * requestIdleCallback polyfill (Safari ve eski tarayıcılar)

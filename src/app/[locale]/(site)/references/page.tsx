@@ -1,11 +1,15 @@
-import APP_CONFIg, { SITE_URL } from "@/config/brand.config";
+import APP_CONFIG, { DEFAULT_OG_IMAGE_URL, SITE_URL } from "@/config/brand.config";
 import { Metadata } from "next";
 import PageTransitionWrapper from "@/components/Animate/PageTransitionWrapper/PageTransitionWrapper";
 import ReferencesPageClient from "./ReferencesPageClient";
 import JsonLd from "@/components/seo/JsonLd";
-import { breadcrumbSchema, collectionPageSchema, itemListSchema } from "@/lib/schema-helpers";
+import { breadcrumbSchema } from "@/lib/schema/site";
+import {
+  collectionPageSchema,
+  itemListSchema
+} from "@/lib/schema/collection";
 import { getPageMeta } from "@/lib/page-content";
-import { getAllReferences } from "@/lib/database";
+import { getAllReferences } from "@/lib/db/references";
 
 // ISR - 1 saatte bir yenilenir, API yükünü azaltır
 export const revalidate = 3600;
@@ -13,8 +17,8 @@ export const revalidate = 3600;
 export async function generateMetadata(): Promise<Metadata> {
   const canonical = `${SITE_URL}/references`;
   const meta = await getPageMeta("references");
-  const title = meta?.title || APP_CONFIg.title;
-  const description = meta?.description || APP_CONFIg.description;
+  const title = meta?.title || APP_CONFIG.title;
+  const description = meta?.description || APP_CONFIG.description;
 
   return {
     title: {
@@ -30,16 +34,16 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: "tr_TR",
       url: canonical,
-      siteName: APP_CONFIg.title,
+      siteName: APP_CONFIG.title,
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
-      images: [{ url: `${SITE_URL}/media/xipsoft-seo.webp`, width: 1200, height: 630, alt: "XipSoft Referanslar" }],
+      images: [{ url: DEFAULT_OG_IMAGE_URL, width: 1200, height: 630, alt: "XipSoft Referanslar" }],
     },
     twitter: {
       card: "summary_large_image",
       title: meta?.ogTitle || title,
       description: meta?.ogDescription || description,
-      images: [`${SITE_URL}/media/xipsoft-seo.webp`],
+      images: [DEFAULT_OG_IMAGE_URL],
     },
   };
 }
@@ -50,8 +54,8 @@ export default async function ReferencesPage() {
 
   const jsonLd = [
     collectionPageSchema({
-      name: meta?.jsonLd?.name || APP_CONFIg.title,
-      description: meta?.jsonLd?.description || APP_CONFIg.description,
+      name: meta?.jsonLd?.name || APP_CONFIG.title,
+      description: meta?.jsonLd?.description || APP_CONFIG.description,
       url: "/references",
     }),
     breadcrumbSchema([

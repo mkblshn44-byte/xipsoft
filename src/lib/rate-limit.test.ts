@@ -1,61 +1,137 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { createServer, type Server } from "node:http";
+import { after, before, test } from "node:test";
 import { NextRequest } from "next/server";
-import { timingSafeEqual } from "@/lib/api-guard";
-import { checkRateLimit, getClientIp, getEndpointRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, getRateLimitBucket } from "@/lib/rate-limit";
+import { checkRateLimit as middlewareCheckRateLimit } from "@/middleware-utils/rate-limiter";
+import { isRedisAvailable, recordRedisSuccess } from "@/lib/redis/breaker";
 
-test("content ingestion endpoints have a finite production rate limit", () => {
-  for (const pathname of ["/api/bot", "/api/content"]) {
-    const config = getEndpointRateLimit(pathname);
-    assert.equal(config.maxRequests, 60);
-    assert.equal(config.failClosed, true);
+/**
+ * Sahte Upstash REST sunucusu. SDK tek komutu bile `POST /pipeline`'e JSON
+ * komut dizisi olarak gönderiyor ve yanıtı dizi bekliyor (`res.map`), o yüzden
+ * başarılı cevap `{ result: N }` nesnelerinin dizisidir. Kaç HTTP isteği
+ * geldiğini saymak, testin asıl amacı: komuta maliyeti burada ölçülür.
+ */
+let server: Server;
+let hits: number[] = [];
+let nextResult = 1;
+let failWith: { status: number; error: string } | null = null;
+
+function requestFor(pathname: string, ip: string): NextRequest {
+  return new NextRequest(`https://xipsoft.dev${pathname}`, {
+    headers: { "x-forwarded-for": ip },
+  });
+}
+
+before(async () => {
+  await new Promise<void>((resolve) => {
+    server = createServer((req, res) => {
+      let body = "";
+      req.on("data", (chunk) => (body += chunk));
+      req.on("end", () => {
+        hits.push(1);
+        if (failWith) {
+          res.writeHead(failWith.status, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: failWith.error }));
+          return;
+        }
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify([{ result: nextResult }]));
+      });
+    });
+    server.listen(0, "127.0.0.1", resolve);
+  });
+
+  const address = server.address();
+  process.env.UPSTASH_REDIS_REST_URL = `http://127.0.0.1:${address && typeof address === "object" ? address.port : 0}`;
+  process.env.UPSTASH_REDIS_REST_TOKEN = "test-token";
+});
+
+after(() => {
+  server.close();
+});
+
+function reset(fixture: { result?: number; fail?: { status: number; error: string } } = {}) {
+  hits = [];
+  nextResult = fixture.result ?? 1;
+  failWith = fixture.fail ?? null;
+  recordRedisSuccess();
+}
+
+test("kova kararı: varsayılan limit IP başına tek kovada, özel limit kendi kovasında", () => {
+  const page = getRateLimitBucket("/hizmetler/web-yazilim-tasarim/kocaeli-izmit");
+  assert.equal(page.endpointSpecific, false);
+  assert.equal(page.keyPrefix, "middleware");
+
+  const otherPage = getRateLimitBucket("/blog/edge-ai-on-device-machine-learning");
+  assert.equal(otherPage.keyPrefix, page.keyPrefix, "aynı IP iki yolda artık iki kova değil");
+
+  const admin = getRateLimitBucket("/admin/kullanicilar");
+  assert.equal(admin.endpointSpecific, true);
+  assert.equal(admin.keyPrefix, "middleware:admin");
+  assert.equal(admin.config.maxRequests, 100);
+
+  const teklif = getRateLimitBucket("/api/teklif");
+  assert.equal(teklif.keyPrefix, "middleware:apiteklif");
+  assert.equal(teklif.config.maxRequests, 5);
+});
+
+test("sıradan ziyaretçi Redis'e hiç ulaşmaz (yerel ön-eşik)", async () => {
+  reset();
+  const ip = "198.51.100.11";
+
+  // freeLocalRequests = max(10, 200*0.1) = 20
+  for (let i = 0; i < 20; i++) {
+    const response = await middlewareCheckRateLimit(requestFor("/blog", ip), "/blog");
+    assert.equal(response, null);
   }
+  assert.equal(hits.length, 0, "eşik altı trafiğin Redis maliyeti sıfır olmalı");
+
+  await middlewareCheckRateLimit(requestFor("/blog", ip), "/blog");
+  assert.equal(hits.length, 1, "eşiği aşan IP tek komutla paylaşımlı sayaçtan geçer");
 });
 
-test("rate limit path matching does not treat similarly named paths as protected endpoints", () => {
-  assert.equal(getEndpointRateLimit("/api/bot-unknown").maxRequests, 200);
+test("özel limitli yol ön-eşiği atlar, her istek paylaşımlı sayaca gider", async () => {
+  reset({ result: 3 });
+  const ip = "198.51.100.12";
+
+  for (let i = 0; i < 3; i++) {
+    await middlewareCheckRateLimit(requestFor("/admin/login", ip), "/admin/login");
+  }
+  assert.equal(hits.length, 3);
 });
 
-test("client IP resolution prefers the proxy-provided address over forwarded input", () => {
-  const request = new NextRequest("https://xipsoft.test/api/bot", {
-    headers: {
-      "cf-connecting-ip": "192.0.2.10",
-      "x-real-ip": "192.0.2.11",
-      "x-forwarded-for": "198.51.100.1, 203.0.113.5",
-    },
-  });
-  assert.equal(getClientIp(request), "192.0.2.10");
+test("sayaç limitte ise 429, altında ise geçiş", async () => {
+  reset({ result: 201 });
+  const result = await checkRateLimit("203.0.113.9", { windowMs: 600_000, maxRequests: 200 });
+  assert.equal(result.success, false);
+  assert.equal(result.remaining, 0);
+  assert.ok(result.retryAfter !== undefined && result.retryAfter > 0);
+  assert.ok(result.retryAfter! <= 600_000, "retry-after pencereyi aşamaz");
 
-  const fallbackRequest = new NextRequest("https://xipsoft.test/api/bot", {
-    headers: { "x-forwarded-for": "198.51.100.1, 203.0.113.5" },
-  });
-  assert.equal(getClientIp(fallbackRequest), "203.0.113.5");
+  reset({ result: 5 });
+  const under = await checkRateLimit("203.0.113.9", { windowMs: 600_000, maxRequests: 200 });
+  assert.equal(under.success, true);
+  assert.equal(under.remaining, 195);
 });
 
-test("protected endpoints fail closed in production when Redis is unavailable", async () => {
-  const originalNodeEnv = process.env.NODE_ENV;
-  const originalRedisUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const originalRedisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-  Reflect.set(process.env, "NODE_ENV", "production");
-  Reflect.deleteProperty(process.env, "UPSTASH_REDIS_REST_URL");
-  Reflect.deleteProperty(process.env, "UPSTASH_REDIS_REST_TOKEN");
+test("kota doluysa devre açılır ve istekler Redis'e hiç gitmeden akar", async () => {
+  reset({ fail: { status: 429, error: "ERR max requests limit exceeded. Limit: 500000, Usage: 500000." } });
 
+  const originalError = console.error;
+  console.error = () => undefined;
   try {
-    const result = await checkRateLimit("test", getEndpointRateLimit("/api/bot"));
-    assert.equal(result.success, false);
-    assert.equal(result.unavailable, true);
-  } finally {
-    if (originalNodeEnv === undefined) Reflect.deleteProperty(process.env, "NODE_ENV");
-    else Reflect.set(process.env, "NODE_ENV", originalNodeEnv);
-    if (originalRedisUrl === undefined) Reflect.deleteProperty(process.env, "UPSTASH_REDIS_REST_URL");
-    else Reflect.set(process.env, "UPSTASH_REDIS_REST_URL", originalRedisUrl);
-    if (originalRedisToken === undefined) Reflect.deleteProperty(process.env, "UPSTASH_REDIS_REST_TOKEN");
-    else Reflect.set(process.env, "UPSTASH_REDIS_REST_TOKEN", originalRedisToken);
-  }
-});
+    const blocked = await checkRateLimit("203.0.113.10", { windowMs: 600_000, maxRequests: 200 });
+    assert.equal(blocked.success, true, "Redis'sız sayfalar fail-open geçer");
+    assert.equal(isRedisAvailable(), false, "kota hatası devreyi tek denemede açar");
 
-test("API key comparison accepts only exact matches", () => {
-  assert.equal(timingSafeEqual("valid-secret", "valid-secret"), true);
-  assert.equal(timingSafeEqual("valid-secret", "valid-secret-extra"), false);
-  assert.equal(timingSafeEqual("valid-secret", "invalid-secret"), false);
+    const hitsAfterOpen = hits.length;
+    for (let i = 0; i < 50; i++) {
+      await checkRateLimit(`203.0.113.${i}`, { windowMs: 600_000, maxRequests: 200 });
+    }
+    assert.equal(hits.length, hitsAfterOpen, "devre açıkken tek bir HTTP isteği bile gitmemeli");
+  } finally {
+    console.error = originalError;
+    recordRedisSuccess();
+  }
 });

@@ -2,13 +2,55 @@
 
 import { cookies } from "next/headers";
 import { verifySessionCookie } from "@/lib/security";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import sharp from "sharp";
 import { IMgBB_API_KEY } from "@/config/brand.config";
-import { validateMagicBytes } from "@/lib/file-validation";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+const MAGIC_BYTES: Record<string, number[][]> = {
+  "image/jpeg": [[0xff, 0xd8, 0xff]],
+  "image/png": [[0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]],
+  "image/gif": [
+    [0x47, 0x49, 0x46, 0x38, 0x37, 0x61],
+    [0x47, 0x49, 0x46, 0x38, 0x39, 0x61],
+  ],
+  "image/webp": [[0x52, 0x49, 0x46, 0x46]],
+  "image/svg+xml": [],
+};
+
+function validateMagicBytes(buffer: Buffer, mimeType: string): boolean {
+  const signatures = MAGIC_BYTES[mimeType];
+  if (signatures === undefined) return false;
+  if (mimeType === "image/svg+xml") return validateSvg(buffer);
+
+  if (mimeType === "image/webp") {
+    if (buffer.length < 12) return false;
+    const isRiff = buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46;
+    const isWebp = buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50;
+    return isRiff && isWebp;
+  }
+
+  return signatures.some((signature) =>
+    buffer.length >= signature.length && signature.every((byte, index) => buffer[index] === byte),
+  );
+}
+
+function validateSvg(buffer: Buffer): boolean {
+  const content = buffer.toString("utf-8").toLowerCase();
+  if (!content.includes("<svg")) return false;
+
+  const dangerous = [
+    "<script", "javascript:", "vbscript:", "data:text/html", "data:application",
+    "onload=", "onerror=", "onclick=", "onmouseover=", "onmouseout=", "onfocus=",
+    "onblur=", "onkeydown=", "onkeyup=", "onkeypress=", "onsubmit=", "onchange=",
+    "oninput=", "ondblclick=", "oncontextmenu=", "onwheel=", "ondrag=", "eval(",
+    "expression(", "url(javascript", "url(data:text", "<foreignobject", "<use href",
+    "<use xlink:href", "xlink:href=",
+  ];
+
+  return !dangerous.some((pattern) => content.includes(pattern));
+}
 
 /**
  * ImgBB'ye resim yükle — ücretsiz, sınırsız

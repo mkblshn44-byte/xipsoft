@@ -1,11 +1,17 @@
 .vercel
 .env*
+!.env.example
 node_modules
 
 # Next.js build output
 .next/
+.next-prod/
+.next-palette-check/
 out/
 build/
+
+# Silinmemiş eski dosyalar (yedek olarak tutulan atıklar)
+_archive/
 
 # TypeScript incremental build info
 *.tsbuildinfo
@@ -13,3 +19,11 @@ build/
 # Local tooling caches
 .eslintcache
 *.log
+
+# DB yedekleri (asla commit edilmez — production veri içerir)
+backups/
+db-backups-*/
+*.sql.bak
+
+# Eski ham DB dizini (production veri + bağlantı bilgisi içerir)
+sql/

@@ -73,11 +73,11 @@ export default function SectionReveal({
                 className="font-black tracking-tight leading-tight mb-4"
                 style={{
                   fontSize: "clamp(1.75rem, 4vw, 3.5rem)",
-                  background: "linear-gradient(180deg, #ffffff 0%, #f1f5f9 30%, #e2e8f0 50%, #f1f5f9 70%, #ffffff 100%)",
+                  backgroundImage: "linear-gradient(180deg, #a78bfa 0%, #ddd6fe 30%, #c4b5fd 50%, #ddd6fe 70%, #a78bfa 100%)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
-                  filter: "drop-shadow(0 0 24px rgba(255,255,255,0.18)) drop-shadow(0 0 12px rgba(148,163,184,0.10))",
+                  filter: "drop-shadow(0 0 24px rgba(167, 139, 250,0.18)) drop-shadow(0 0 12px rgba(167, 139, 250,0.10))",
                 }}
                 initial={{ opacity: 0, y: 16 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}

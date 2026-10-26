@@ -1,21 +1,18 @@
 "use client";
 
-import { motion, useInView } from "motion/react";
-import { useRef } from "react";
 import { useTranslations } from "next-intl";
 import TitleText from "@/components/Common/TitleText/TitleText";
-import { Star, Quote } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { PALETTE } from "@/config/palette";
 import { GlassCard } from "@/components/Ui/Card";
 
-const V = PALETTE.neon[500];   // #a78bfa
-const C = PALETTE.accent.cyan; // #ddd6fe
+const V = PALETTE.neon[500];
 
 const reviews = [
   {
     name: "Aykut S.",
     role: "E-Ticaret Girişimcisi",
-    color: C,
+    color: V,
     text: "XipSoft ile web sitemizi yeniledikten sonra organik Google trafiğimiz %140 arttı ve yüklenme süremiz 1.2 saniyeye düştü. Çalışan ekip sorumlusundan telefona bakan arkadaşa kadar hepsi tam anlamıyla profesyonel.",
     highlight: "%140 organik trafik artışı",
     rating: 5,
@@ -31,7 +28,7 @@ const reviews = [
   {
     name: "Oğuz T.",
     role: "Kurumsal Yazılım Direktörü",
-    color: C,
+    color: V,
     text: "Sektörde birçok firma ile çalışıp en iyi özverili ve profesyonelliği bulduğum firma. Özellikle güvenlik odaklı geliştirme yaklaşımları ve KVKK uyum süreci eksiksiz yönetildi.",
     highlight: "KVKK uyum süreci eksiksiz",
     rating: 5,
@@ -47,38 +44,25 @@ const reviews = [
 ];
 
 export default function MusteriYorumlari() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { amount: 0.1, once: true });
   const t = useTranslations("home.reviews");
 
   return (
-    <section ref={ref} className="py-16 lg:py-24">
+    <section className="py-16 lg:py-24">
       {/* Başlık */}
-      <motion.div
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-        transition={{ duration: 0.6 }}
-      >
-        <TitleText tag="h2" variant="section" className="mb-3">
+      <div className="text-center mb-12 home-reveal">
+        <TitleText tag="h2" variant="brand" className="mb-3">
           {t("title")}
         </TitleText>
         <p className="text-ink-muted text-base max-w-xl mx-auto">
           {t("subtitle")}
         </p>
-      </motion.div>
+      </div>
 
       {/* Yorum kartları */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {reviews.map((r, i) => (
-          <motion.div
-            key={r.name}
-            initial={{ opacity: 0, y: 30, scale: 0.97 }}
-            animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.97 }}
-            transition={{ duration: 0.6, delay: 0.05 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="group relative"
-          >
-            <GlassCard className="relative flex flex-col gap-5 p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1.5">
+        {reviews.map((r) => (
+          <div key={r.name} className="group relative home-reveal">
+            <GlassCard className="home-liquid-glass relative flex flex-col gap-5 p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1.5">
               {/* Arka plan orb */}
               <div
                 className="absolute -bottom-8 -right-8 w-40 h-40 rounded-full opacity-15 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none blur-2xl"
@@ -91,7 +75,7 @@ export default function MusteriYorumlari() {
                 style={{ background: `linear-gradient(90deg, transparent, ${r.color}, transparent)` }}
               />
 
-              <Quote className="w-7 h-7 opacity-25" style={{ color: r.color }} />
+              <XipIcon name="quote" glow="strong" className="w-7 h-7 opacity-25" style={{ color: r.color }} />
 
               <p className="text-zinc-300 text-base leading-relaxed flex-1">{r.text}</p>
 
@@ -127,8 +111,10 @@ export default function MusteriYorumlari() {
                 {/* Yıldızlar — amber kaldırıldı, palette rengi */}
                 <div className="flex gap-0.5">
                   {Array.from({ length: r.rating }).map((_, j) => (
-                    <Star
+                    <XipIcon
                       key={j}
+                      name="star"
+                      glow="none"
                       className="w-3.5 h-3.5"
                       style={{ fill: V, color: V }}
                     />
@@ -136,7 +122,7 @@ export default function MusteriYorumlari() {
                 </div>
               </div>
             </GlassCard>
-          </motion.div>
+          </div>
         ))}
       </div>
     </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Wrench, Clock, ArrowRight, RefreshCw } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import Image from "next/image";
 import TitleText from "@/components/Common/TitleText/TitleText";
 
@@ -47,18 +47,18 @@ export default function MaintenancePage() {
 
       {/* ── Arka plan glow'ları (projeyle aynı) ── */}
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-        {/* Sol üst — rose */}
+        {/* Sol üst — marka moru (kırmızı/rose parıltı kaldırıldı) */}
         <div className="absolute -top-[10%] -left-[5%] w-[55vw] h-[55vh] rounded-full"
-          style={{ background: "radial-gradient(ellipse 70% 70% at 20% 20%, rgba(251,113,133,0.18) 0%, rgba(249,115,22,0.10) 40%, transparent 70%)", filter: "blur(60px)" }} />
+          style={{ background: "radial-gradient(ellipse 70% 70% at 20% 20%, rgba(167, 139, 250,0.10) 0%, rgba(18, 20, 28,0.08) 40%, transparent 70%)", filter: "blur(80px)" }} />
         {/* Orta — amber */}
         <div className="absolute top-[15%] left-[25%] w-[50vw] h-[60vh]"
-          style={{ background: "radial-gradient(ellipse 60% 60% at 50% 40%, rgba(249,115,22,0.12) 0%, rgba(251,191,36,0.07) 45%, transparent 70%)", filter: "blur(80px)" }} />
+          style={{ background: "radial-gradient(ellipse 60% 60% at 50% 40%, rgba(167, 139, 250,0.12) 0%, rgba(221, 214, 254,0.07) 45%, transparent 70%)", filter: "blur(80px)" }} />
         {/* Sag — mor */}
         <div className="absolute top-0 right-0 h-full w-[60vw]"
-          style={{ background: "radial-gradient(ellipse 70% 90% at 100% 20%, rgba(139,92,246,0.28) 0%, rgba(139,92,246,0.12) 45%, transparent 75%)", filter: "blur(60px)" }} />
+          style={{ background: "radial-gradient(ellipse 70% 90% at 100% 20%, rgba(42, 111, 212,0.28) 0%, rgba(42, 111, 212,0.12) 45%, transparent 75%)", filter: "blur(60px)" }} />
         {/* Sol alt */}
         <div className="absolute bottom-0 left-0 h-[70vh] w-[60vw]"
-          style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(139,92,246,0.22) 0%, transparent 65%)", filter: "blur(60px)" }} />
+          style={{ background: "radial-gradient(ellipse 80% 70% at 0% 100%, rgba(42, 111, 212,0.22) 0%, transparent 65%)", filter: "blur(60px)" }} />
       </div>
 
       {/* Noise overlay */}
@@ -83,7 +83,7 @@ export default function MaintenancePage() {
         {/* Ikon */}
         <div className="relative">
           <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-violet-600/20 to-pink-600/20 border border-white/[0.07] flex items-center justify-center shadow-2xl shadow-violet-500/10">
-            <Wrench className="w-10 h-10 text-violet-400 animate-[wiggle_2s_ease-in-out_infinite]" />
+            <XipIcon name="wrench" glow="strong" className="w-10 h-10 text-violet-400 animate-[wiggle_2s_ease-in-out_infinite]" />
           </div>
           {/* glow halkası */}
           <div className="absolute inset-0 rounded-3xl blur-xl bg-gradient-to-br from-violet-600/20 to-pink-600/20 -z-10" />
@@ -121,7 +121,7 @@ export default function MaintenancePage() {
           onClick={() => window.location.reload()}
           className="group flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-white/[0.07] text-zinc-400 hover:text-white text-sm font-medium transition-all"
         >
-          <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+          <XipIcon name="refresh-cw" glow="soft" className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
           Sayfayı Yenile
         </button>
 

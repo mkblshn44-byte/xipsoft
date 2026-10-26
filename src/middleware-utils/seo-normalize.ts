@@ -8,7 +8,7 @@
  * `syncDeletedPathsFromDb()` ile DB'den güncel liste çekilebilir.
  */
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 
 export const TRAILING_SLASH_POLICY: "remove" | "add" = "remove";
 
@@ -67,6 +67,66 @@ export const DELETED_PATHS: Array<string> = [
 export const DELETED_PATH_SET: ReadonlySet<string> = new Set(DELETED_PATHS);
 
 /**
+ * Kanonik biçimi UZANTISIZ olan rotalar — TEK KAYNAK `@/lib/content-path`.
+ *
+ * İçerik ağacının (Aşama 6) kanonik adresi `.html` ile biter; bu yüzden
+ * `.html` yalnızca aşağıdaki kod/legacy rotalarda sökülür. Liste burada
+ * tutulmaz, `content-path.ts`'ten İTHAL edilir: middleware uzantıyı sökerken
+ * rota/JSON-LD/sitemap geri eklerse tek adımlık yönlendirme döngüsü doğar.
+ *
+ * `/hizmetler` yalnızca EXACT listededir → hub uzantısız kalır, altındaki
+ * hizmet/konum adresleri `/hizmetler/<slug>.html` olarak `.html` kanonik alır.
+ */
+import {
+  EXTENSIONLESS_ROUTE_EXACT,
+  EXTENSIONLESS_ROUTE_PREFIXES,
+  isExtensionlessRoute,
+  toRouteKey,
+} from "@/lib/content-path";
+import { isPublishedTreePath } from "@/lib/content-tree-policy";
+
+export { EXTENSIONLESS_ROUTE_EXACT, EXTENSIONLESS_ROUTE_PREFIXES };
+
+/** Pathname sonundaki `.html` (ve tekrarlarını) söker. */
+export function stripHtmlExtension(pathname: string): string {
+  return pathname.replace(/(?:\.html)+$/i, "");
+}
+
+/**
+ * Verilen (uzantısı sökülmüş) yol, uzantısız kanoniğe sahip bir kod/legacy
+ * rota mı? Öyleyse `.html` ekli istekler uzantısız adrese yönlendirilir.
+ *
+ * SENKRON sürüm yalnızca elle tutulan listeye bakar; DB gerçeği (yayınlanmış
+ * ağaç düğümü) için `shouldStripHtmlExtension` kullanın.
+ */
+export function isExtensionlessCanonicalPath(pathname: string): boolean {
+  return isExtensionlessRoute(pathname);
+}
+
+/**
+ * MIDDLEWARE KARARI (veri odaklı): `.html` ekli bir istek uzantısız adrese mi
+ * taşınmalı, yoksa uzantı KANONİK olarak mı kalmalı?
+ *
+ *   1. Liste "koru" derse (`/hizmetler/<slug>.html`, ağaç alt yolları) → DB'ye
+ *      hiç gidilmez; istek olduğu gibi rotaya düşer.
+ *   2. Liste "sök" derse ve yol bir KOD rotasıysa (`/`, `/hizmetler` hub'ı,
+ *      `/blog` listesi, politika sayfaları) → sök. Bu kökler admin
+ *      doğrulamasında da ayrılmıştır; ağaç sahiplenemez.
+ *   3. Liste "sök" derse ama kök YALNIZCA legacy bir adrsa (`/forum`, `/news`,
+ *      `/urunler`…) → o yolu yayına alınmış bir ağaç düğümü sahipleniyorsa
+ *      `.html` KANONİK kalır ve istek rotaya ulaşır. Sahiplenmiyorsa eski
+ *      davranış aynen devam eder (tek adımda uzantısız legacy adres).
+ *
+ * 3. şık olmasaydı, admin panelden `/forum/...` altında yayınlanan bir sayfa
+ * middleware tarafından hiç rotaya bırakılmazdı.
+ */
+export async function shouldStripHtmlExtension(pathnameWithoutExtension: string): Promise<boolean> {
+  if (!isExtensionlessRoute(pathnameWithoutExtension)) return false;
+  if (EXTENSIONLESS_ROUTE_EXACT.includes(toRouteKey(pathnameWithoutExtension))) return true;
+  return !(await isPublishedTreePath(pathnameWithoutExtension));
+}
+
+/**
  * DB'den silinen slug'ları çeker ve döner (Node.js runtime, edge DEGIL).
  * Kullanım: Build öncesi script veya admin panelinden triggerlanır.
  * Döndüğü array'i DELETED_PATHS'e ekle veya ayrı dosyaya yaz.
@@ -117,17 +177,17 @@ export function buildGoneResponse(pathname: string): Response {
 <meta name="color-scheme" content="dark" />
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;display:grid;place-items:center;background:#050811;color:#e2e8f0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:24px}
+body{min-height:100vh;display:grid;place-items:center;background:#050811;color:#cbd5e1;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:24px}
 .card{max-width:520px;text-align:center}
-.code{font-size:clamp(4rem,18vw,8rem);font-weight:900;background:linear-gradient(135deg,#a78bfa,#ddd6fe);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 24px rgba(167,139,250,.3))}
-h1{font-size:1.5rem;margin:8px 0 12px;color:#fff}
+.code{font-size:clamp(4rem,18vw,8rem);font-weight:900;background:linear-gradient(135deg,#ddd6fe,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 24px rgba(167, 139, 250,.1))}
+h1{font-size:1.5rem;margin:8px 0 12px;color:#ffffff}
 p{color:#94a3b8;font-size:.95rem;line-height:1.6;margin-bottom:24px}
-.path{display:inline-block;padding:4px 10px;border-radius:8px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);color:#c4b5fd;font-family:ui-monospace,monospace;font-size:.8rem;margin-bottom:20px;word-break:break-all;max-width:100%}
+.path{display:inline-block;padding:4px 10px;border-radius:8px;background:rgba(167, 139, 250,.06);border:1px solid rgba(203, 213, 225, .08);color:#ddd6fe;font-family:ui-monospace,monospace;font-size:.8rem;margin-bottom:20px;word-break:break-all;max-width:100%}
 .links{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;font-weight:600;font-size:.875rem;text-decoration:none;transition:all .2s}
-.btn-primary{background:linear-gradient(135deg,#a78bfa,#ddd6fe);color:#09090b;box-shadow:0 0 20px rgba(167,139,250,.35)}
+.btn-primary{background:linear-gradient(135deg,#a78bfa,#8b5cf6);color:#050811;box-shadow:0 0 20px rgba(167, 139, 250,.12)}
 .btn-primary:hover{transform:translateY(-1px)}
-.btn-secondary{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#cbd5e1}
+.btn-secondary{background:rgba(255,255,255,.04);border:1px solid rgba(203, 213, 225, .1);color:#cbd5e1}
 .btn-secondary:hover{background:rgba(255,255,255,.08);color:#fff}
 </style>
 </head>
@@ -140,7 +200,7 @@ p{color:#94a3b8;font-size:.95rem;line-height:1.6;margin-bottom:24px}
   <div class="links">
     <a class="btn btn-primary" href="/">← Ana Sayfaya Dön</a>
     <a class="btn btn-secondary" href="/blog">Blog</a>
-    <a class="btn btn-secondary" href="/hizmetler/web-yazilim-tasarim">Hizmetler</a>
+    <a class="btn btn-secondary" href="/hizmetler">Hizmetler</a>
     <a class="btn btn-secondary" href="/contact-us">İletişim</a>
   </div>
 </div>

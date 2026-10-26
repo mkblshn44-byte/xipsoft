@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowUp } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 
 export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
@@ -46,15 +46,15 @@ export default function ScrollToTop() {
             border border-white/[0.12]
             text-zinc-400 hover:text-white
             shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.08)]
-            hover:shadow-[0_4px_24px_rgba(167,139,250,0.25),inset_0_1px_0_rgba(255,255,255,0.12)]
+            hover:shadow-[0_4px_24px_rgba(167, 139, 250,0.25),inset_0_1px_0_rgba(255,255,255,0.12)]
             hover:border-white/[0.22]
             transition-colors duration-200"
           style={{ bottom: 'max(1.5rem, calc(1.5rem + env(safe-area-inset-bottom)))' }}
         >
           {/* Sagdan ısık */}
           <div className="absolute inset-0 rounded-full pointer-events-none"
-            style={{ background: "linear-gradient(135deg, rgba(167,139,250,0.08) 0%, transparent 60%)" }} />
-          <ArrowUp className="w-4 h-4 relative z-10" />
+            style={{ background: "linear-gradient(135deg, rgba(167, 139, 250,0.08) 0%, transparent 60%)" }} />
+          <XipIcon name="arrow-up" glow="strong" className="w-4 h-4 relative z-10" />
         </motion.button>
       )}
     </AnimatePresence>

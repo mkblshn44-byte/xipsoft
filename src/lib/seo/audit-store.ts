@@ -2,7 +2,7 @@
  * seo/audit-store.ts — SEO denetim sonuçlarını kalıcılaştırma.
  */
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import type { SEOAuditResult } from "./page-audit";
 
 export async function saveSEOAudit(pageId: string, audit: SEOAuditResult): Promise<void> {

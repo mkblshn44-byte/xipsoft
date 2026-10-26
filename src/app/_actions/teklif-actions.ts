@@ -2,7 +2,8 @@
 
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { query } from "@/lib/database";
+import { createTeklif } from "@/lib/db/teklif";
+import { sendCustomTelegramMessage } from "@/lib/telegram";
 
 // ── Runtime dogrulama semasi (Zod v4) ────────────────────────────────────────
 
@@ -104,13 +105,6 @@ async function notifyTeklifToAdmin(data: {
   detail: string | null;
   contactMethod: string;
 }): Promise<{ ok: boolean; error?: string }> {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHANNEL_ID;
-
-  if (!botToken || !chatId) {
-    return { ok: false, error: "Telegram env degiskenleri eksik" };
-  }
-
   const escape = (s: string | null | undefined) =>
     (s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] ?? c));
 
@@ -128,17 +122,8 @@ async function notifyTeklifToAdmin(data: {
     .filter(Boolean)
     .join("\n");
 
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-    });
-    const json = await res.json();
-    return json.ok ? { ok: true } : { ok: false, error: json.description };
-  } catch (err: unknown) {
-    return { ok: false, error: err instanceof Error ? err.message : "Bilinmeyen hata" };
-  }
+  // Tek merkezi Telegram gönderimi (@/lib/telegram) — ikinci bir fetch kopyası tutulmaz.
+  return sendCustomTelegramMessage(text, process.env.TELEGRAM_ADMIN_CHAT_ID);
 }
 
 export async function submitTeklifAction(
@@ -156,56 +141,18 @@ export async function submitTeklifAction(
     const token = randomUUID();
 
     try {
-      await query(
-        `INSERT INTO teklif_requests (token, name, email, phone, service, detail, status)
-         VALUES ($1, $2, $3, $4, $5, $6, 'pending')
-         ON CONFLICT DO NOTHINg`,
-        [
-          token,
-          data.name.trim(),
-          data.email,
-          data.phone?.trim() || null,
-          data.service,
-          data.detail?.trim() || null,
-        ]
-      );
+      await createTeklif({
+        token,
+        name: data.name.trim(),
+        email: data.email,
+        phone: data.phone?.trim() || null,
+        service: data.service,
+        detail: data.detail?.trim() || null,
+      });
     } catch (dbErr: any) {
+      // DB erişilemezse teklif kaydı düşer ama kullanıcı akışı devam eder
+      // (Telegram bildirimi yine gönderilir, admin token ile takip edebilir).
       console.error("[Teklif] DB kayit hatasi:", dbErr?.message);
-      if (dbErr?.message?.includes("does not exist") || dbErr?.code === "42P01") {
-        try {
-          await query(`
-            CREATE TABLE IF NOT EXISTS teklif_requests (
-              id SERIAL PRIMARY KEY,
-              token UUID NOT NULL UNIQUE,
-              name VARCHAR(255) NOT NULL,
-              email VARCHAR(255) NOT NULL,
-              phone VARCHAR(50),
-              service VARCHAR(255) NOT NULL,
-              detail TEXT,
-              status VARCHAR(50) NOT NULL DEFAULT 'pending',
-              price NUMERIC,
-              payment_url TEXT,
-              payment_method VARCHAR(50),
-              created_at TIMESTAMPTZ DEFAULT NOW(),
-              updated_at TIMESTAMPTZ DEFAULT NOW()
-            )
-          `);
-          await query(
-            `INSERT INTO teklif_requests (token, name, email, phone, service, detail, status)
-             VALUES ($1, $2, $3, $4, $5, $6, 'pending')`,
-            [
-              token,
-              data.name.trim(),
-              data.email,
-              data.phone?.trim() || null,
-              data.service,
-              data.detail?.trim() || null,
-            ]
-          );
-        } catch (createErr: any) {
-          console.error("[Teklif] Tablo olusturma hatasi:", createErr?.message);
-        }
-      }
     }
 
     const telegramResult = await notifyTeklifToAdmin({

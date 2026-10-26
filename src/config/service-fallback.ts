@@ -3,7 +3,7 @@
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * Mimari: MIMARI.md §3 (Şablon–İçerik Ayrımı) ve §6 (Fallback Katmanları)
- * SEO:    SEO.md §5 (Şablon SEO İlkeleri & Fallback Stratejisi)
+ * SEO:    SEO.md B12 (doğru HTTP durumu) + B4 (ince/shablon sayfa riski)
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * Katman sırası:  DB (varsa)  →  Config (bu dosya)  →  i18n
@@ -15,7 +15,7 @@
  * işaretlenir (ince içerik indekslenmez, ancak iç bağlantılar takip edilir).
  *
  * Burada tanımlı slug listesi aynı zamanda "gerçekten var olan hizmetler"
- * allowlist'idir: config'de VE DB'de olmayan bir slug 404 döner (SEO.md §5.3).
+ * allowlist'idir: config'de VE DB'de olmayan bir slug 404 döner (MIMARI.md §6).
  */
 
 import type { ServicePageData } from "@/lib/db/services";
@@ -31,7 +31,10 @@ export interface ServiceFallbackEntry {
 
 /** 11 ana hizmet — kanonik slug → fallback içeriği. */
 export const SERVICE_FALLBACKS: Record<string, ServiceFallbackEntry> = {
-  "web-yazilim-tasarim": {
+  // Slug DB'deki kanonik karşılığıyla birebir aynı olmalı: `services.slug`
+  // zamanında "web-yazilim-tasarim1" olarak taşındı, bu anahtar eski adıyla
+  // kalırsa DB erişilemediğinde iskelet bile üretilemiyor (404).
+  "web-yazilim-tasarim1": {
     title: "Web Yazılım & Tasarım",
     subtitle:
       "Kurumsal web siteleri ve ölçeklenebilir web uygulamaları; modern tasarım, yüksek performans ve SEO uyumu ile.",

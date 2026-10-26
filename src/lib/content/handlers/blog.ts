@@ -3,17 +3,45 @@
  */
 
 import { NextResponse } from "next/server";
-import pool from "@/lib/database";
-import { generateSlug, ensureUniqueSlug, sanitizeSlugInput } from "@/lib/post-helpers";
+import pool from "@/lib/db/pool";
+import { generateSlug, ensureUniqueSlug, sanitizeSlugInput } from "@/lib/blog/slug";
 import { shareBlogToTelegram } from "@/lib/telegram";
 import { sanitizeHTML, sanitizeUserInput } from "@/lib/security";
 import { SITE_URL } from "@/lib/site-url";
 import { invalidateBlogCaches } from "@/lib/blog-cache";
 import { buildLexicalState } from "../lexical";
 import { validateTags } from "../validation";
-import { isSafeExternalUrl } from "../ssrf";
 import { fail } from "../response";
 import { resolveBotAuthorId } from "../auth";
+
+const PRIVATE_IP_PATTERNS = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2\d|3[01])\./,
+  /^192\.168\./,
+  /^169\.254\./,
+  /^::1$/,
+  /^fc00:/i,
+  /^fe80:/i,
+  /^0\./,
+  /^localhost$/i,
+  /\.local$/i,
+  /\.internal$/i,
+  /\.corp$/i,
+];
+
+function isSafeExternalUrl(rawUrl: string): boolean {
+  if (!rawUrl || rawUrl.length > 2048) return false;
+  try {
+    const url = new URL(rawUrl);
+    if (url.protocol !== "https:") return false;
+    if (url.port && url.port !== "443") return false;
+    const host = url.hostname.toLowerCase();
+    return !PRIVATE_IP_PATTERNS.some((pattern) => pattern.test(host));
+  } catch {
+    return false;
+  }
+}
 
 export async function handleBlogIngest(body: Record<string, unknown>): Promise<NextResponse> {
   const {

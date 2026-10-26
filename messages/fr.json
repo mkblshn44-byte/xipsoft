@@ -63,7 +63,9 @@
     }
   },
   "XipSoftTypo": {
-    "subtitle": "XipSoft Logiciels & Technologie"
+    "subtitle": "XipSoft Logiciels & Technologie",
+    "sloganTitle": "LOGICIEL & TECHNOLOGIE",
+    "sloganDecor": "TECHNOLOGIE"
   },
   "nav": {
     "about": "À propos",

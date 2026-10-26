@@ -8,8 +8,9 @@
  */
 
 import { NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { upsertRedirect } from "@/lib/redirect-handler";
+import { pausePublishedNodeForRedirectSource } from "@/lib/seo-conflict-guard";
 import {
   normalizeRedirectSource,
   normalizeRedirectTarget,
@@ -51,6 +52,13 @@ export async function handleRedirectIngest(body: Record<string, unknown>): Promi
   });
   if (!redirect) {
     return fail(500, "SERVER_ERROR", "Yönlendirme kaydedilemedi");
+  }
+
+  // Çakışma koruması: kaynak yolda yayınlı bir içerik ağacı sayfası varsa
+  // duraklatılır — route, redirect'i gölgede bırakamaz (`createRedirect` ile
+  // aynı kural).
+  if (isActive) {
+    await pausePublishedNodeForRedirectSource(sourcePath);
   }
 
   return NextResponse.json(

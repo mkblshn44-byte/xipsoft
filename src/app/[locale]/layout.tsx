@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
+import IntlMessagesProvider from "@/components/Common/IntlProvider/IntlMessagesProvider";
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -21,7 +22,16 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  // setRequestLocale ŞART: bundan sonraki her getMessages()/getTranslations()
+  // middleware header'ını okumaz, bu prerender parametresini kullanır.
+  // Header okuması olsaydı route dinamikleşir ve ISR (`revalidate`) düşerdı.
   setRequestLocale(locale);
 
-  return <>{children}</>;
+  const messages = await getMessages();
+
+  return (
+    <IntlMessagesProvider serverLocale={locale} serverMessages={messages}>
+      {children}
+    </IntlMessagesProvider>
+  );
 }

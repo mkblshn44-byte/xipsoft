@@ -32,18 +32,25 @@ type Analytics = {
     human_visits: number;
     today_visits: number;
     last_hour_visits: number;
+    average_duration_seconds: number | null;
+    average_transfer_bytes: number | null;
   } | null;
   by_country: { country_code: string; visits: number; unique_ips: number }[];
   by_device:  { device: string; visits: number }[];
   by_browser: { browser: string; visits: number }[];
   by_os:      { os: string; visits: number }[];
-  top_pages:  { path: string; visits: number; unique_ips: number }[];
+  top_pages:  {
+    path: string; visits: number; unique_ips: number;
+    average_duration_seconds: number | null; average_transfer_bytes: number | null;
+  }[];
   top_referrers: { referrer: string; visits: number }[];
   daily:      { date: string; visits: number; unique_ips: number; bot_visits: number }[];
   recent:     {
     id: number; ip_address: string; country: string | null; city: string | null;
     path: string; device_type: string | null; browser: string | null;
-    os: string | null; is_bot: boolean; referrer: string | null; created_at: string;
+    os: string | null; asn: string | null; cf_colo: string | null;
+    is_bot: boolean; referrer: string | null; duration_seconds: number | null;
+    transfer_bytes: number | string | null; created_at: string;
   }[];
 };
 
@@ -60,6 +67,21 @@ function fmt(n: number) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
+}
+
+function formatDuration(seconds: number | null | undefined) {
+  if (seconds == null || !Number.isFinite(seconds)) return "—";
+  if (seconds < 60) return `${Math.round(seconds)} sn`;
+  return `${Math.floor(seconds / 60)} dk ${Math.round(seconds % 60)} sn`;
+}
+
+function formatBytes(bytes: number | string | null | undefined) {
+  if (bytes == null) return "—";
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value < 0) return "—";
+  if (value < 1024) return `${Math.round(value)} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function pct(part: number, total: number) {
@@ -223,11 +245,13 @@ export default function AdminMonitoringClient() {
         <div className="space-y-6">
 
           {/* Özet kartları */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard icon={Eye}       label="Toplam Ziyaret"    value={fmt(s?.total_visits ?? 0)} />
             <StatCard icon={Users}     label="Tekil IP"          value={fmt(s?.unique_ips ?? 0)} />
             <StatCard icon={TrendingUp} label="Bugün"            value={fmt(s?.today_visits ?? 0)} />
             <StatCard icon={Clock}     label="Son 1 Saat"        value={fmt(s?.last_hour_visits ?? 0)} />
+            <StatCard icon={Clock}     label="Ort. Kalma Süresi" value={formatDuration(s?.average_duration_seconds)} />
+            <StatCard icon={Database}  label="Ort. Veri Kullanımı" value={formatBytes(s?.average_transfer_bytes)} />
             <StatCard icon={Users}     label="İnsan"             value={fmt(s?.human_visits ?? 0)}
               sub={pct(s?.human_visits ?? 0, totalVisits)} />
             <StatCard icon={Bot}       label="Bot"               value={fmt(s?.bot_visits ?? 0)}
@@ -331,6 +355,8 @@ export default function AdminMonitoringClient() {
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">Sayfa</th>
                     <th className="px-4 py-2 text-right text-gray-400 font-medium">Ziyaret</th>
                     <th className="px-4 py-2 text-right text-gray-400 font-medium">Tekil IP</th>
+                    <th className="px-4 py-2 text-right text-gray-400 font-medium">Ort. Süre</th>
+                    <th className="px-4 py-2 text-right text-gray-400 font-medium">Ort. Veri</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -339,6 +365,8 @@ export default function AdminMonitoringClient() {
                       <td className="px-4 py-2 text-gray-700 font-mono truncate max-w-[200px]" title={p.path}>{p.path}</td>
                       <td className="px-4 py-2 text-right text-gray-500">{fmt(p.visits)}</td>
                       <td className="px-4 py-2 text-right text-gray-400">{fmt(p.unique_ips)}</td>
+                      <td className="px-4 py-2 text-right text-gray-500 whitespace-nowrap">{formatDuration(p.average_duration_seconds)}</td>
+                      <td className="px-4 py-2 text-right text-gray-500 whitespace-nowrap">{formatBytes(p.average_transfer_bytes)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -392,7 +420,7 @@ export default function AdminMonitoringClient() {
               <p role="status" className="border-b border-gray-100 px-4 py-2 text-xs text-gray-600">{visitActionMessage}</p>
             )}
             <div className="overflow-x-auto">
-              <table className="w-full text-xs min-w-[700px]">
+              <table className="w-full text-xs min-w-[1050px]">
                 <thead className="border-b border-gray-100 bg-gray-50">
                   <tr>
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">IP</th>
@@ -401,6 +429,9 @@ export default function AdminMonitoringClient() {
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">Sayfa</th>
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">Cihaz</th>
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">Tarayıcı</th>
+                    <th className="px-4 py-2 text-right text-gray-400 font-medium">Kalma Süresi</th>
+                    <th className="px-4 py-2 text-right text-gray-400 font-medium">Veri Kullanımı</th>
+                    <th className="px-4 py-2 text-left text-gray-400 font-medium">Ağ (ASN / CF Noktası)</th>
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">Bot?</th>
                     <th className="px-4 py-2 text-left text-gray-400 font-medium">Zaman</th>
                     <th className="px-4 py-2 text-right text-gray-400 font-medium">İşlem</th>
@@ -408,7 +439,7 @@ export default function AdminMonitoringClient() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {(analytics?.recent ?? []).length === 0 ? (
-                    <tr><td colSpan={9} className="px-4 py-6 text-center text-gray-400">Veri yok</td></tr>
+                    <tr><td colSpan={12} className="px-4 py-6 text-center text-gray-400">Veri yok</td></tr>
                   ) : (analytics?.recent ?? []).map((v) => (
                     <tr key={v.id} className={`hover:bg-gray-50 ${v.is_bot ? "opacity-50" : ""}`}>
                       <td className="px-4 py-2 font-mono text-gray-800">{v.ip_address}</td>
@@ -425,6 +456,13 @@ export default function AdminMonitoringClient() {
                       <td className="px-4 py-2 text-gray-700 font-mono truncate max-w-[160px]" title={v.path}>{v.path}</td>
                       <td className="px-4 py-2 text-gray-500 capitalize">{v.device_type ?? "—"}</td>
                       <td className="px-4 py-2 text-gray-500 capitalize">{v.browser ?? "—"}</td>
+                      <td className="px-4 py-2 text-right text-gray-500 whitespace-nowrap">{formatDuration(v.duration_seconds)}</td>
+                      <td className="px-4 py-2 text-right text-gray-500 whitespace-nowrap">{formatBytes(v.transfer_bytes)}</td>
+                      <td className="px-4 py-2 text-gray-500 whitespace-nowrap">
+                        {v.asn ? `ASN ${v.asn}` : "ASN —"}
+                        {" / "}
+                        {v.cf_colo ? `CF ${v.cf_colo}` : "CF —"}
+                      </td>
                       <td className="px-4 py-2">
                         {v.is_bot && (
                           <span className="px-1.5 py-0.5 rounded text-[10px] bg-gray-100 text-gray-500 flex items-center gap-1 w-fit">

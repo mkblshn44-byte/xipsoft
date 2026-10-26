@@ -7,8 +7,10 @@ import { useLanguage } from "@/hooks/useLanguage";
 /**
  * IntlMessagesProvider — dil seçimini istemci tarafında uygular.
  *
- * Sunucu her zaman statik "tr" render eder (bkz. src/i18n/request.ts — cookies()
- * kaldırıldı, aksi halde tüm site dinamikleşip TTFB'yi öldürüyordu).
+ * Sunucu, kendisine verilen `[locale]` segmentinin messages paketini render eder
+ * (bkz. src/app/[locale]/layout.tsx — setRequestLocale + getMessages). Kök
+ * layout'ta getLocale()/getMessages() KULLANILMAZ, çünkü o çağrılar middleware
+ * header'ını okuyup tüm siteyi dinamikleştirir ve ISR'i (revalidate) kapatır.
  * Kullanıcı Homebar'dan dil değiştirdiğinde:
  *   1. LanguageContext locale'i günceller (reload GEREKMEZ)
  *   2. Bu provider ilgili messages/*.json'u dinamik import eder
@@ -47,6 +49,12 @@ export default function IntlMessagesProvider({
 
   const activeLocale = loaded && loaded.locale === locale ? locale : serverLocale;
   const activeMessages = activeLocale === serverLocale ? serverMessages : loaded!.messages;
+
+  // <html lang> kök layout'ta prerender parametresinden gelir; istemcide dil
+  // değiştirilirse (Homebar, reload yok) o öznitelik eskimiş kalır → eşitle.
+  useEffect(() => {
+    document.documentElement.lang = activeLocale;
+  }, [activeLocale]);
 
   return (
     <NextIntlClientProvider locale={activeLocale} messages={activeMessages} timeZone="Europe/Istanbul">

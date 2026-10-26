@@ -1,6 +1,8 @@
 /*
-   XipSoft — Renk Sistemi (Minified)
-   Tüm dekoratif efektler kaldırıldı.
+   XipSoft — Renk Katmanı (mor/siyah uzay)
+   TEK KAYNAK: src/config/palette.ts ("Neon Siyah Uzay").
+   Bu dosya o paleti CSS değişkenlerine yansıtır + yüzey/başlık sınıflarını verir.
+   palette.ts değişir, burası senkronlanmazsa site iki marka arasında bölünür.
 */
 
 :root {
@@ -9,24 +11,73 @@
      (CSS, TS import edemediği için bu değerler orayla senkron tutulur)
      ═══════════════════════════════════════════════════════════════════ */
 
-  /* Uzay zeminleri */
-  --space-950: #050811;
-  --space-900: #070b16;
-  --space-800: #0b0f19;
-  --space-700: #121826;
+  /* Uzay zeminleri — siyah → kömür */
+  --space-950: #050811;   /* Uzay Siyahı — ana zemin */
+  --space-900: #070b16;   /* Kömür geçişi */
+  --space-800: #0b0f19;   /* Kart / panel zemini */
+  --space-700: #121826;   /* Hover / sınır bölgesi */
 
-  /* Neon mor (ana vurgu) */
-  --neon-300: #c4b0ff;
-  --neon-400: #b794ff;
-  --neon-500: #9d72ff;
+  /* Neon mor (lavanta) aksanı (#a78bfa) */
+  --neon-300: #ddd6fe;
+  --neon-400: #c4b5fd;
+  --neon-500: #a78bfa;
   --neon-600: #8b5cf6;
   --neon-700: #7c3aed;
 
-  /* İkincil aksanlar */
+  /* Geriye dönük neon green alias'ları */
+  --neon-green-300: var(--neon-300);
+  --neon-green-400: var(--neon-400);
+  --neon-green-500: var(--neon-500);
+  --neon-green-600: var(--neon-600);
+
+  /*
+   * Eski cyan ailesi — tek marka ailesine (mor lavanta) eşlendi.
+   * Değerler src/config/palette.ts → VIOLET_RAMP ile birebir aynı olmalı.
+   */
+  --cyan-300: #c4b5fd;
+  --cyan-400: #a78bfa;
+  --cyan-500: #8b5cf6;
+  --cyan-600: #7c3aed;
+  --cyan-700: #6d28d9;
   --accent-cyan: #ddd6fe;
-  --accent-rose: #a78bfa;
+  /* `gold*` token ADları korunur (bileşenler/CSS bunları okuyor); DEĞERLER
+     mor lavantadır — palette.ts `accent.gold*` ile birebir aynı olmalı. */
   --accent-gold: #a78bfa;
-  --accent-emerald: #ddd6fe;
+  --accent-gold-light: #c4b5fd;
+  --accent-gold-dark: #7c3aed;
+  --accent-rose: #a78bfa;      /* error/danger → mor */
+  --accent-emerald: #ddd6fe;   /* success → açık lavanta */
+
+  /* Slate grisi — nötr skalası (marka grisi 400) */
+  --titanium-50:  #f8fafc;
+  --titanium-100: #f1f5f9;
+  --titanium-200: #e2e8f0;
+  --titanium-300: #cbd5e1;
+  --titanium-400: #94a3b8;   /* SLATE GRİSİ — çizgi + ikincil metin */
+  --titanium-500: #64748b;
+  --titanium-600: #475569;
+  --titanium-700: #334155;
+  --titanium-800: #1e293b;
+  --titanium-900: #0f172a;
+
+  /* Yüzey durakları + hazır gradyanlar (uzay tonları) */
+  --metal-shadow:   #050811;
+  --metal-base:     #0b0f19;
+  --metal-raised:   #121826;
+  --metal-sheen:    #1e293b;
+  --metal-highlight:#c4b5fd;
+  --metal-surface-gradient:
+    linear-gradient(135deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.015) 45%, rgba(167,139,250,0.05) 100%);
+  --metal-bar-gradient:
+    linear-gradient(135deg, #c4b5fd 0%, #a78bfa 45%, #8b5cf6 100%);
+  /* Başlık/CTA yazı dolgusu (bg-clip-text ile kullanılır) */
+  --metal-text-gradient:
+    linear-gradient(178deg, #ffffff 0%, #ede9fe 38%, #c4b5fd 62%, #f5f3ff 100%);
+
+  /* Marka gradyanı — mor tonları arasında derinlik (açık → ana → koyu) */
+  --gold-gradient-start: #c4b5fd;
+  --gold-gradient-mid: #a78bfa;
+  --gold-gradient-end: #8b5cf6;
 
   /* Zemin */
   --color-bg:            var(--space-950);
@@ -37,17 +88,36 @@
   /* Kart zeminleri — yarı şeffaf liquid glass */
   --color-card-bg:       rgba(255, 255, 255, 0.02);
   --color-card-bg-hover: rgba(255, 255, 255, 0.04);
+  /* Mobilde backdrop-filter kapalı → kartlar yarı saydam kırılgan yüzey
+     yerine opak kömür plakaya döner. Light temada beyaz plaka. */
+  --card-solid-bg:       var(--space-900);
   --color-tag-bg:        rgba(255, 255, 255, 0.04);
 
   /* Kenarlık — ince, zarif */
   --color-border:        rgba(255, 255, 255, 0.06);
   --color-border-hover:  rgba(255, 255, 255, 0.12);
+  /* Panel kenarlığı — ayırıcı çizgilerden güçlü, kart/panel yüzeylerine özel */
+  --color-glass-border:         rgba(255, 255, 255, 0.08);
+  --color-glass-border-hover:   rgba(157, 114, 255, 0.55);   /* palette.border.neonStrong */
 
   /* Metin */
-  --color-text-primary:   #ffffff;   /* palette.text.heading */
-  --color-text-secondary: #cbd5e1;   /* palette.text.body */
-  --color-text-muted:     #94a3b8;   /* palette.text.muted */
-  --color-text-dim:       #64748b;   /* palette.text.dim */
+  --color-text-primary:   #ffffff;    /* palette.text.heading */
+  --color-text-secondary: #cbd5e1;    /* palette.text.body */
+  --color-text-muted:     #94a3b8;    /* palette.text.muted — SLATE GRİSİ */
+  --color-text-dim:       #64748b;    /* palette.text.dim */
+
+  /* Neon glow — mor aksan ışığı */
+  --brand-accent-glow: rgba(157, 114, 255, 0.20);
+  --brand-accent-soft: rgba(157, 114, 255, 0.12);
+
+  /* Hero başlığı — mor vurgu + zemini kesen koyu gölge */
+  --hero-title-color: var(--color-text-primary);
+  --hero-title-shadow: 0 1px 14px #050811, 0 8px 28px var(--brand-accent-glow);
+
+  /* Eski gold token adları → mor glow (#a78bfa). */
+  --gold-glow: rgba(157, 114, 255, 0.18);
+  --gold-glow-lg: rgba(157, 114, 255, 0.26);
+  --gold-glow-soft: rgba(157, 114, 255, 0.12);
 
   /* Prism/Aksan — geriye dönük uyumlu alias'lar (merkezi paletten türetilir) */
   --prism-violet: var(--neon-500);
@@ -55,11 +125,44 @@
   --prism-rose:   var(--accent-rose);
   --prism-purple: var(--neon-400);
   --prism-emerald:var(--accent-emerald);
-  --prism-blue:   #ddd6fe;
+  --prism-blue:   var(--accent-cyan);
 
-  /* glassmorphism */
-  --glass-blur:   blur(28px) saturate(130%);
-  --glass-blur-sm: blur(16px) saturate(120%);
+  /* Cam yüzey blur'u — liquid glass: yüksek blur + yüksek saturate.
+     Üst sınır palette.glass.blur (20px). */
+  --glass-blur:   blur(20px) saturate(140%);
+  --glass-blur-sm: blur(16px) saturate(130%);
+
+  /* Marka filigranı (.brand-watermark) — rozet logosu tek kaynaktan */
+  --brand-mark-url: url("/media/logo-steel.webp");
+
+  /* Hareket / pah / kart yüzeyi — src/config/palette.ts (radius/motion/glass)
+     değerleriyle birebir eşleşir; kart yüzeylerinin referansı burasıdır. */
+  --radius-control: 0.5rem;        /* yumuşak köşeler (mor/siyah tema) */
+  --radius-card: 0.75rem;
+  --chamfer-sm: 0px;               /* PAH KAPALI: köşeler kesilmez, yuvarlanır */
+  --chamfer-md: 0px;
+  --chamfer-lg: 0px;
+  /* Pahlı köşe maskeleri — sol üstten saat yönünde 4 kesim.
+     Kullanım: `clip-path: var(--clip-chamfer-md)` veya `.chamfer-md` sınıfı. */
+  --clip-chamfer-sm: polygon(
+    var(--chamfer-sm) 0, 100% 0, 100% calc(100% - var(--chamfer-sm)),
+    calc(100% - var(--chamfer-sm)) 100%, 0 100%, 0 var(--chamfer-sm)
+  );
+  --clip-chamfer-md: polygon(
+    var(--chamfer-md) 0, 100% 0, 100% calc(100% - var(--chamfer-md)),
+    calc(100% - var(--chamfer-md)) 100%, 0 100%, 0 var(--chamfer-md)
+  );
+  --clip-chamfer-lg: polygon(
+    var(--chamfer-lg) 0, 100% 0, 100% calc(100% - var(--chamfer-lg)),
+    calc(100% - var(--chamfer-lg)) 100%, 0 100%, 0 var(--chamfer-lg)
+  );
+  --motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-ease-premium:  cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-slash:    cubic-bezier(0.85, 0, 0.15, 1);
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-slow: 360ms;
+  --glass-blur-card: blur(20px) saturate(140%);
 }
 
 html.light, [data-theme="light"] {
@@ -68,12 +171,22 @@ html.light, [data-theme="light"] {
   --color-surface-2:     rgba(248, 249, 251, 0.90);
   --color-surface-3:     rgba(238, 240, 244, 0.95);
 
+  --color-card-bg:       rgba(255, 255, 255, 0.62);
+  --color-card-bg-hover: rgba(255, 255, 255, 0.82);
+  --card-solid-bg:       #ffffff;
+
   --color-border:        rgba(71, 85, 105, 0.10);
   --color-border-hover:  rgba(71, 85, 105, 0.22);
+  --color-glass-border:        rgba(71, 85, 105, 0.14);
+  --color-glass-border-hover:  rgba(124, 58, 237, 0.42);
 
   --color-text-primary:   #0f172a;
   --color-text-secondary: #334155;
   --color-text-muted:     #64748b;
+
+  /* #a78bfa açık zeminde düşük kontrast (WCAG AA) → koyu mor. */
+  --hero-title-color: var(--color-text-primary);
+  --hero-title-shadow: 0 1px 14px rgba(255, 255, 255, 0.75), 0 8px 28px rgba(157, 114, 255, 0.10);
 }
 
 html.light body {
@@ -86,16 +199,164 @@ html.light body {
 .text-secondary { color: var(--color-text-secondary); }
 .text-muted     { color: var(--color-text-muted); }
 
-/* ─── TITLE TEXT — tek kaynak başlık stili ──────────────── */
+/* Genel h2 başlıkları — platin gri, loş gri gölge */
+h2 {
+  color: var(--color-text-muted) !important;
+  text-shadow: 0 8px 28px rgba(148, 163, 184, 0.18);
+}
+
+/* Site metinleri, `(site)` layout kabında Plus Jakarta Sans kullanır. */
+.site-headings,
+.site-headings * {
+  font-family: var(--font-body), sans-serif !important;
+}
+.site-headings nav,
+.site-headings nav * {
+  font-family: var(--font-navbar), system-ui, sans-serif !important;
+}
+
+/* Site başlıkları: hero h1 marka mavisi, diğer h1 kırık beyaz, h2 gri + loş gölge.
+   Alt çizgi (h1/h2 ::after) loş mavi kalır. */
+.site-headings h1 {
+  font-family: var(--font-display), system-ui, sans-serif !important;
+  text-transform: uppercase !important;
+  color: var(--color-text-primary) !important;
+  text-shadow: 0 8px 28px rgba(167, 139, 250, 0.12);
+  position: relative;
+  display: inline-block;
+}
+
+.site-headings h2 {
+  font-family: var(--font-display), system-ui, sans-serif !important;
+  text-transform: uppercase !important;
+  color: var(--color-text-muted) !important;
+  text-shadow: 0 8px 28px rgba(148, 163, 184, 0.18);
+  position: relative;
+  display: inline-block;
+}
+
+/*
+ * Hero başlıkları — marka mavisi. `.site-headings h1`'in kırık beyazını sınıf
+ * sayısıyla geride bırakır (0,2,0 > 0,1,1). Koyu gölge korunur: hero yazısı
+ * SpaceCanvas nebula'sının üzerine çiziliyor, tek başına mavi glow okunabilirliği
+ * düşürüyor.
+ */
+.site-headings .hero-title,
+.site-headings .title-text-glass--hero,
+.hero-title {
+  color: var(--hero-title-color) !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  text-shadow: var(--hero-title-shadow);
+}
+
+/* Alt çizgi glow efekti */
+.site-headings h1::after,
+.site-headings h2::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.28), transparent);
+  box-shadow: 0 0 18px rgba(167, 139, 250, 0.10);
+}
+
+@keyframes line-glow {
+  0%, 100% {
+    opacity: 0.3;
+    box-shadow: 0 0 10px rgba(167, 139, 250, 0.08);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.14), 0 0 30px rgba(167, 139, 250, 0.06);
+  }
+}
+
 .title-text-glass {
   display: inline-block;
   font-family: var(--font-display), system-ui, sans-serif;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  font-weight: 900;
-  color: var(--color-text-primary);
-  text-shadow: 0 0 0 transparent;
+  font-weight: 700;
+  color: var(--color-text-primary) !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  text-shadow: 0 8px 28px rgba(167, 139, 250, 0.12);
   position: relative;
+}
+
+.title-text-glass::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.28), transparent);
+  box-shadow: 0 0 18px rgba(167, 139, 250, 0.10);
+}
+
+.title-glass-card {
+  isolation: isolate;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-card);
+}
+
+.title-glass-card__surface {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid rgba(203, 213, 225, 0.12);
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+
+.title-glass-card--brand .title-glass-card__surface {
+  border-color: rgba(167, 139, 250, 0.12);
+  background:
+    radial-gradient(ellipse at 50% 12%, rgba(167, 139, 250, 0.08), transparent 68%),
+    rgba(255, 255, 255, 0.025);
+}
+
+.title-glass-card--brand .title-glass-card__surface::before {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse, transparent 48%, rgba(196, 181, 253, 0.10) 48.5%, transparent 49.2%),
+    radial-gradient(ellipse, transparent 66%, rgba(196, 181, 253, 0.06) 66.5%, transparent 67.2%);
+  opacity: 0.55;
+  transform: rotate(-14deg) scaleY(0.62);
+}
+
+.title-glass-card--brand .title-glass-card__surface::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 78%);
+}
+
+.title-glass-card__surface::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 45%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.title-glass-card__content {
+  position: relative;
+  z-index: 1;
 }
 
 .title-text-glass::after {
@@ -113,51 +374,46 @@ html.light body {
 .title-text-glass--prism {
   color: transparent !important;
   background: linear-gradient(
-    180deg,
+    178deg,
     #ffffff 0%,
-    #f1f5f9 30%,
-    #e2e8f0 50%,
-    #f1f5f9 70%,
-    #ffffff 100%
+    #e2e8f0 16%,
+    #64748b 38%,
+    #f8fafc 50%,
+    #94a3b8 68%,
+    #cbd5e1 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 24px rgba(255,255,255,0.18), 0 0 28px rgba(148,163,184,0.10);
+  text-shadow: 0 1px 0 rgba(5, 8, 17, 0.55);
 }
 
 /* Section variant — buz gümüş cam gradient */
 .title-text-glass--section {
   color: transparent !important;
   background: linear-gradient(
-    180deg,
+    178deg,
     #ffffff 0%,
-    #f1f5f9 30%,
-    #e2e8f0 50%,
-    #f1f5f9 70%,
-    #ffffff 100%
+    #e2e8f0 16%,
+    #64748b 38%,
+    #f8fafc 50%,
+    #94a3b8 68%,
+    #cbd5e1 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 24px rgba(255,255,255,0.16), 0 0 28px rgba(148,163,184,0.10);
+  text-shadow: 0 1px 0 rgba(5, 8, 17, 0.55);
 }
 
-/* Hero variant — buz gümüş cam gradient */
+/* Hero variant — marka mavisi (buz gümüş cam gradient yerine düz safir mavi) */
 .title-text-glass--hero {
-  color: transparent !important;
-  background: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #f1f5f9 30%,
-    #e2e8f0 50%,
-    #f1f5f9 70%,
-    #ffffff 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 32px rgba(255,255,255,0.20), 0 0 36px rgba(148,163,184,0.12);
+  color: var(--hero-title-color) !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  text-shadow: var(--hero-title-shadow);
 }
 
 /* Silver variant — gümüş tonları */
@@ -165,19 +421,85 @@ html.light body {
   color: transparent !important;
   background: linear-gradient(
     168deg,
-    #f1f5f9 0%,
-    #e2e8f0 10%,
-    #cbd5e1 24%,
-    #f8fafc 38%,
-    #e2e8f0 52%,
+    #f8fafc 0%,
+    #cbd5e1 10%,
+    #e2e8f0 24%,
+    #ffffff 38%,
+    #cbd5e1 52%,
     #94a3b8 66%,
-    #e2e8f0 80%,
-    #f1f5f9 100%
+    #cbd5e1 80%,
+    #f8fafc 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-shadow: 0 4px 18px rgba(255,255,255,0.10), 0 0 28px rgba(148,163,184,0.14);
+  text-shadow: 0 4px 18px rgba(255,255,255,0.10), 0 0 28px rgba(148, 163, 184,0.14);
+}
+
+/* Brand variant — bölüm başlığı gri, loş gri gölge. */
+.title-text-brand {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  color: var(--color-text-muted) !important;
+  text-transform: uppercase !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  text-shadow: 0 8px 28px rgba(148, 163, 184, 0.18);
+  position: relative;
+  display: inline-block;
+}
+
+.title-text-brand::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.28), transparent);
+  box-shadow: 0 0 18px rgba(167, 139, 250, 0.10);
+}
+
+@media (min-width: 640px) {
+  .title-text-brand {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .title-text-brand {
+    font-size: 3rem;
+    line-height: 1;
+  }
+}
+
+/* Hafif brand varyantı — TitleText kullanmayan bölüm başlıkları (gri). */
+.brand-gradient-text {
+  font-family: var(--font-display), system-ui, sans-serif;
+  color: var(--color-text-muted) !important;
+  text-transform: uppercase !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  text-shadow: 0 8px 28px rgba(148, 163, 184, 0.18);
+  position: relative;
+  display: inline-block;
+}
+
+.brand-gradient-text::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.28), transparent);
+  box-shadow: 0 0 18px rgba(167, 139, 250, 0.10);
 }
 
 /* Admin variant — düz renk, glass efekti yok */
@@ -218,15 +540,15 @@ html.light body {
 .card {
   position: relative;
   overflow: hidden;
-  border-radius: 1rem;
-  border: 1px solid var(--color-border);
-  background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018));
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(2,6,23,0.12);
-  transition: transform 0.4s cubic-bezier(0.22,1,0.36,1),
-              box-shadow 0.4s ease,
-              border-color 0.4s ease;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-glass-border);
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  backdrop-filter: var(--glass-blur-card);
+  -webkit-backdrop-filter: var(--glass-blur-card);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(5, 8, 17,0.18), 0 0 28px rgba(167, 139, 250, 0.05);
+  transition: transform var(--motion-duration-base) var(--motion-ease-premium),
+              box-shadow var(--motion-duration-base) var(--motion-ease-standard),
+              border-color var(--motion-duration-base) var(--motion-ease-standard);
 }
 
 /* Kenar gradyan çizgisi */
@@ -236,12 +558,13 @@ html.light body {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(157,114,255,0.28), rgba(255,255,255,0.05), rgba(139,92,246,0.14));
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(167, 139, 250,0.05), rgba(255,255,255,0.02));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 0.45;
   transition: opacity 0.4s ease, background 0.4s ease;
 }
 
@@ -259,11 +582,12 @@ html.light body {
 
 /* ── Hover — varsayilan ──────────────────────────────────────────────────── */
 .card:hover {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 8px 40px rgba(2,6,23,0.22), 0 0 0 1px rgba(255,255,255,0.04);
+  border-color: var(--color-glass-border-hover);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 8px 40px rgba(5, 8, 17,0.28), 0 0 0 1px rgba(255,255,255,0.04), 0 0 28px rgba(167, 139, 250, 0.08);
   transform: translateY(-2px) scale(1.005);
 }
 .card:hover::before {
-  background: linear-gradient(135deg, rgba(183,148,255,0.55), rgba(255,255,255,0.10), rgba(157,114,255,0.30));
+  background: linear-gradient(135deg, rgba(167, 139, 250,0.18), rgba(255,255,255,0.10), rgba(11, 15, 25,0.12));
   opacity: 1;
 }
 .card:hover::after {
@@ -304,10 +628,10 @@ html.light body {
 
 /* ── Varyant: elevated ──────────────────────────────────────────────────── */
 .card--elevated {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 48px rgba(2,6,23,0.25), 0 0 0 1px rgba(255,255,255,0.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 12px 48px rgba(5, 8, 17,0.25), 0 0 0 1px rgba(255,255,255,0.06);
 }
 .card--elevated:hover {
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 64px rgba(2,6,23,0.35), 0 0 0 1px rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 64px rgba(5, 8, 17,0.35), 0 0 0 1px rgba(255,255,255,0.08);
 }
 
 /* ── Varyant: interactive (guclu hover scale + glow) ─────────────────────── */
@@ -316,13 +640,13 @@ html.light body {
 }
 .card--interactive:hover {
   transform: translateY(-4px) scale(1.02);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 16px 56px rgba(2,6,23,0.3), 0 0 0 1px rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 16px 56px rgba(5, 8, 17,0.3), 0 0 0 1px rgba(255,255,255,0.08);
 }
 
 /* ── Varyant: admin (light theme) ────────────────────────────────────────── */
 .card--admin {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
@@ -365,39 +689,66 @@ html.light body {
   border: 1px solid var(--color-border);
 }
 
-/* ─── BIRINCIL CTA — merkezî glass button (neon mor) ──────────────────── */
+/* ─── BIRINCIL CTA — merkezî ÇELİK düğme (pahlı köşe + metalik dolgu) ─────
+   Kenar çizgisi iki katmanlı pseudo ile çizilir: `::after` 1px büyük ve
+   titanyum renginde (pahlı kenar bandı), `::before` metalik dolgu.
+   `clip-path` ebeveyni kestiği için pseudo'lar EBEVEYNDE değil, izole
+   stacking context içinde kalır (`isolation: isolate`). */
 .site-cta-primary {
   position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   min-height: 3.25rem;
-  border: 1px solid var(--neon-500);
-  border-radius: 1rem;
-  background: linear-gradient(135deg, rgba(157, 114, 255, 0.85), rgba(124, 58, 237, 0.78));
-  color: #f5f3ff;
-  box-shadow:
-    0 8px 28px rgba(124, 58, 237, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(15, 23, 42, 0.12);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--space-950);
   text-decoration: none;
   transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
+    color 120ms var(--motion-ease-standard),
+    transform 120ms var(--motion-ease-standard);
 }
 
+.site-cta-primary::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -2;
+  pointer-events: none;
+  background: linear-gradient(135deg, var(--titanium-300), var(--neon-400) 55%, var(--titanium-600));
+  border-radius: inherit;
+  transition: background 160ms var(--motion-ease-standard);
+}
+
+.site-cta-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--metal-bar-gradient);
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(226, 232, 240, 0.28);
+  transition: box-shadow 160ms var(--motion-ease-standard);
+}
+
+/* Hover: kılıç kesiği — tek yönlü, hızlı ışık süpürmesi (content üzerinde) */
 .site-cta-primary:hover {
-  border-color: var(--neon-300);
-  background: linear-gradient(135deg, rgba(183, 148, 255, 0.95), rgba(139, 92, 246, 0.88));
+  color: var(--space-950);
+  transform: translateY(-1px);
+}
+
+.site-cta-primary:hover::after {
+  background: linear-gradient(135deg, var(--neon-300), #ffffff 50%, var(--neon-500));
+}
+
+.site-cta-primary:hover::before {
   box-shadow:
-    0 12px 34px rgba(124, 58, 237, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -1px 0 rgba(15, 23, 42, 0.1);
+    inset 0 1px 0 rgba(248, 250, 252, 0.45),
+    0 0 22px rgba(167, 139, 250, 0.22);
 }
 
 .site-cta-primary:focus-visible {
@@ -406,7 +757,7 @@ html.light body {
 }
 
 .site-cta-primary:active {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.99);
 }
 
 .site-cta-primary:disabled,
@@ -415,30 +766,56 @@ html.light body {
   opacity: 0.55;
 }
 
-/* ─── İKİNCİL CTA — merkezî glass button (neon outline) ───────────────── */
+/* ─── İKİNCİL CTA — loş çelik düğme (yalnızca pahlı kenar) ─────────────── */
 .site-cta-secondary {
   position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   min-height: 3.25rem;
-  border: 1px solid rgba(157, 114, 255, 0.25);
-  border-radius: 1rem;
-  background: rgba(157, 114, 255, 0.08);
-  color: var(--neon-400);
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-text-secondary);
   text-decoration: none;
   transition:
-    background 180ms ease,
-    border-color 180ms ease,
-    color 180ms ease,
-    transform 180ms ease;
+    color 120ms var(--motion-ease-standard),
+    transform 120ms var(--motion-ease-standard);
+}
+
+.site-cta-secondary::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--titanium-600);
+  border-radius: inherit;
+}
+
+.site-cta-secondary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgba(11, 15, 25, 0.86);
+  border-radius: inherit;
+  transition: background 160ms var(--motion-ease-standard);
 }
 
 .site-cta-secondary:hover {
-  border-color: rgba(157, 114, 255, 0.45);
-  background: rgba(157, 114, 255, 0.14);
-  color: var(--neon-300);
+  color: var(--color-text-primary);
+}
+
+.site-cta-secondary:hover::after {
+  background: var(--titanium-400);
+}
+
+.site-cta-secondary:hover::before {
+  background: var(--metal-raised);
 }
 
 .site-cta-secondary:focus-visible {
@@ -447,7 +824,7 @@ html.light body {
 }
 
 .site-cta-secondary:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 /* ─── AKSAN YARDIMCILARI — dinamik vurgu rengi (inline stil yerine) ───── */
@@ -462,33 +839,19 @@ html.light body {
 .accent-neon {
   --accent:        var(--neon-500);
   --accent-strong: var(--neon-300);
-  --accent-soft:   rgba(157, 114, 255, 0.10);
-  --accent-line:   rgba(157, 114, 255, 0.75);
-  --accent-border: rgba(157, 114, 255, 0.30);
+  --accent-soft:   rgba(167, 139, 250, 0.08);
+  --accent-line:   rgba(167, 139, 250, 0.28);
+  --accent-border: rgba(167, 139, 250, 0.18);
 }
 
-.accent-cyan {
-  --accent:        var(--accent-cyan);
-  --accent-strong: #67e8f9;
-  --accent-soft:   rgba(34, 211, 238, 0.10);
-  --accent-line:   rgba(34, 211, 238, 0.75);
-  --accent-border: rgba(34, 211, 238, 0.30);
-}
-
-.accent-rose {
-  --accent:        var(--accent-rose);
-  --accent-strong: #c4b5fd;
-  --accent-soft:   rgba(167, 139, 250, 0.10);
-  --accent-line:   rgba(167, 139, 250, 0.75);
-  --accent-border: rgba(167, 139, 250, 0.30);
-}
-
+/* @deprecated Token adı "gold"; değerler safir — .accent-neon ile aynı.
+   Veri tarafında `accent: "gold"` yazan kartlar bu sınıfı okuyor. */
 .accent-gold {
   --accent:        var(--accent-gold);
-  --accent-strong: #c4b5fd;
-  --accent-soft:   rgba(167, 139, 250, 0.10);
-  --accent-line:   rgba(167, 139, 250, 0.75);
-  --accent-border: rgba(167, 139, 250, 0.30);
+  --accent-strong: var(--accent-gold-light);
+  --accent-soft:   rgba(167, 139, 250, 0.08);
+  --accent-line:   rgba(167, 139, 250, 0.28);
+  --accent-border: rgba(167, 139, 250, 0.18);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -498,53 +861,7 @@ html.light body {
   }
 }
 
-/* ════════════════════════════════════════════════════════════
-   AKSAN YARDIMCI SINIFLARI — Tek kaynak CSS değişken seti
-   ════════════════════════════════════════════════════════════
-   Kullanım: className="accent-neon" → içerideki tüm var(--accent*)
-   değişkenleri otomatik set edilir. Bileşenler ham renk YAZMAZ.
 
-   Alanlar:
-     --accent        → tam renk (ikon, başlık, nokta, vb.)
-     --accent-line   → divider çizgisi için (biraz daha parlak)
-     --accent-soft   → %8 opaklıklı glow / hover bg
-     --accent-border → %30 opaklıklı kart border
-*/
-
-.accent-neon {
-  --accent:        var(--neon-500);          /* #9d72ff */
-  --accent-line:   var(--neon-400);          /* #b794ff */
-  --accent-soft:   rgba(157, 114, 255, 0.08);
-  --accent-border: rgba(157, 114, 255, 0.30);
-}
-
-.accent-cyan {
-  --accent:        var(--accent-cyan);       /* #ddd6fe */
-  --accent-line:   var(--accent-cyan);
-  --accent-soft:   rgba(34, 211, 238, 0.08);
-  --accent-border: rgba(34, 211, 238, 0.30);
-}
-
-.accent-rose {
-  --accent:        var(--accent-rose);       /* artık mor (#a78bfa) */
-  --accent-line:   var(--neon-400);
-  --accent-soft:   rgba(167, 139, 250, 0.08);
-  --accent-border: rgba(167, 139, 250, 0.30);
-}
-
-.accent-gold {
-  --accent:        var(--accent-gold);       /* artık mor (#a78bfa) */
-  --accent-line:   var(--neon-400);
-  --accent-soft:   rgba(167, 139, 250, 0.08);
-  --accent-border: rgba(167, 139, 250, 0.30);
-}
-
-.accent-emerald {
-  --accent:        var(--accent-emerald);    /* artık cyan (#ddd6fe) */
-  --accent-line:   var(--accent-cyan);
-  --accent-soft:   rgba(34, 211, 238, 0.08);
-  --accent-border: rgba(34, 211, 238, 0.30);
-}
 
 /* ── İKİNCİL CTA butonu — site-cta-primary'nin eşi ─────── */
 .site-cta-secondary {
@@ -554,11 +871,11 @@ html.light body {
   justify-content: center;
   gap: 0.5rem;
   min-height: 3.25rem;
-  border: 1px solid var(--color-border-neon, rgba(157, 114, 255, 0.30));
-  border-radius: 1rem;
-  background: rgba(157, 114, 255, 0.08);
-  color: var(--neon-400, #b794ff);
-  box-shadow: 0 0 18px rgba(157, 114, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border-neon, rgba(167, 139, 250, 0.18));
+  border-radius: 9999px;
+  background: rgba(167, 139, 250, 0.06);
+  color: var(--neon-300, #ddd6fe);
+  box-shadow: 0 0 24px rgba(167, 139, 250, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   text-decoration: none;
@@ -571,13 +888,13 @@ html.light body {
 }
 
 .site-cta-secondary:hover {
-  border-color: rgba(157, 114, 255, 0.55);
-  background: rgba(157, 114, 255, 0.14);
-  box-shadow: 0 0 28px rgba(157, 114, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(196, 181, 253, 0.28);
+  background: rgba(167, 139, 250, 0.10);
+  box-shadow: 0 0 28px rgba(167, 139, 250, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .site-cta-secondary:focus-visible {
-  outline: 2px solid var(--neon-400, #b794ff);
+  outline: 2px solid var(--neon-300, #ddd6fe);
   outline-offset: 3px;
 }
 
@@ -603,7 +920,7 @@ html.light body {
   .card {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background: rgba(11, 15, 25, 0.98) !important;
+    background: var(--card-solid-bg, #070b16) !important;
     box-shadow: none !important;
     transition: none !important;
   }
@@ -617,7 +934,7 @@ html.light body {
   .Blog-card-glass {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background: rgba(11, 15, 25, 0.98) !important;
+    background: var(--card-solid-bg, #070b16) !important;
   }
 
   /* Site CTA butonları — backdrop kaldır, hafif opak */
@@ -640,4 +957,265 @@ html.light body {
   .liquid-glow {
     display: none !important;
   }
+}
+
+/* Ana sayfa hizmet kartları — ölçülü mavi sıvı cam */
+.card.home-service-card {
+  border: 1px solid rgba(203, 213, 225, 0.12);
+  background: rgba(248, 250, 252, 0.1);
+  backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18);
+  -webkit-backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.252);
+}
+
+.card.home-service-card::before {
+  inset: -20%;
+  padding: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 121.5% 121.5% at 50% 50%,
+    rgba(167, 139, 250, 0.045) 0%,
+    transparent 70%
+  );
+  -webkit-mask: none;
+  mask: none;
+  opacity: 0.7;
+  animation: homeServiceLiquidRefract 8s ease-in-out infinite;
+}
+
+.card.home-service-card:hover {
+  border-color: rgba(221, 214, 254, 0.32);
+  background: rgba(248, 250, 252, 0.065);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 24px rgba(167, 139, 250, 0.08);
+}
+
+@keyframes homeServiceLiquidRefract {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(77.4deg) scale(1); }
+}
+
+@media (max-width: 768px) {
+  .card.home-service-card {
+    background: rgba(248, 250, 252, 0.1) !important;
+    backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18) !important;
+    -webkit-backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18) !important;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.252) !important;
+  }
+
+  .card.home-service-card:hover {
+    background: rgba(248, 250, 252, 0.14) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.home-service-card::before {
+    animation: none;
+  }
+}
+
+/* Ana sayfanın diğer kartları — hizmet kartlarıyla eşleşen safir cam yüzey */
+.card.home-liquid-glass,
+.home-liquid-glass:not(.card) {
+  border-color: rgba(203, 213, 225, 0.12);
+  background: rgba(248, 250, 252, 0.1) !important;
+  backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18);
+  -webkit-backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.252);
+}
+
+.card.home-liquid-glass::before,
+.home-liquid-glass:not(.card)::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  padding: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 121.5% 121.5% at 50% 50%,
+    rgba(167, 139, 250, 0.035) 0%,
+    transparent 70%
+  );
+  -webkit-mask: none;
+  mask: none;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: homeServiceLiquidRefract 8s ease-in-out infinite;
+}
+
+.card.home-liquid-glass:hover,
+.home-liquid-glass:not(.card):hover {
+  border-color: rgba(221, 214, 254, 0.32);
+  background: rgba(248, 250, 252, 0.14) !important;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    0 0 24px rgba(167, 139, 250, 0.08);
+}
+
+@media (max-width: 768px) {
+  .card.home-liquid-glass,
+  .home-liquid-glass:not(.card) {
+    background: rgba(248, 250, 252, 0.1) !important;
+    backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18) !important;
+    -webkit-backdrop-filter: blur(8.8px) saturate(1.215) contrast(1.18) !important;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.252) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.home-liquid-glass::before,
+  .home-liquid-glass:not(.card)::before {
+    animation: none;
+  }
+}
+
+/* Site genelinde buton yüzeyleri saydam kalır; renkli kenarlık ve metin
+   durumları korunarak butonlar koyu zemin üzerinde ayırt edilebilir. */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+a.site-cta-primary,
+a[class*="bg-"][class*="px-"][class*="rounded"] {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+button[class*="text-black"],
+button[class*="text-zinc-950"],
+button[class*="text-slate-950"],
+a[class*="text-black"][class*="px-"][class*="rounded"],
+a[class*="text-zinc-950"][class*="px-"][class*="rounded"],
+a[class*="text-slate-950"][class*="px-"][class*="rounded"] {
+  color: var(--neon-300) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   YARDIMCI KATMAN — yüzey/plaka yardımcı sınıfları (mor-siyah tema)
+   Keskin hatlar (radius 0 + 45° pah), fırçalanmış metal yüzey, devre
+   ışımaları ve kılıç kesiği geçişleri. Yeni yüzeyler bunları kullanır.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Pah (chamfer): köşeler yuvarlanmaz, kesilir ─────────────────────── */
+.chamfer-sm { clip-path: var(--clip-chamfer-sm); }
+.chamfer-md { clip-path: var(--clip-chamfer-md); }
+.chamfer-lg { clip-path: var(--clip-chamfer-lg); }
+
+/* ── Fırçalanmış metal panel ───────────────────────────────────────────
+   Üst kenarda ince ışık çizgisi + yatay fırça izleri; köşeler pahlı. */
+.metal-panel {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background:
+    repeating-linear-gradient(96deg, rgba(226, 232, 240, 0.03) 0 1px, transparent 1px 6px),
+    var(--metal-surface-gradient);
+  clip-path: var(--clip-chamfer-md);
+  box-shadow: inset 0 1px 0 rgba(226, 232, 240, 0.16);
+}
+
+.metal-panel:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(248, 250, 252, 0.26),
+    0 0 0 1px rgba(148, 163, 184, 0.18);
+}
+
+/* Kabartma çelik plaka — kartlar için (üstü parlak, altı gölge) */
+.steel-plate {
+  border-radius: 0;
+  background: var(--metal-surface-gradient);
+  clip-path: var(--clip-chamfer-md);
+  box-shadow:
+    inset 0 1px 0 rgba(226, 232, 240, 0.20),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.6),
+    0 3px 12px -4px rgba(0, 0, 0, 0.7);
+}
+
+/* ── Devre ayracı — section başlıklarının altındaki kesik çizgi ──────── */
+.circuit-rule {
+  position: relative;
+  height: 1px;
+  border: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(148, 163, 184, 0.45) 18%,
+    rgba(148, 163, 184, 0.45) 62%,
+    transparent
+  );
+}
+
+.circuit-rule::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: -2px;
+  width: 5px;
+  height: 5px;
+  background: var(--neon-400);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  box-shadow: 0 0 10px rgba(196, 181, 253, 0.7);
+  animation: circuit-pulse 4.5s ease-out infinite;
+}
+
+/* ── Kılıç kesiği — hover'da tek yönlü, hızlı ışık süpürmesi ──────────
+   `.btn-glint`in aksine DÖNGÜ YOK: girdiği anda bir kez geçer. */
+.slash-glint {
+  position: relative;
+  overflow: hidden;
+}
+
+.slash-glint::after {
+  content: "";
+  position: absolute;
+  inset: -2px 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-130%) skewX(-18deg);
+  background: linear-gradient(
+    100deg,
+    transparent 38%,
+    rgba(248, 250, 252, 0.10) 46%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(248, 250, 252, 0.10) 54%,
+    transparent 62%
+  );
+}
+
+.slash-glint:hover::after,
+.slash-glint:focus-visible::after {
+  animation: slash-glint 0.55s var(--motion-ease-slash) both;
+}
+
+/* ── Marka filigranı — logo X/S monogramı yüzey altında soluk iz olarak */
+.brand-watermark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--brand-mark-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: min(70%, 520px);
+  opacity: 0.05;
+  filter: grayscale(1) contrast(1.15) brightness(1.35);
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .circuit-rule::before { animation: none; }
+  .slash-glint::after { animation: none !important; opacity: 0 !important; }
 }

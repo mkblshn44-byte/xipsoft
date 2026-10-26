@@ -14,6 +14,8 @@
  * - Toplam otomatik bağlantı sayısı sınırlandırılır (over-optimization önleme).
  */
 
+import { servicePath } from "@/lib/content-path";
+
 export interface KeywordLinkItem {
   keyword: string;
   url: string;
@@ -23,85 +25,88 @@ export interface KeywordLinkItem {
 
 export const INTERNAL_KEYWORD_MAP: KeywordLinkItem[] = [
   // ── Hizmetler (Pillar Landing Pages) ──────────────────────────────────────────
+  // Hedefler `servicePath()` ile üretilir: kanonik uzantı politikası tek kaynakta
+  // tutulsun. Eski adlar (web-yazilim-tasarim, bulut-bilisim-devops …) DB'de
+  // artık yok; bunlar 1.607 yayında noindex iskelet/404 hedefi üretiyordu.
   {
     keyword: "özel web yazılım",
-    url: "/hizmetler/web-yazilim-tasarim",
+    url: servicePath("web-yazilim-tasarim1"),
     category: "service",
     description: "Özel Web Yazılım & Tasarım Hizmetleri",
   },
   {
     keyword: "kurumsal web tasarım",
-    url: "/hizmetler/web-yazilim-tasarim",
+    url: servicePath("web-yazilim-tasarim1"),
     category: "service",
   },
   {
     keyword: "web yazılım",
-    url: "/hizmetler/web-yazilim-tasarim",
+    url: servicePath("web-yazilim-tasarim1"),
     category: "service",
   },
   {
     keyword: "mobil uygulama geliştirme",
-    url: "/hizmetler/mobil-uygulama",
+    url: servicePath("mobil-uygulama"),
     category: "service",
   },
   {
     keyword: "mobil uygulama",
-    url: "/hizmetler/mobil-uygulama",
+    url: servicePath("mobil-uygulama"),
     category: "service",
   },
   {
     keyword: "siber güvenlik",
-    url: "/hizmetler/siber-guvenlik",
+    url: servicePath("siber-guvenlik"),
     category: "service",
   },
   {
     keyword: "sızma testi",
-    url: "/hizmetler/siber-guvenlik",
+    url: servicePath("siber-guvenlik"),
     category: "service",
   },
   {
     keyword: "teknik seo",
-    url: "/hizmetler/seo-dijital-pazarlama",
+    url: servicePath("seo-dijital-pazarlama"),
     category: "service",
   },
   {
     keyword: "core web vitals",
-    url: "/hizmetler/seo-dijital-pazarlama",
+    url: servicePath("seo-dijital-pazarlama"),
     category: "service",
   },
   {
     keyword: "arama motoru optimizasyonu",
-    url: "/hizmetler/seo-dijital-pazarlama",
+    url: servicePath("seo-dijital-pazarlama"),
     category: "service",
   },
   {
     keyword: "masaüstü yazılım",
-    url: "/hizmetler/masaustu-yazilim",
+    url: servicePath("masaustu-yazilim"),
     category: "service",
   },
   {
     keyword: "yapay zeka entegrasyonu",
-    url: "/hizmetler/yapay-zeka-ai-entegrasyonu",
+    url: servicePath("yapay-zeka-ml"),
     category: "service",
   },
   {
     keyword: "bulut bilişim",
-    url: "/hizmetler/bulut-bilisim-devops",
+    url: servicePath("bulut-bilisim"),
     category: "service",
   },
   {
     keyword: "devops",
-    url: "/hizmetler/bulut-bilisim-devops",
+    url: servicePath("devops-sre"),
     category: "service",
   },
   {
     keyword: "e-ticaret yazılımları",
-    url: "/hizmetler/e-ticaret-yazilimlari",
+    url: servicePath("e-ticaret-platformlari"),
     category: "service",
   },
   {
     keyword: "blokzincir geliştirme",
-    url: "/hizmetler/blokzincir-web3-gelistirme",
+    url: servicePath("blockchain-web3"),
     category: "service",
   },
 
@@ -193,6 +198,30 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** Uzun ifadeler önce eşleşsin ("özel web yazılım" > "web yazılım"). */
+function byKeywordLengthDesc(list: KeywordLinkItem[]): KeywordLinkItem[] {
+  return [...list].sort((a, b) => b.keyword.length - a.keyword.length);
+}
+
+const SORTED_INTERNAL_KEYWORDS = byKeywordLengthDesc(INTERNAL_KEYWORD_MAP);
+
+// Kelime başına bir kez derlenir; her enjekte çağrısında regex kurma maliyeti
+// kaldırıldı (REFACTOR.md §9.1 Adım 4 / P3).
+const linkPatternCache = new Map<string, RegExp>();
+
+function getLinkPattern(keyword: string): RegExp {
+  const cached = linkPatternCache.get(keyword);
+  if (cached) return cached;
+
+  // Türkçe karakter ve kelime sınırlarına uyumlu regex
+  const pattern = new RegExp(
+    `(?<=^|[\\s.,!?;:()"\\[\\]])(${escapeRegex(keyword)})(?=[\\s.,!?;:()"\\[\\]]|$)`,
+    "i",
+  );
+  linkPatternCache.set(keyword, pattern);
+  return pattern;
+}
+
 /**
  * Verilen HTML metni içerisindeki anahtar kelimeleri tespit edip
  * SEO standartlarına uygun iç bağlantılar (internal links) enjekte eder.
@@ -205,10 +234,9 @@ export function injectInternalLinks(
 
   const currentSlug = (options.currentSlug || "").trim();
   const maxLinks = options.maxLinks ?? 5;
-  const keywordList = (options.customMap || INTERNAL_KEYWORD_MAP)
-    // Uzun ifadeler önce eşleşsin ("özel web yazılım" > "web yazılım")
-    .slice()
-    .sort((a, b) => b.keyword.length - a.keyword.length);
+  const keywordList = options.customMap
+    ? byKeywordLengthDesc(options.customMap)
+    : SORTED_INTERNAL_KEYWORDS;
 
   // Kendi sayfasına link vermemesi için filtrele
   const validKeywords = keywordList.filter((item) => {
@@ -254,13 +282,7 @@ export function injectInternalLinks(
       if (totalInjected >= maxLinks) break;
       if (linkedKeywords.has(item.keyword) || linkedUrls.has(item.url)) continue;
 
-      // Türkçe karakter ve kelime sınırlarına uyumlu regex
-      const pattern = new RegExp(
-        `(?<=^|[\\s.,!?;:()"\\[\\]])(${escapeRegex(item.keyword)})(?=[\\s.,!?;:()"\\[\\]]|$)`,
-        "i"
-      );
-
-      const m = pattern.exec(tokenText);
+      const m = getLinkPattern(item.keyword).exec(tokenText);
       if (m && m.index !== undefined) {
         const matchedText = m[1];
         const replacement = `<a href="${item.url}" class="text-indigo-400 hover:text-indigo-300 font-medium underline underline-offset-4 transition-colors" title="${item.description || matchedText}">${matchedText}</a>`;

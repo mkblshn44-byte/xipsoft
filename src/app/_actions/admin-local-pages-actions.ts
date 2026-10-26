@@ -1,14 +1,31 @@
 "use server";
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { requireAdminAction } from "@/lib/api-guard";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { hashPageContent, CENTRAL_LOCATION_COLUMNS } from "@/lib/pages";
+import { hashPageContent } from "@/lib/pages/hash";
+import { CENTRAL_LOCATION_COLUMNS } from "@/lib/pages/sql";
 import { SITE_URL } from "@/lib/site-url";
 // Otomatik yerel üretim motorları iptal edildi.
-import { performSEOAudit, saveSEOAudit, type PageAuditData } from "@/lib/seo-audit";
+import {
+  performSEOAudit,
+  type PageAuditData
+} from "@/lib/seo/page-audit";
+import { saveSEOAudit } from "@/lib/seo/audit-store";
 import { invalidateRedirectCache, upsertSlugRedirect } from "@/lib/redirect-handler";
+import { servicePath, locationTreeFullPath } from "@/lib/content-path";
+import { isFullPathTaken } from "@/lib/content-tree-admin";
+import { invalidatePageCaches } from "@/lib/redis/page-cache";
 import { slugify } from "@/utils/slugify";
+
+/**
+ * Redis sayfa önbelleğini Next tarafındaki tag/pool geçersiz kılmayla birlikte
+ * düşürür. Next önbelleği tek süreçlik olduğu için panel değişikliği diğer
+ * instance'lara ve CDN'e ancak buradan geçerse anında yansır.
+ */
+async function dropPageCache(...slugs: Array<string | null | undefined>): Promise<void> {
+  await invalidatePageCaches({ slugs, sitemap: true });
+}
 
 
 export interface LocalPageFilters {
@@ -85,7 +102,7 @@ export async function createPage(input: {
        FROM services s
        JOIN locations l ON l.id = $2::uuid AND l.is_active = TRUE
        LEFT JOIN locations parent ON parent.id = l.parent_id
-       WHERE s.id = $1::int AND s.is_active = TRUE LIMIT 1`,
+       WHERE s.id = $1::int AND s.row_type = 'main' AND s.is_active = TRUE LIMIT 1`,
       [input.serviceId, input.locationId],
     );
     const location = context.rows[0];
@@ -94,19 +111,27 @@ export async function createPage(input: {
     const locationSlug = location.locationSlug ?? location.locationName.toLowerCase().replace(/\s+/g, "-");
     const serviceSlug = location.serviceSlug ?? "hizmet";
     const slug = `${serviceSlug}/${locationSlug}`;
-    const canonicalUrl = `${SITE_URL}/hizmetler/${slug}`;
+    const fullPath = locationTreeFullPath(slug);
+    if (await isFullPathTaken(fullPath)) {
+      return { success: false, error: `"${fullPath}" yolu ağaçta zaten kullanımda` };
+    }
+    const canonicalUrl = `${SITE_URL}${servicePath(slug)}`;
     const title = input.title?.trim() || `${location.serviceTitle} ${location.locationName}`;
     const metaTitle = input.metaTitle?.trim() || `${title} | XipSoft`;
     const metaDescription = input.metaDescription?.trim() || `${location.locationName} için ${location.serviceTitle}`;
     const status = input.status ?? "review";
     const result = await pool.query(
       `INSERT INTO pages
-         (service_id, location_id, slug, title, markdown_content, meta_title, meta_description,
+         (service_id, location_id, slug, full_path, kind, node_type,
+          title, markdown_content, meta_title, meta_description,
           canonical_url, status, content_hash, published_at)
-       VALUES ($1::int, $2::uuid, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       VALUES ($1::int, $2::uuid, $3, $12, 'location', 'page',
+               $4, $5, $6, $7,
+               $8, $9, $10, $11)
        RETURNING id::text, slug, status`,
       [input.serviceId, input.locationId, slug, title, input.markdownContent, metaTitle, metaDescription,
-        canonicalUrl, status, hashPageContent(input.markdownContent), status === "published" ? new Date() : null],
+        canonicalUrl, status, hashPageContent(input.markdownContent),
+        status === "published" ? new Date() : null, fullPath],
     );
     const pageId = result.rows[0]?.id;
     if (pageId) {
@@ -129,8 +154,9 @@ export async function createPage(input: {
     }
     revalidateTag("local-pages");
     revalidateTag("sitemap");
-    revalidatePath(`/hizmetler/${slug}`);
+    revalidatePath(servicePath(slug));
     revalidatePath("/sitemap.xml");
+    await dropPageCache(slug);
     return { success: true, page: result.rows[0] };
   } catch (error) {
     console.error("createPage error:", error);
@@ -215,10 +241,15 @@ export async function updatePage(input: {
         await client.query("ROLLBACK");
         return { success: false, error: "Bu slug başka bir sayfada kullanılıyor" };
       }
+      if (await isFullPathTaken(locationTreeFullPath(nextSlug), input.id, client)) {
+        await client.query("ROLLBACK");
+        return { success: false, error: "Bu adres (full_path) ağaçta başka bir düğüm tarafından kullanılıyor" };
+      }
 
       const result = await client.query(
         `UPDATE pages
          SET slug = $2,
+             full_path = $14,
              title = COALESCE(NULLIF($3, ''), title),
              markdown_content = $4,
              meta_title = COALESCE(NULLIF($5, ''), meta_title),
@@ -237,13 +268,13 @@ export async function updatePage(input: {
           input.metaTitle?.trim() ?? "", input.metaDescription?.trim() ?? "",
           input.lokalAciklama ?? null, input.ozelMetaDesc ?? null,
           input.lokalSss === undefined ? null : JSON.stringify(input.lokalSss),
-          previousSlug, `${SITE_URL}/hizmetler/${nextSlug}`, input.status ?? null,
-          hashPageContent(input.markdownContent)],
+          previousSlug, `${SITE_URL}${servicePath(nextSlug)}`, input.status ?? null,
+          hashPageContent(input.markdownContent), locationTreeFullPath(nextSlug)],
       );
       page = result.rows[0];
 
       if (previousSlug !== nextSlug) {
-        await upsertSlugRedirect(client, `/hizmetler/${previousSlug}`, `/hizmetler/${nextSlug}`);
+        await upsertSlugRedirect(client, servicePath(previousSlug), servicePath(nextSlug));
       }
       await client.query("COMMIT");
     } catch (transactionError) {
@@ -255,16 +286,17 @@ export async function updatePage(input: {
     if (!page) return { success: false, error: "Sayfa güncellenemedi" };
 
     if (previousSlug !== page.slug) {
-      invalidateRedirectCache(`/hizmetler/${previousSlug}`);
-      invalidateRedirectCache(`/hizmetler/${page.slug}`);
-      revalidatePath(`/hizmetler/${previousSlug}`);
-      revalidatePath(`/hizmetler/${page.slug}`);
+      invalidateRedirectCache(servicePath(previousSlug));
+      invalidateRedirectCache(servicePath(page.slug));
+      revalidatePath(servicePath(previousSlug));
+      revalidatePath(servicePath(page.slug));
     }
     revalidateTag(`local-page:${input.id}`);
     revalidateTag("local-pages");
     revalidateTag("sitemap");
     revalidatePath("/admin/cms/local-pages");
     revalidatePath("/sitemap.xml");
+    await dropPageCache(page.slug, previousSlug);
     return { success: true, page };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Sayfa güncellenemedi" };
@@ -282,8 +314,9 @@ export async function createGenerationJob() {
 export async function softDeletePage(id: string) {
   try {
     await requireAdminAction();
-    await pool.query(
-      `UPDATE pages SET is_deleted = TRUE, deleted_at = NOW(), status = 'paused', updated_at = NOW() WHERE id = $1::uuid`,
+    const deleted = await pool.query<{ slug: string }>(
+      `UPDATE pages SET is_deleted = TRUE, deleted_at = NOW(), status = 'paused', updated_at = NOW()
+        WHERE id = $1::uuid RETURNING slug`,
       [id],
     );
     revalidateTag(`local-page:${id}`);
@@ -291,6 +324,7 @@ export async function softDeletePage(id: string) {
     revalidateTag("sitemap");
     revalidatePath("/sitemap.xml");
     revalidatePath("/admin/cms/local-pages");
+    await dropPageCache(deleted.rows[0]?.slug);
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Sayfa silinemedi" };
@@ -312,6 +346,7 @@ export async function restorePage(id: string) {
     revalidateTag("sitemap");
     revalidatePath("/admin/cms/local-pages");
     revalidatePath("/sitemap.xml");
+    await dropPageCache(result.rows[0].slug);
     return { success: true, page: result.rows[0] };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Sayfa geri yüklenemedi" };
@@ -338,7 +373,7 @@ export async function previewPage(input: {
        FROM services s
        JOIN locations l ON l.id = $2::uuid AND l.is_active = TRUE
        LEFT JOIN locations parent ON parent.id = l.parent_id
-       WHERE s.id = $1 AND s.is_active = TRUE LIMIT 1`,
+       WHERE s.id = $1 AND s.row_type = 'main' AND s.is_active = TRUE LIMIT 1`,
       [input.serviceId, input.locationId],
     );
     const location = context.rows[0];
@@ -347,7 +382,7 @@ export async function previewPage(input: {
     const locationSlug = location.locationSlug ?? location.locationName.toLowerCase().replace(/\s+/g, "-");
     const serviceSlug = location.serviceSlug ?? "hizmet";
     const slug = `${serviceSlug}/${locationSlug}`;
-    const canonicalUrl = `${SITE_URL}/hizmetler/${slug}`;
+    const canonicalUrl = `${SITE_URL}${servicePath(slug)}`;
     const title = input.title?.trim() || `${location.serviceTitle} ${location.locationName}`;
     const metaTitle = input.metaTitle?.trim() || `${title} | XipSoft`;
     const metaDescription = input.metaDescription?.trim() || `${location.locationName} için ${location.serviceTitle}`;
@@ -394,17 +429,4 @@ export async function resumeJob() {
 
 export async function getJobStatus() {
   return { success: false, status: null, error: "Otomatik üretim iptal edildi (DB-only model)" };
-}
-
-export async function getServicesAndLocations(): Promise<{ services: { id: string; title: string }[]; locations: { id: string; name: string; location_type: string }[] }> {
-  try {
-    const [svcR, locR] = await Promise.all([
-      pool.query<{ id: string; title: string }>('SELECT id::text, title FROM services WHERE is_active = TRUE ORDER BY sort_order, title'),
-      pool.query<{ id: string; name: string; location_type: string }>('SELECT id::text, name, location_type FROM locations WHERE is_active = TRUE ORDER BY location_type, name'),
-    ]);
-    return { services: svcR.rows, locations: locR.rows };
-  } catch (error) {
-    console.error('getServicesAndLocations error:', error);
-    return { services: [], locations: [] };
-  }
 }

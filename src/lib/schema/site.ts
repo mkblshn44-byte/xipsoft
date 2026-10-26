@@ -4,7 +4,15 @@
  */
 
 import { SITE_URL } from "@/lib/site-url";
-import { SCHEMA_CONTEXT } from "./shared";
+import {
+  APP_CONFIG,
+  BRAND,
+  BRAND_COMPANY,
+  DEFAULT_OG_IMAGE_URL,
+} from "@/config/brand.config";
+import { websiteSchema } from "./website";
+import { localBusinessSchema } from "./local-business";
+import { AREA_SERVED, SCHEMA_CONTEXT, SOCIAL_PROFILES } from "./shared";
 
 export function breadcrumbSchema(
   items: Array<{ name: string; url: string }>
@@ -60,46 +68,58 @@ export function organizationSchema() {
     "@context": SCHEMA_CONTEXT,
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
-    name: "XipSoft Yazılım ve Teknoloji Sistemleri",
-    legalName: "XipSoft Yazilim ve Teknoloji Sistemleri",
+    name: BRAND.name,
+    legalName: BRAND_COMPANY.legalName,
     url: SITE_URL,
     logo: {
       "@type": "ImageObject",
-      url: `${SITE_URL}/media/xipsoft-seo.webp`,
+      url: DEFAULT_OG_IMAGE_URL,
       width: 1200,
       height: 630,
     },
-    description:
-      "Profesyonel web yazılım, mobil uygulama, siber Güvenlik ve dijital pazarlama hizmetleri sunan İstanbul merkezli teknoloji şirketi — 15 yıl deneyim, 200+ proje.",
-    foundingDate: "2010",
+    image: DEFAULT_OG_IMAGE_URL,
+    description: APP_CONFIG.description,
+    foundingDate: String(BRAND_COMPANY.foundingYear),
     numberOfEmployees: { "@type": "QuantitativeValue", value: "20-50" },
-    areaServed: [
-      { "@type": "Country", name: "Turkey" },
-      { "@type": "Country", name: "Europe" },
-    ],
+    areaServed: AREA_SERVED,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Nurol Tower, İzzet Paşa, Yeni Yol Cd. No:3 Kat:22",
-      addressLocality: "Şişli",
-      addressRegion: "İstanbul",
-      postalCode: "34381",
-      addressCountry: "TR",
+      streetAddress: BRAND_COMPANY.address,
+      addressLocality: BRAND_COMPANY.district,
+      addressRegion: BRAND_COMPANY.city,
+      postalCode: BRAND_COMPANY.postalCode,
+      addressCountry: BRAND_COMPANY.countryCode,
     },
     contactPoint: [
       {
         "@type": "ContactPoint",
+        telephone: BRAND_COMPANY.phone,
+        email: BRAND_COMPANY.email,
         contactType: "customer service",
-        telephone: "+90-544-454-84-44",
-        email: "info@xipsoft.net",
-        url: `${SITE_URL}/contact-us`,
         areaServed: "TR",
         availableLanguage: ["Turkish", "English"],
       },
+      {
+        "@type": "ContactPoint",
+        email: BRAND_COMPANY.email,
+        contactType: "technical support",
+        areaServed: "TR",
+      },
     ],
-    sameAs: [
-      "https://www.linkedin.com/company/xipsoft",
-      "https://github.com/xipsoft",
-      "https://twitter.com/xipsoft",
-    ],
+    sameAs: SOCIAL_PROFILES,
+  };
+}
+
+/**
+ * Site geneli varlık grafiği — Organization + WebSite + LocalBusiness düğümleri
+ * tek `@graph` altında. Kök layout bu tek bloğu her sayfaya basar; sayfalar
+ * yalnızca kendi sayfaya özel şemalarını (WebPage, Breadcrumb, Service, FAQ,
+ * BlogPosting...) ekler. Böylece aynı `@id` düğümleri hiçbir sayfada
+ * tekrarlanmaz.
+ */
+export function siteGraphSchema() {
+  return {
+    "@context": SCHEMA_CONTEXT,
+    "@graph": [organizationSchema(), websiteSchema(), localBusinessSchema()],
   };
 }

@@ -4,8 +4,8 @@
  * Google News, Feedly ve içerik aggregator'ları için SEO sinyali sağlar.
  */
 import { NextResponse } from "next/server";
-import { SITE_URL } from "@/config/brand.config";
-import pool from "@/lib/database";
+import { DEFAULT_OG_IMAGE_URL, SITE_URL } from "@/config/brand.config";
+import pool from "@/lib/db/pool";
 
 export const revalidate = 3600;
 
@@ -68,7 +68,7 @@ export async function GET() {
       const title = escapeXml(post.title);
       const desc = escapeXml(post.description ?? post.title);
       const author = escapeXml(post.author_name ?? "XipSoft");
-      const image = post.cover_image_url ?? `${BASE}/media/xipsoft-seo.webp`;
+      const image = post.cover_image_url ?? DEFAULT_OG_IMAGE_URL;
       const categories = Array.isArray(post.tags)
         ? post.tags.map((t) => `    <category>${escapeXml(t)}</category>`).join("\n")
         : "";
@@ -100,7 +100,7 @@ ${categories}
     <managingEditor>info@xipsoft.net (XipSoft)</managingEditor>
     <webMaster>info@xipsoft.net (XipSoft)</webMaster>
     <image>
-      <url>${BASE}/media/xipsoft-seo.webp</url>
+      <url>${DEFAULT_OG_IMAGE_URL}</url>
       <title>XipSoft Blog</title>
       <link>${BASE}/blog</link>
     </image>

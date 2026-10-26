@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import APP_CONFIg from "@/config/brand.config";
+import APP_CONFIG from "@/config/brand.config";
 import { getPageMeta } from "@/lib/page-content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const meta = await getPageMeta("maintenance");
   return {
-    title: meta?.title || APP_CONFIg.title,
-    description: meta?.description || APP_CONFIg.description,
+    title: meta?.title || APP_CONFIG.title,
+    description: meta?.description || APP_CONFIG.description,
     robots: { index: false, follow: false },
   };
 }

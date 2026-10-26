@@ -20,9 +20,10 @@
 
 import React, { useId } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { cn } from "@/utils";
-import { faqSchema } from "@/lib/schema-helpers";
+import { faqSchema } from "@/lib/schema/site";
+import { ldJson } from "@/lib/ld-json";
 
 export interface FaqItem {
   question: string;
@@ -78,7 +79,7 @@ export function FaqSection({
       {includeSchema && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(list)) }}
+          dangerouslySetInnerHTML={{ __html: ldJson(faqSchema(list)) }}
         />
       )}
 
@@ -99,7 +100,7 @@ export function FaqSection({
             )}
             <h2
               id={`${sectionId}-title`}
-              className="mb-3 text-2xl font-extrabold text-white sm:text-3xl"
+              className="mb-3 text-2xl font-extrabold text-white sm:text-3xl brand-gradient-text"
             >
               {title}
             </h2>
@@ -166,7 +167,7 @@ function FaqAccordionItem({
           transition={{ duration: 0.2 }}
           className="shrink-0"
         >
-          <ChevronDown className="h-4 w-4" style={{ color: accentColor }} />
+          <XipIcon name="chevron-down" glow="soft" className="h-4 w-4" style={{ color: accentColor }} />
         </motion.span>
       </button>
 

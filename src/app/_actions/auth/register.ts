@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
-import { query, queryOne } from "@/lib/database";
+import { query, queryOne } from "@/lib/db/pool";
 import { z } from "zod";
 import { verifyTurnstile } from "@/lib/turnstile";
 

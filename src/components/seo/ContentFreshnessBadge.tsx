@@ -5,7 +5,7 @@
  * to both users and search engines, which is important for SEO.
  */
 
-import { Calendar, Clock } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 
 interface ContentFreshnessBadgeProps {
   updatedAt: Date | string;
@@ -49,7 +49,7 @@ export function ContentFreshnessBadge({
   if (variant === "compact") {
     return (
       <div className={`flex items-center gap-1.5 text-xs text-zinc-500 ${className}`}>
-        <Clock className="w-3 h-3" />
+        <XipIcon name="clock" glow="none" className="w-3 h-3" />
         <span>Güncellendi: {formatDate(updatedDate)}</span>
       </div>
     );
@@ -72,7 +72,7 @@ export function ContentFreshnessBadge({
             : "bg-zinc-800 text-zinc-400 border border-zinc-700"
         }`}
       >
-        <Calendar className="w-3.5 h-3.5" />
+        <XipIcon name="calendar" glow="none" className="w-3.5 h-3.5" />
         <span>Güncellendi: {formatDate(updatedDate)}</span>
       </div>
       {showDate && createdDate && (

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Turnstile } from "@marsidev/react-turnstile";
 import type { TurnstileInstance } from "@marsidev/react-turnstile";
-import { Mail, Lock, LogIn, Eye, EyeOff } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { loginAction } from "@/app/_actions/auth/login";
 
 const IS_LOCAL_DEV = process.env.NODE_ENV === "development";
@@ -34,7 +34,7 @@ export default function LoginPageClient() {
     // Giriş sonrası kullanıcı (admin dâhil) siteye (/) döner; admin paneli
     // yalnızca kullanıcı kendisi /admin'e gittiğinde (Telegram 2FA ile) açılır.
     // Aksi halde "giriş → admin paneli" sürprizi oluşur. Yalnızca /admin
-    // DIŞINDAKİ güvenli iç hedefler (ör. /blog/write) korunur.
+    // DIŞINDAKİ güvenli iç hedefler (ör. /x/edit) korunur.
     const isAdminPath =
       !!redirectTo && (redirectTo === "/admin" || redirectTo.startsWith("/admin/"));
     if (
@@ -97,7 +97,7 @@ export default function LoginPageClient() {
 
       {/* ── Sağ: Form ── */}
       <div className="relative flex flex-col w-full lg:w-1/2 xl:w-2/5 bg-zinc-950 overflow-y-auto">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(124,58,237,0.12)_0%,_transparent_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(156,124,34,0.12)_0%,_transparent_60%)] pointer-events-none" />
 
         <div className="flex flex-1 items-center justify-center px-6 py-12 z-10">
           <div className="w-full max-w-sm">
@@ -123,7 +123,7 @@ export default function LoginPageClient() {
               <div className="space-y-1.5">
                 <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="mail" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type="email"
                     value={email}
@@ -139,7 +139,7 @@ export default function LoginPageClient() {
               <div className="space-y-1.5">
                 <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">Şifre</label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="lock" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -155,7 +155,7 @@ export default function LoginPageClient() {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
                     tabIndex={-1}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <XipIcon name="eye-off" className="w-4 h-4" /> : <XipIcon name="eye" className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -178,12 +178,12 @@ export default function LoginPageClient() {
               <button
                 type="submit"
                 disabled={loading || (!IS_LOCAL_DEV && !turnstileToken)}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-900/30"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-space-950 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-900/30"
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <LogIn className="w-4 h-4" />
+                  <XipIcon name="log-in" className="w-4 h-4" glow="strong" />
                 )}
                 {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
               </button>

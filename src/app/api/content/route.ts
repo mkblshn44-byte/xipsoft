@@ -25,17 +25,15 @@
  *     sourceType?: "manual"|"template"|"ai", // varsayılan: manual
  *   }
  *
- * İş mantığı `@/lib/content-api` içinde tek kaynaktan yönetilir (DRY).
+ * İş mantığı `@/lib/content/handlers/*` içinde tek kaynaktan yönetilir (DRY).
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import {
-  handleBlogIngest,
-  handlePageIngest,
-  handlePageBatchIngest,
-  handleRedirectIngest,
-  handleRestrictedPageUpdate,
-} from "@/lib/content-api";
+import { handleBlogIngest } from "@/lib/content/handlers/blog";
+import { handlePageIngest } from "@/lib/content/handlers/page";
+import { handlePageBatchIngest } from "@/lib/content/handlers/page-batch";
+import { handleRedirectIngest } from "@/lib/content/handlers/redirect";
+import { handleRestrictedPageUpdate } from "@/lib/content/handlers/restricted-page";
 import { guardContentApiRead, guardContentApiRequest } from "@/lib/content/request-guard";
 
 export const runtime = "nodejs";

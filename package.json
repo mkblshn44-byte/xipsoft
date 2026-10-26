@@ -25,6 +25,7 @@
     "seo:location-status": "tsx --env-file=.env.local src/scripts/manage-location-status.ts",
     "seo:redirects:bulk": "tsx --env-file=.env.local src/scripts/bulk-create-redirects.ts",
     "test:redirect": "tsx --test src/lib/redirect-handler.test.ts",
+    "test:quota": "tsx --test src/lib/rate-limit.test.ts src/lib/redis/breaker.test.ts src/lib/security/local-window.test.ts",
     "test:seo": "tsx --test src/app/seo-config.test.ts",
     "test:redirect-integration": "tsx src/scripts/verify-redirect-flow.ts"
   },
@@ -50,6 +51,9 @@
     "@lexical/utils": "^0.41.0",
     "@marsidev/react-turnstile": "^1.5.2",
     "@studio-freight/lenis": "^1.0.42",
+    "@types/node": "^20.19.39",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "@upstash/redis": "^1.37.0",
     "argon2": "^0.41.1",
     "autoprefixer": "^10",
@@ -59,6 +63,7 @@
     "daisyui": "^3.9.4",
     "date-fns": "^2.30.0",
     "dompurify": "^3.4.5",
+    "dotenv": "^18.0.9",
     "gsap": "^3.15.0",
     "isomorphic-dompurify": "^3.14.0",
     "jose": "^6.2.2",
@@ -70,8 +75,9 @@
     "next": "^15.5.22",
     "next-intl": "^4.8.3",
     "nodemailer": "^8.0.5",
-    "pg": "^8.20.0",
+    "pg": "^8.23.1",
     "postcss": "^8",
+    "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-day-picker": "^9",
     "react-dom": "19.2.4",
@@ -88,11 +94,8 @@
     "tailwind-merge": "^1.14.0",
     "tailwindcss": "^3.3.3",
     "typed.js": "^2.0.16",
-    "web-vitals": "4.2.4",
     "typescript": "5.8.2",
-    "@types/node": "^20.19.39",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
+    "web-vitals": "4.2.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -103,6 +106,7 @@
     "@types/js-cookie": "^3.0.6",
     "@types/nodemailer": "^6.4.14",
     "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
     "eslint": "^9",
     "eslint-config-next": "^15.5.22",
     "prettier": "^3.0.0",
@@ -118,6 +122,9 @@
   "allowScripts": {
     "@parcel/watcher@2.6.0": true,
     "argon2@0.41.1": true,
-    "sharp@0.34.5": true
+    "sharp@0.34.5": true,
+    "@swc/core@1.16.20": true,
+    "unrs-resolver@1.12.2": true,
+    "esbuild@0.28.2": true
   }
 }

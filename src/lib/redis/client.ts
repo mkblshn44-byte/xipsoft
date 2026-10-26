@@ -2,24 +2,59 @@
  * Redis client + generic cache yardımcıları.
  *
  * Upstash (primary) ile çalışır. `UPSTASH_REDIS_REST_URL` +
- * `UPSTASH_REDIS_REST_TOKEN` env yoksa no-op davranır (client `null`).
+ * `UPSTASH_REDIS_REST_TOKEN` env yoksa no-op davranır (client `null`). Aynı
+ * `null`, devre kesici açıldığında da döner — bkz. `./breaker`.
  *
  * Bu katman yalnızca **bağlantı + jenerik JSON cache** işini yapar; domain'e
  * özel cache sarmalayıcıları (blog, …) ayrı dosyalardadır.
  */
 
 import { Redis } from '@upstash/redis';
+import { isRedisAvailable, recordRedisFailure, recordRedisSuccess } from './breaker';
 
 let _client: Redis | null = null;
 
-/** Client'ı tembel oluşturur; env yoksa `null` döner (no-op). */
+/**
+ * Komutları izleyen ince proxy: her başarısızlığı devre kesiciye bildirir, hata
+ * yine olduğğu gibi yukarı fırlar — çağıran tarafın `try/catch`i değişmez.
+ *
+ * Bu tek nokta, `eval`/`get`/`set`/`del`/`keys` kullanan altı çağrı yerine
+ * geçmek zorunda kalan ayrı hata yollarını gereksiz kılıyor. (Pipeline kullanım
+ * yok; olsa `exec` yakalanmazdı.)
+ */
+function instrument(client: Redis): Redis {
+  return new Proxy(client, {
+    get(target, prop) {
+      const value = Reflect.get(target, prop);
+      if (typeof value !== 'function') return value;
+      return (...args: unknown[]) =>
+        Promise.resolve(value.apply(target, args)).then(
+          (result) => {
+            recordRedisSuccess();
+            return result;
+          },
+          (error) => {
+            recordRedisFailure(error);
+            throw error;
+          },
+        );
+    },
+  });
+}
+
+/**
+ * Client'ı tembel oluşturur. İki durumda `null` (no-op) döner:
+ *   - env yoksa,
+ *   - devre kesici açıksa (kota dolu / Redis'e ulaşılamıyor) → HTTP'e hiç çıkma.
+ */
 function getClient(): Redis | null {
+  if (!isRedisAvailable()) return null;
   if (_client) return _client;
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
   try {
-    _client = new Redis({ url, token });
+    _client = instrument(new Redis({ url, token }));
     return _client;
   } catch {
     return null;

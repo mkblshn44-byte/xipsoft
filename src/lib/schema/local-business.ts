@@ -8,8 +8,8 @@
  */
 
 import { SITE_URL } from "@/lib/site-url";
-import { BRAND_COMPANY } from "@/config/brand.config";
-import { SCHEMA_CONTEXT } from "./shared";
+import { BRAND_COMPANY, DEFAULT_OG_IMAGE_URL } from "@/config/brand.config";
+import { AREA_SERVED, SCHEMA_CONTEXT, SOCIAL_PROFILES } from "./shared";
 
 export function localBusinessSchema(opts?: {
   /** İşletme düğümünün işaret ettiği sayfa (varsayılan: ana sayfa). */
@@ -19,19 +19,21 @@ export function localBusinessSchema(opts?: {
 }) {
   return {
     "@context": SCHEMA_CONTEXT,
-    "@type": "LocalBusiness",
+    // ProfessionalService, LocalBusiness'ın alt türüdür; ana sayfa ve iletişim
+    // sayfası aynı düğümü paylaşsın diye en özgül tip seçildi.
+    "@type": "ProfessionalService",
     // Organization'dan AYRI düğüm kimliği: iki farklı @type aynı @id'yi
     // paylaşırsa Google varlıkları birleştirirken tip çakışması yaşayabilir.
     "@id": `${SITE_URL}/#localbusiness`,
-    name: BRAND_COMPANY.legalName,
     // Üst kuruluş: Organization düğümüne bağlanır (varlık grafiği)
     parentOrganization: { "@type": "Organization", "@id": `${SITE_URL}/#organization` },
+    name: BRAND_COMPANY.legalName,
     url: opts?.url ?? SITE_URL,
     telephone: BRAND_COMPANY.phone,
     email: BRAND_COMPANY.email,
     foundingDate: String(BRAND_COMPANY.foundingYear),
-    image: `${SITE_URL}/media/xipsoft-seo.webp`,
-    logo: `${SITE_URL}/media/xipsoft-seo.webp`,
+    image: DEFAULT_OG_IMAGE_URL,
+    logo: DEFAULT_OG_IMAGE_URL,
     address: {
       "@type": "PostalAddress",
       streetAddress: BRAND_COMPANY.address,
@@ -54,11 +56,7 @@ export function localBusinessSchema(opts?: {
         closes: "18:00",
       },
     ],
-    areaServed: { "@type": "Country", name: BRAND_COMPANY.country },
-    sameAs: opts?.sameAs ?? [
-      "https://www.linkedin.com/company/xipsoft",
-      "https://github.com/xiplarexs",
-      "https://t.me/xipsoft",
-    ],
+    areaServed: AREA_SERVED,
+    sameAs: opts?.sameAs ?? SOCIAL_PROFILES,
   };
 }

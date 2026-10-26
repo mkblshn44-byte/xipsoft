@@ -1,6 +1,6 @@
 "use server";
 
-import { query, queryOne } from "@/lib/database";
+import { query, queryOne } from "@/lib/db/pool";
 import { getServerActionContext } from "@/lib/api-guard";
 import { NextResponse } from "next/server";
 

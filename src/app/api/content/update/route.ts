@@ -5,7 +5,7 @@
  * Dış otomasyon/botlar yalnızca VERİTABANINDA VAR OLAN yerel sayfaların içeriğini
  * güncelleyebilir. Yeni sayfa AÇILAMAZ (INSERT yasak), slug DEĞİŞTİRİLEMEZ.
  *
- * ── Güvenlik / kurallar (bkz. src/lib/content-api.ts → handleRestrictedPageUpdate) ──
+ * ── Güvenlik / kurallar (bkz. src/lib/content/handlers/restricted-page.ts) ──
  *  1) X-Bot-Key doğrulaması crypto.timingSafeEqual ile (eksik/hatalı → 401).
  *  2) Sıkı şema: yalnızca slug, content, summary, meta_title, meta_description,
  *     lokal_sss, status — başka alan / başka tablo müdahelesi imkânsız.
@@ -30,7 +30,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { handleRestrictedPageUpdate } from "@/lib/content-api";
+import { handleRestrictedPageUpdate } from "@/lib/content/handlers/restricted-page";
 import { guardContentApiRead, guardContentApiRequest } from "@/lib/content/request-guard";
 
 export const runtime = "nodejs";

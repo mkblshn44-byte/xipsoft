@@ -2,7 +2,7 @@
  * redirect-utils.ts — Yönlendirme (SEO 301/302) normalize yardımcıları.
  *
  * Hem admin server action'ları (`admin-redirect-actions.ts`) hem de dış içerik
- * API'si (`content-api.ts`) aynı doğrulama/normalizasyon kurallarını kullansın
+ * API'si (`src/lib/content/*`) aynı doğrulama/normalizasyon kurallarını kullansın
  * diye tek kaynakta (DRY) tutulur.
  */
 

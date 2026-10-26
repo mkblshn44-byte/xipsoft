@@ -1,12 +1,53 @@
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { NextRequest, NextResponse } from "next/server";
 import type { Pool } from "pg";
-import { getRedisClient } from "@/lib/redis";
+import { getRedisClient } from "@/lib/redis/client";
+import {
+  contentCanonicalPath,
+  isDataDependentExtensionless,
+  type ExtensionlessPolicy,
+} from "@/lib/content-path";
+import { isPublishedTreePath } from "@/lib/content-tree-policy";
 
 export type RedirectEntry = { target_path: string; status_code: number } | null;
 
-const REDIRECT_CACHE_TTL_MS = 15_000;
-const redirectCache = new Map<string, { entry: RedirectEntry; expiresAt: number }>();
+// ── In-memory snapshot ────────────────────────────────────────────────────────
+// Middleware her istekte çalışır; botlar/binlerce bilinmeyen yol için istek
+// başına DB sorgusu bağlantı havuzunu tüketir. Bunun yerine `seo_redirects`
+// tablosunun TAMAMI tek sorguyla belleğe alınır ve tüm lookups bellekten
+// yapılır. DB'ye yalnızca snapshot süresi dolunca (ya da cache invalidation
+// sonrası ilk istekte) 1 kez gidilir.
+const REDIRECT_SNAPSHOT_TTL_MS = 30_000;
+
+let redirectSnapshot: Map<string, RedirectEntry> | null = null;
+let redirectSnapshotExpiresAt = 0;
+let redirectSnapshotRequest: Promise<Map<string, RedirectEntry>> | null = null;
+
+function normalizePath(p: string): string {
+  return p.length > 1 && p.endsWith("/") ? p.slice(0, -1) : p;
+}
+
+async function loadRedirectSnapshot(
+  database: Pick<Pool, "query">,
+): Promise<Map<string, RedirectEntry>> {
+  const { rows } = await database.query<{
+    source_path: string;
+    target_path: string;
+    status_code: number;
+  }>(
+    `SELECT source_path, target_path, status_code
+     FROM seo_redirects
+     WHERE is_active = TRUE`,
+  );
+  const map = new Map<string, RedirectEntry>();
+  for (const row of rows) {
+    map.set(normalizePath(row.source_path), {
+      target_path: row.target_path,
+      status_code: row.status_code,
+    });
+  }
+  return map;
+}
 
 /**
  * Hem in-memory hem de Redis redirect önbelleğini temizler.
@@ -14,14 +55,13 @@ const redirectCache = new Map<string, { entry: RedirectEntry; expiresAt: number 
  */
 export function invalidateRedirectCache(sourcePath?: string): void {
   if (sourcePath) {
-    redirectCache.delete(sourcePath);
-    const normalized = sourcePath.length > 1 && sourcePath.endsWith("/")
-      ? sourcePath.slice(0, -1)
-      : sourcePath;
-    redirectCache.delete(normalized);
+    const normalized = normalizePath(sourcePath);
+    redirectSnapshot?.delete(normalized);
   } else {
-    redirectCache.clear();
+    redirectSnapshot = null;
   }
+  // Snapshot'ı bayat işaretle → sonraki istek DB'den taze yükler.
+  redirectSnapshotExpiresAt = 0;
 
   // Best-effort Redis cache invalidation
   try {
@@ -43,56 +83,57 @@ export function invalidateRedirectCache(sourcePath?: string): void {
 }
 
 /**
- * Yönlendirme hedefini getirir: Memory -> Redis -> DB hiyerarşisi.
+ * Yönlendirme hedefini getirir.
+ *
+ * - Varsayılan (middleware) yolu: bellekteki tam tablo snapshot'ından O(1)
+ *   lookup — DB'ye hiç gidilmez.
+ * - `database` parametresi verilirse (script/test) eski davranış korunur:
+ *   yalnızca o path için DB sorgusu yapılır.
  */
 export async function getRedirectTarget(
   pathname: string,
   database: Pick<Pool, "query"> = pool,
 ): Promise<RedirectEntry> {
-  const normalized = pathname.length > 1 && pathname.endsWith("/")
-    ? pathname.slice(0, -1)
-    : pathname;
+  const normalized = normalizePath(pathname);
 
-  // 1. In-memory cache
-  const cached = redirectCache.get(normalized);
-  if (cached && cached.expiresAt > Date.now()) return cached.entry;
-
-  // 2. Redis cache (Upstash)
-  const redis = getRedisClient();
-  if (redis) {
+  // Test/script explicit DB hedefledi → per-key eski davranış.
+  if (database !== pool) {
     try {
-      const redisVal = await redis.get<string | { target_path: string; status_code: number }>(`redirect:${normalized}`);
-      if (redisVal) {
-        const parsed: NonNullable<RedirectEntry> =
-          typeof redisVal === "string" ? JSON.parse(redisVal) : redisVal;
-        redirectCache.set(normalized, { entry: parsed, expiresAt: Date.now() + REDIRECT_CACHE_TTL_MS });
-        return parsed;
-      }
-    } catch {
-      // Redis fallback
+      const { rows } = await database.query<NonNullable<RedirectEntry>>(
+        `SELECT target_path, status_code FROM seo_redirects
+         WHERE source_path = $1 AND is_active = TRUE
+         LIMIT 1`,
+        [normalized],
+      );
+      return rows[0] ?? null;
+    } catch (error) {
+      console.error("[RedirectHandler] DB query error:", error);
+      return null;
     }
   }
 
-  // 3. NeonDB sorgusu
-  try {
-    const { rows } = await database.query<NonNullable<RedirectEntry>>(
-      `SELECT target_path, status_code FROM seo_redirects
-       WHERE source_path = $1 AND is_active = TRUE
-       LIMIT 1`,
-      [normalized],
-    );
-    const entry = rows[0] ?? null;
-    redirectCache.set(normalized, { entry, expiresAt: Date.now() + REDIRECT_CACHE_TTL_MS });
-
-    if (redis && entry) {
-      redis.set(`redirect:${normalized}`, JSON.stringify(entry), { ex: 3600 }).catch(() => {});
+  // Snapshot bayattıysa (veya yoksa) tazele — eş zamanlı istekler tek sorgu paylaşır.
+  if (!redirectSnapshot || Date.now() >= redirectSnapshotExpiresAt) {
+    if (!redirectSnapshotRequest) {
+      redirectSnapshotRequest = loadRedirectSnapshot(database)
+        .then((map) => {
+          redirectSnapshot = map;
+          redirectSnapshotExpiresAt = Date.now() + REDIRECT_SNAPSHOT_TTL_MS;
+          return map;
+        })
+        .catch((error) => {
+          console.error("[RedirectHandler] Snapshot load failed:", error);
+          // Eski snapshot varsa onunla devam et (fail-open).
+          return redirectSnapshot ?? new Map<string, RedirectEntry>();
+        })
+        .finally(() => {
+          redirectSnapshotRequest = null;
+        });
     }
-
-    return entry;
-  } catch (error) {
-    console.error("[RedirectHandler] DB query error:", error);
-    return null;
+    await redirectSnapshotRequest;
   }
+
+  return redirectSnapshot?.get(normalized) ?? null;
 }
 
 /**
@@ -197,6 +238,49 @@ export async function recordSlugRedirect(
 
 export const upsertSlugRedirect = recordSlugRedirect;
 
+/**
+ * `seo_redirects.target_path` değerini ağacın `.html` kanoniğine indirger.
+ *
+ * Neden okuma tarafında: tablodaki 116 satır (`web-yazilim-tasarim/…` →
+ * `…1/…`) uzantısız hedef yazıldığında üretilmişti; hedef ayrıca 308 ile
+ * `.html`'e döndüğü için botlar iki yönlendirme hop'u görüyordu. Burada
+ * `contentCanonicalPath` çağrılmak üzere hedef tek adımda kanoniğe çözülür —
+ * DB'de geri sayım/düzeltme yazımı gerektirmez ve sonraki kayıtlar da kapsanır.
+ *
+ * Kanonik uzantı kararı VERİDEN gelebildiği için (`kind='custom'` düğümü
+ * `.html`, eski hizmet/konum satırları uzantısız) sahiplik bilgisi policy olarak
+ * VERİLMEK zorunda; verilmezse legacy liste kazanır ve yayınlanmış bir düğüme
+ * giden hedef uzantısız kalıp ikinci hop'u geri getirir.
+ *
+ * Uzantısız kanonik rotalar (`/blog/…`, `/hizmetler` hub'ı) ve kök dışı/
+ * sorgulu hedefler olduğu gibi geçer.
+ */
+export function canonicalizeTargetPath(
+  targetPath: string,
+  policy?: ExtensionlessPolicy,
+): string {
+  if (!targetPath.startsWith("/")) return targetPath;
+  const boundary = targetPath.search(/[?#]/);
+  if (boundary === -1) return contentCanonicalPath(targetPath, policy);
+  return `${contentCanonicalPath(targetPath.slice(0, boundary), policy)}${targetPath.slice(boundary)}`;
+}
+
+/**
+ * Hedefin ağaç sahipliğini ÖNCEDEN çözer ve sync kanonik üreticisine verilebilir
+ * policy'ye çevirir. Yalnızca kararın veriden değişebildiği yollarda sorgu
+ * atılır (`isDataDependentExtensionless`) — EXACT kod rotaları ve `.html`
+ * kanonik hedefler DB'ye dokunmaz.
+ */
+export async function targetPathPolicy(
+  targetPath: string,
+  treeLookup: (path: string) => Promise<boolean> = isPublishedTreePath,
+): Promise<ExtensionlessPolicy | undefined> {
+  const bare = targetPath.split(/[?#]/)[0];
+  if (!isDataDependentExtensionless(bare)) return undefined;
+  const owned = await treeLookup(bare);
+  return { isTreeOwned: () => owned };
+}
+
 export async function recordBlogPostSlugChange(
   client: { query: (text: string, values?: any[]) => Promise<any> },
   oldSlug: string,
@@ -208,10 +292,11 @@ export async function recordBlogPostSlugChange(
 export function createRedirectResponse(
   req: NextRequest,
   entry: RedirectEntry,
+  policy?: ExtensionlessPolicy,
 ): NextResponse | null {
   if (!entry) return null;
 
-  const target = new URL(entry.target_path, req.url);
+  const target = new URL(canonicalizeTargetPath(entry.target_path, policy), req.url);
   const allowedStatuses = [301, 302, 307, 308];
   if (target.href === req.url || !allowedStatuses.includes(entry.status_code)) return null;
   return NextResponse.redirect(target, entry.status_code as 301 | 302 | 307 | 308);
@@ -219,14 +304,20 @@ export function createRedirectResponse(
 
 /**
  * Middleware katmanında gelen isteği yönlendirir.
+ *
+ * `treeLookup` yalnızca test/ödeme noktasıdır: production'daki öntanımlı
+ * değer `isPublishedTreePath` (60 sn TTL önbellekli, kök ön elemeli).
  */
 export async function handleRedirect(
   req: NextRequest,
   lookup: (pathname: string) => Promise<RedirectEntry> = getRedirectTarget,
+  treeLookup: (path: string) => Promise<boolean> = isPublishedTreePath,
 ): Promise<NextResponse | null> {
   try {
     const entry = await lookup(req.nextUrl.pathname);
-    return createRedirectResponse(req, entry);
+    if (!entry) return null;
+    const policy = await targetPathPolicy(entry.target_path, treeLookup);
+    return createRedirectResponse(req, entry, policy);
   } catch (error) {
     console.error("[RedirectHandler] Failed to check redirect:", error);
     return null;

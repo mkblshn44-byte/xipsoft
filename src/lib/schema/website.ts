@@ -6,7 +6,7 @@
  */
 
 import { SITE_URL } from "@/lib/site-url";
-import { BRAND } from "@/config/brand.config";
+import { APP_CONFIG, BRAND } from "@/config/brand.config";
 import { SCHEMA_CONTEXT } from "./shared";
 
 export function websiteSchema() {
@@ -16,6 +16,8 @@ export function websiteSchema() {
     "@id": `${SITE_URL}/#website`,
     name: BRAND.name,
     url: SITE_URL,
+    description: APP_CONFIG.description,
+    // Yalnızca TR yayında (/en route yok) — hreflang ve inLanguage tek dil.
     inLanguage: "tr-TR",
     publisher: { "@type": "Organization", "@id": `${SITE_URL}/#organization` },
   };

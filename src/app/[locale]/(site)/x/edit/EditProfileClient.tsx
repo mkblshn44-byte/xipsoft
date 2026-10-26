@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import TitleText from "@/components/Common/TitleText/TitleText";
 import { updateUserProfileAction } from "@/app/_actions/user-actions";
-import { ArrowLeft, Loader2, User, Link as LinkIcon, MapPin, Briefcase, Camera, Save, Globe, AlertCircle, CheckCircle } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -209,7 +209,7 @@ export default function EditProfileClient() {
 
       <div className="max-w-4xl mx-auto relative z-10 space-y-8">
         <Link href={`/x/${user?.display_name || user?.id}`} className="inline-flex items-center gap-2 text-xs -black uppercase tracking-widest text-zinc-500 hover:text-purple-400 transition-all group italic">
-          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Profile Dön
+          <XipIcon name="arrow-left" className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> Profile Dön
         </Link>
 
         <div className="space-y-2">
@@ -222,7 +222,7 @@ export default function EditProfileClient() {
         {/* Error Message */}
         {error && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
-            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <XipIcon name="alert-circle" className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" glow="none" />
             <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
@@ -230,7 +230,7 @@ export default function EditProfileClient() {
         {/* Success Message */}
         {success && (
           <div className="flex items-start gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-            <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <XipIcon name="check-circle" className="h-5 w-5 text-green-400 flex-shrink-0 mt-0.5" glow="none" />
             <p className="text-green-300 text-sm">{success}</p>
           </div>
         )}
@@ -250,13 +250,13 @@ export default function EditProfileClient() {
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Camera className="w-8 h-8 text-white" />
+                      <XipIcon name="camera" className="w-8 h-8 text-white" />
                     </div>
                   </div>
                 </div>
                 {uploading && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
-                    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                    <XipIcon name="loader" className="w-8 h-8 text-purple-400 animate-spin" />
                   </div>
                 )}
                 <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
@@ -279,17 +279,17 @@ export default function EditProfileClient() {
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
                     <div className="text-center">
-                      <Camera className="w-6 h-6 text-zinc-600 mx-auto mb-1" />
+                      <XipIcon name="camera" className="w-6 h-6 text-zinc-600 mx-auto mb-1" />
                       <p className="text-[10px] text-zinc-600 -black uppercase tracking-widest">Arka Plan Resmi</p>
                     </div>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="w-6 h-6 text-white" />
+                  <XipIcon name="camera" className="w-6 h-6 text-white" />
                 </div>
                 {uploadingCover && (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+                    <XipIcon name="loader" className="w-6 h-6 text-purple-400 animate-spin" />
                   </div>
                 )}
                 <input type="file" ref={coverInputRef} onChange={handleCoverChange} accept="image/*" className="hidden" />
@@ -302,7 +302,7 @@ export default function EditProfileClient() {
 
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 backdrop-blur-xl space-y-4">
                 <div className="flex items-center gap-3 text-zinc-400">
-                    <Globe className="w-4 h-4 text-purple-400" />
+                    <XipIcon name="globe" className="w-4 h-4 text-purple-400" />
                     <span className="text-[10px] -black uppercase tracking-widest italic">Kayıt: {user?.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR') : '...'}</span>
                 </div>
             </div>
@@ -331,7 +331,7 @@ export default function EditProfileClient() {
               <div>
                 <label className="text-[10px] -black uppercase tracking-widest text-zinc-500 italic mb-2 block">Website</label>
                 <div className="relative">
-                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                  <XipIcon name="link2" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                   <input
                     type="url"
                     value={website}
@@ -348,7 +348,7 @@ export default function EditProfileClient() {
                 </div>
                 {validationErrors.website && (
                   <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" /> {validationErrors.website}
+                    <XipIcon name="alert-circle" className="h-3 w-3" /> {validationErrors.website}
                   </p>
                 )}
               </div>
@@ -357,7 +357,7 @@ export default function EditProfileClient() {
               <div>
                 <label className="text-[10px] -black uppercase tracking-widest text-zinc-500 italic mb-2 block">Konum</label>
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                  <XipIcon name="map-pin" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                   <input
                     type="text"
                     value={location}
@@ -374,7 +374,7 @@ export default function EditProfileClient() {
                 </div>
                 {validationErrors.location && (
                   <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" /> {validationErrors.location}
+                    <XipIcon name="alert-circle" className="h-3 w-3" /> {validationErrors.location}
                   </p>
                 )}
               </div>
@@ -383,7 +383,7 @@ export default function EditProfileClient() {
               <div>
                 <label className="text-[10px] -black uppercase tracking-widest text-zinc-500 italic mb-2 block">Meslek</label>
                 <div className="relative">
-                  <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+                  <XipIcon name="briefcase" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                   <input
                     type="text"
                     value={job}
@@ -400,7 +400,7 @@ export default function EditProfileClient() {
                 </div>
                 {validationErrors.job && (
                   <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" /> {validationErrors.job}
+                    <XipIcon name="alert-circle" className="h-3 w-3" /> {validationErrors.job}
                   </p>
                 )}
               </div>
@@ -423,7 +423,7 @@ export default function EditProfileClient() {
                 />
                 {validationErrors.branch && (
                   <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" /> {validationErrors.branch}
+                    <XipIcon name="alert-circle" className="h-3 w-3" /> {validationErrors.branch}
                   </p>
                 )}
               </div>
@@ -448,7 +448,7 @@ export default function EditProfileClient() {
                 />
                 {validationErrors.bio && (
                   <p className="mt-2 text-xs text-red-400 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" /> {validationErrors.bio}
+                    <XipIcon name="alert-circle" className="h-3 w-3" /> {validationErrors.bio}
                   </p>
                 )}
               </div>
@@ -459,7 +459,7 @@ export default function EditProfileClient() {
                   disabled={loading || Object.keys(validationErrors).length > 0}
                   className="w-full group relative overflow-hidden flex items-center justify-center gap-3 px-8 py-5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white -black italic uppercase tracking-widest shadow-2xl shadow-purple-500/40 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? <Loader2 className="animate-spin h-6 w-6" /> : <Save className="h-6 w-6" />}
+                  {loading ? <XipIcon name="loader" className="animate-spin h-6 w-6" glow="strong" /> : <XipIcon name="save" className="h-6 w-6" glow="strong" />}
                   {loading ? "Kaydediliyor..." : "Degisiklikleri Kaydet"}
                 </button>
               </div>

@@ -3,15 +3,12 @@
 import { useRef, useState } from "react";
 import { motion, useInView } from "motion/react";
 import dynamic from "next/dynamic";
-import {
-  Mail, Phone, MapPin, MessageCircle, Send,
-  CheckCircle, Loader2, Clock, ArrowRight,
-} from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { BRAND_COMPANY, BRAND_COLORS } from "@/config/brand.config";
 import { PALETTE } from "@/config/palette";
 
-const V = PALETTE.neon[500];   // #a78bfa
-const C = PALETTE.accent.cyan; // #ddd6fe
+const V = PALETTE.neon[500];
+const C = PALETTE.accent.cyan;
 import { submitTeklifAction } from "@/app/_actions/teklif-actions";
 import { trackContactSubmit, trackWhatsAppClick } from "@/utils/analytics";
 
@@ -26,28 +23,28 @@ const GoogleMap = dynamic(() => import("@/components/Map/GoogleMap"), {
 
 const KANALLAR = [
   {
-    icon: Mail,
+    icon: "mail",
     label: "E-posta",
     value: "info@xipsoft.net",
     href: "mailto:info@xipsoft.net",
     color: C,
   },
   {
-    icon: Phone,
+    icon: "phone",
     label: "Telefon & WhatsApp",
     value: BRAND_COMPANY.phone,
     href: `https://wa.me/${BRAND_COMPANY.phone.replace(/\D/g, "")}`,
     color: C,
   },
   {
-    icon: MapPin,
+    icon: "map-pin",
     label: "Adres",
     value: BRAND_COMPANY.addressShort,
     href: BRAND_COMPANY.mapsUrl,
     color: V,
   },
   {
-    icon: Clock,
+    icon: "clock",
     label: "Çalışma Saatleri",
     value: "Hafta içi 10:00–17:00 • Hafta sonu açık",
     color: V,
@@ -106,7 +103,7 @@ function IletisimFormu({ isInView }: { isInView: boolean }) {
     >
       {gonderildi ? (
         <div className="flex flex-col items-center gap-4 py-10 text-center">
-          <CheckCircle className="w-12 h-12" style={{ color: V }} />
+          <XipIcon name="check-circle" className="w-12 h-12" style={{ color: V }} glow="strong" />
           <h3 className="font-bold text-xl text-white">Mesajınız Alındı</h3>
           <p className="text-zinc-400 text-sm max-w-xs leading-relaxed">
             En kısa sürede{" "}
@@ -201,7 +198,7 @@ function IletisimFormu({ isInView }: { isInView: boolean }) {
               className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-50"
             style={{ background: `linear-gradient(135deg, ${C}, ${V})`, color: "#030712" }}
             >
-              {yukleniyor ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {yukleniyor ? <XipIcon name="loader" className="w-4 h-4 animate-spin" glow="strong" /> : <XipIcon name="send" className="w-4 h-4" glow="strong" />}
               {yukleniyor ? "gönderiliyor..." : "gönder"}
             </button>
           </form>
@@ -243,7 +240,6 @@ export default function ContactPageClient() {
         {/* Sol — Kanallar */}
         <div className="flex flex-col gap-3">
           {KANALLAR.map((k, i) => {
-            const Icon = k.icon;
             return (
               <motion.div
                 key={k.label}
@@ -265,13 +261,13 @@ export default function ContactPageClient() {
                       className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                       style={{ background: `${k.color}12`, border: `1px solid ${k.color}20` }}
                     >
-                      <Icon className="w-4 h-4" style={{ color: k.color }} />
+                      <XipIcon name={k.icon} className="w-4 h-4" style={{ color: k.color }} glow="none" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] text-zinc-600 mb-0.5">{k.label}</p>
                       <p className="text-sm text-zinc-300 font-medium truncate group-hover:text-white transition-colors">{k.value}</p>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    <XipIcon name="arrow-right" className="w-3.5 h-3.5 text-zinc-700 group-hover:text-zinc-500 group-hover:translate-x-0.5 transition-all shrink-0" />
                   </a>
                 ) : (
                   <div className="flex items-center gap-4 px-5 py-4 rounded-xl border border-zinc-800/60 bg-zinc-950/40">
@@ -279,7 +275,7 @@ export default function ContactPageClient() {
                       className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                       style={{ background: `${k.color}12`, border: `1px solid ${k.color}20` }}
                     >
-                      <Icon className="w-4 h-4" style={{ color: k.color }} />
+                      <XipIcon name={k.icon} className="w-4 h-4" style={{ color: k.color }} glow="none" />
                     </div>
                     <div>
                       <p className="text-[11px] text-zinc-600 mb-0.5">{k.label}</p>
@@ -303,13 +299,13 @@ export default function ContactPageClient() {
             transition={{ duration: 0.45, delay: 0.5 }}
           >
             <div className="flex items-center gap-3">
-              <MessageCircle className="w-4 h-4 shrink-0" style={{ color: C }} />
+              <XipIcon name="message-circle" className="w-4 h-4 shrink-0" style={{ color: C }} />
               <div>
                 <p className="text-sm font-semibold" style={{ color: C }}>WhatsApp'tan Yazın</p>
                 <p className="text-xs text-ink-muted">Birkaç dakika içinde yanıt</p>
               </div>
             </div>
-            <ArrowRight className="w-3.5 h-3.5 shrink-0" style={{ color: C }} />
+            <XipIcon name="arrow-right" className="w-3.5 h-3.5 shrink-0" style={{ color: C }} />
           </motion.a>
         </div>
 
@@ -336,7 +332,7 @@ export default function ContactPageClient() {
             className="w-full h-full min-h-[360px]"
           />
           <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-950/80 border border-zinc-800/60 backdrop-blur-sm pointer-events-none">
-            <MapPin className="w-3 h-3 text-zinc-400" />
+            <XipIcon name="map-pin" className="w-3 h-3 text-zinc-400" />
             <span className="text-xs text-zinc-400">{BRAND_COMPANY.addressShort}</span>
           </div>
         </div>

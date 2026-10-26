@@ -1,12 +1,12 @@
 "use server";
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { revalidatePath } from "next/cache";
 import { requireAdminAction } from "@/lib/api-guard";
 import { SITE_URL } from "@/lib/site-url";
 import { invalidateBlogCaches } from "@/lib/blog-cache";
 import { invalidateRedirectCache, recordBlogPostSlugChange } from "@/lib/redirect-handler";
-import { ensureUniqueSlug, sanitizeSlugInput } from "@/lib/post-helpers";
+import { ensureUniqueSlug, sanitizeSlugInput } from "@/lib/blog/slug";
 
 /**
  * Yazar (author_id) istemciden GÜVENİLMEZ şekilde alınmaz; oturumdaki admin

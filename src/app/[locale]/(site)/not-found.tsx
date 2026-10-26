@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Home, ArrowLeft, Globe, Code2, Shield, Smartphone } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { BRAND_COLORS } from "@/config/brand.config";
 
 const QUICK_LINKS = [
-  { label: "Hizmetler",  href: "/hizmetler/web-yazilim-tasarim", color: BRAND_COLORS.secondary, icon: Globe },
-  { label: "Blog",       href: "/blog",                          color: BRAND_COLORS.primary,   icon: Code2 },
-  { label: "Güvenlik",   href: "/hizmetler/siber-guvenlik",      color: "#ddd6fe",              icon: Shield },
-  { label: "Mobil",      href: "/hizmetler/mobil-uygulama",      color: BRAND_COLORS.accent,    icon: Smartphone },
+  { label: "Hizmetler",  href: "/hizmetler/web-yazilim-tasarim1.html", color: BRAND_COLORS.secondary, icon: "globe" },
+  { label: "Blog",       href: "/blog",                          color: BRAND_COLORS.primary,   icon: "code2" },
+  { label: "Güvenlik",   href: "/hizmetler/siber-guvenlik.html",      color: "#ddd6fe",              icon: "shield-check" },
+  { label: "Mobil",      href: "/hizmetler/mobil-uygulama.html",      color: BRAND_COLORS.accent,    icon: "smartphone" },
 ];
 
 export default function NotFound() {
@@ -20,8 +20,8 @@ export default function NotFound() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            radial-gradient(ellipse 70% 55% at 50% 0%, rgba(167,139,250,0.14) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 0% 100%, rgba(34,211,238,0.10) 0%, transparent 55%)
+            radial-gradient(ellipse 70% 55% at 50% 0%, rgba(167, 139, 250,0.14) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 40% at 0% 100%, rgba(167, 139, 250,0.08) 0%, transparent 55%)
           `,
         }}
       />
@@ -30,8 +30,8 @@ export default function NotFound() {
         className="absolute inset-0 pointer-events-none opacity-[0.035]"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(167,139,250,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(167,139,250,0.5) 1px, transparent 1px)
+            linear-gradient(rgba(167, 139, 250,0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(167, 139, 250,0.12) 1px, transparent 1px)
           `,
           backgroundSize: "60px 60px",
         }}
@@ -48,11 +48,11 @@ export default function NotFound() {
             className="font-black leading-none select-none"
             style={{
               fontSize: "clamp(6rem, 20vw, 12rem)",
-              background: "linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(167,139,250,0.5) 40%, rgba(34,211,238,0.4) 100%)",
+              backgroundImage: "linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(167, 139, 250,0.32) 40%, rgba(18, 20, 28,0.24) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              filter: "drop-shadow(0 0 50px rgba(167,139,250,0.4))",
+              filter: "drop-shadow(0 0 50px rgba(167, 139, 250,0.10))",
             }}
           >
             404
@@ -70,7 +70,7 @@ export default function NotFound() {
             className="h-[2px] w-24 rounded-full"
             style={{
               background: "linear-gradient(90deg, transparent, #a78bfa, #ddd6fe, transparent)",
-              boxShadow: "0 0 12px rgba(167,139,250,0.7)",
+              boxShadow: "0 0 12px rgba(167, 139, 250,0.16)",
             }}
           />
         </motion.div>
@@ -106,10 +106,10 @@ export default function NotFound() {
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-zinc-950 transition-all hover:scale-[1.03] active:scale-95"
             style={{
               background: "linear-gradient(135deg, #a78bfa, #ddd6fe)",
-              boxShadow: "0 0 20px rgba(167,139,250,0.45)",
+              boxShadow: "0 0 20px rgba(167, 139, 250,0.12)",
             }}
           >
-            <Home className="w-4 h-4" />
+            <XipIcon name="home" glow="strong" halo="red" className="w-4 h-4" />
             Ana Sayfaya Dön
           </Link>
           <button
@@ -118,10 +118,10 @@ export default function NotFound() {
             style={{
               background: "var(--color-card-bg)",
               border: "1px solid var(--color-border)",
-              color: "rgba(255,255,255,0.75)",
+              color: "rgba(203, 213, 225, 0.75)",
             }}
           >
-            <ArrowLeft className="w-4 h-4" />
+            <XipIcon name="arrow-left" glow="soft" className="w-4 h-4" />
             geri git
           </button>
         </motion.div>
@@ -134,7 +134,6 @@ export default function NotFound() {
           transition={{ delay: 0.55 }}
         >
           {QUICK_LINKS.map((link, i) => {
-            const Icon = link.icon;
             return (
               <motion.div
                 key={link.href}
@@ -151,10 +150,10 @@ export default function NotFound() {
                   }}
                 >
                   <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
+                    className="icon-backlight w-9 h-9 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
                     style={{ background: `${link.color}15`, border: `1px solid ${link.color}25` }}
                   >
-                    <Icon className="w-4 h-4" style={{ color: link.color }} strokeWidth={1.5} />
+                    <XipIcon name={link.icon} glow="strong" className="w-4 h-4" style={{ color: link.color }} />
                   </div>
                   <span className="text-xs font-medium text-zinc-400 group-hover:text-white transition-colors">{link.label}</span>
                 </Link>

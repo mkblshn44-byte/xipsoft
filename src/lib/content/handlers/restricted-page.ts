@@ -21,10 +21,12 @@
 
 import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import pool from "@/lib/database";
-import { hashPageContent } from "@/lib/pages";
+import pool from "@/lib/db/pool";
+import { hashPageContent } from "@/lib/pages/hash";
 import { sanitizeHTML } from "@/lib/security";
 import { SITE_URL } from "@/lib/site-url";
+import { servicePath } from "@/lib/content-path";
+import { invalidatePageCaches } from "@/lib/redis/page-cache";
 import { fail } from "../response";
 import { isPlainRecord } from "../validation";
 import { PAGE_STATUSES } from "../constants";
@@ -281,8 +283,9 @@ export async function handleRestrictedPageUpdate(
   );
   revalidateTag("local-pages");
   revalidateTag("sitemap");
-  revalidatePath(`/hizmetler/${slug}`);
+  revalidatePath(servicePath(slug));
   revalidatePath("/sitemap.xml");
+  await invalidatePageCaches({ slugs: [slug, servicePath(slug)], sitemap: true });
 
   // ── 7) Temiz yanıt: işlem özeti (id/hash/user yok) ─────────────────────────
   return NextResponse.json({
@@ -290,7 +293,7 @@ export async function handleRestrictedPageUpdate(
     target_table: "pages",
     updated: 1,
     slug,
-    url: `${SITE_URL}/hizmetler/${slug}`,
+    url: `${SITE_URL}${servicePath(slug)}`,
     status,
     message: "İçerik başarıyla güncellendi ve önbellek tazelendi.",
   });

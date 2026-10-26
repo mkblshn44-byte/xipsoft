@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { guardContentApiRequest } from "@/lib/content/request-guard";
+import { invalidateAllPageCaches } from "@/lib/redis/page-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   revalidateTag("local-pages");
   revalidateTag("sitemap");
   revalidateTag("locations");
+
+  // Redis katmanı: toplu içerik işleminde hangi slug'ların değiştiği bilinmediği
+  // için sayfa + sitemap önbelleği komple düşürülür (bir sonraki istek DB'den
+  // tek sefer yüklenip yeniden yazılır).
+  await invalidateAllPageCaches();
 
   // Bileşen/rota seviyesinde cache (tek catch-all şablon: hizmet detay + konum).
   revalidatePath("/hizmetler/[...slug]", "page");

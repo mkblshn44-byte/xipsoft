@@ -8,7 +8,8 @@
  */
 
 import { SITE_URL } from "@/lib/site-url";
-import { BRAND } from "@/config/brand.config";
+import { BRAND, DEFAULT_OG_IMAGE_URL } from "@/config/brand.config";
+import { servicePath } from "@/lib/content-path";
 import { SCHEMA_CONTEXT } from "./shared";
 
 /** Konum kapsamı — schema.org areaServed karşılığı. */
@@ -41,7 +42,7 @@ export interface ServiceSchemaInput {
 
 export function serviceSchema(input: ServiceSchemaInput) {
   const url = input.url.startsWith("http") ? input.url : `${SITE_URL}${input.url}`;
-  const image = input.image ?? `${SITE_URL}/media/xipsoft-seo.webp`;
+  const image = input.image ?? DEFAULT_OG_IMAGE_URL;
   const area = input.areaServed ?? { type: "Country" as const, name: "Turkey" };
 
   return {
@@ -85,7 +86,7 @@ export function serviceBreadcrumbs(opts: {
   return [
     { name: "Ana Sayfa", url: "/" },
     { name: "Hizmetler", url: "/hizmetler" },
-    { name: opts.serviceName, url: `/hizmetler/${opts.serviceSlug}` },
+    { name: opts.serviceName, url: servicePath(opts.serviceSlug) },
     ...(opts.locationName && opts.locationUrl
       ? [{ name: opts.locationName, url: opts.locationUrl }]
       : []),

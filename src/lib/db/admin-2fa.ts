@@ -25,6 +25,10 @@ async function ensureAdmin2faOtpTable(): Promise<void> {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  await pool.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS admin_2fa_otps_chat_id_uidx
+    ON admin_2fa_otps (chat_id)
+  `);
   admin2faTableReady = true;
 }
 

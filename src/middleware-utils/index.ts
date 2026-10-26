@@ -22,9 +22,10 @@ import {
   guardAdminApi,
 } from "./admin-access";
 import { blockCountryIfNecessary } from "./country-blocklist";
-import { DELETED_PATH_SET, normalizeTrailingSlash, stripLocalePrefix, buildGoneResponse } from "./seo-normalize";
+import { DELETED_PATH_SET, normalizeTrailingSlash, stripLocalePrefix, buildGoneResponse, stripHtmlExtension, shouldStripHtmlExtension } from "./seo-normalize";
 import { handleLegacyForum, handleLegacyWpPaths } from "./legacy-forum";
 import { handleRedirect } from "@/lib/redirect-handler";
+import { xipGuardCheck } from "@/lib/security/xip-guard";
 
 // next-intl routing middleware — as-needed: tr kök (/hakkimizda), diğer diller önekli (/en/...)
 const intlMiddleware = createIntlMiddleware(routing);
@@ -50,9 +51,16 @@ export default async function middleware(
 ): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
 
+  // 00. XipGuard — zincirin en başındaki en ucuz kesim. Kısa ömürlü blok veya
+  // istek aşımı varsa redirect/DB/render katmanlarına hiç uğramadan 403/429
+  // döner. Upstash env'i yoksa katman no-op'tur (bkz. lib/security/xip-guard).
+  const guardResponse = await xipGuardCheck(req);
+  if (guardResponse) return guardResponse;
+
   // 0a-pre. www → non-www — Vercel kendi routing katmanında 308 ürettiği için
-  // next.config.mjs redirect kuralı yetersiz kalıyor. Middleware Edge Runtime'da
-  // çalışır ve Vercel routing'den önce devreye girer → kesin 301 garantisi.
+  // next.config.mjs redirect kuralı yetersiz kalıyor. Middleware Node.js
+  // runtime'da çalışıyor (build çıktısı: middleware.js.nft.json `pg` trace ediyor,
+  // `.next/server/edge/` üretilmiyor) → kesin 301 garantisi.
   const host = req.headers.get("host") ?? "";
     if (process.env.NODE_ENV === "production" && host.startsWith("www.")) {
     const nonWwwHost = host.slice(4); // "www." kaldır
@@ -70,12 +78,26 @@ export default async function middleware(
   //   /tr/hakkimizda   -> 301 /hakkimizda   (SEO kopya içerik önlenir)
   //   /tr/hakkimizda/  -> 301 /hakkimizda   (zincir yok, tek hop)
   //   /tr              -> 301 /
+  //
+  // `.html` POLİTİKASI (Aşama 6 + veri odaklı karar): İçerik ağacı düğümlerinin
+  // kanonik adresi `.html` ile biter → bu uzantı KORUNUR. Yalnızca uzantısız
+  // kanoniğe sahip kod/legacy rotalarda (`/hizmetler`, `/blog`, statik
+  // sayfalar…) eski WordPress `.html` bağlantılarını tek adımda temizlemek için
+  // sökülür. Legacy bir kökün (`/forum`, `/news`, `/urunler`…) altında
+  // yayınlanmış bir ağaç sayfası varsa kararı VERİ verir: `.html` kanonik
+  // kalır ve istek rotaya ulaşır. Ağaç kararı yoksa elle liste geçerlidir.
+  const htmlStripped = stripHtmlExtension(pathname);
+  const hasHtmlExtension = htmlStripped !== pathname;
+  const basePath =
+    hasHtmlExtension && (await shouldStripHtmlExtension(htmlStripped))
+      ? htmlStripped
+      : pathname;
   const normalized =
     normalizeTrailingSlash(
       process.env.NODE_ENV === "development"
-        ? pathname
-        : stripLocalePrefix(pathname, routing.defaultLocale)
-    ).replace(/(?:\.html)+$/i, "") || "/";
+        ? basePath
+        : stripLocalePrefix(basePath, routing.defaultLocale)
+    ) || "/";
 
   // NOT: www -> non-www redirect yukarida (0a-pre) middleware'de yapiliyor.
 
@@ -88,7 +110,9 @@ export default async function middleware(
   }
 
   // 0c. Eski WordPress forum URL'leri (forum bölümü kaldırıldı) -> taşınmışsa
-  //     301 /blog/<slug>, aksi halde 301 /blog (GSC'de "Yonlendirmeli sayfa")
+  //     301 /blog/<slug>, aksi halde 301 /blog (GSC'de "Yonlendirmeli sayfa").
+  //     YAYIN decision istisnası: yolu kök catch-all'un çözdüğü bir ağaç
+  //     düğümü sahipleniyorsa handler null döner ve istek devam eder.
   const localePrefix = routing.locales.find(
     (locale) => normalized === `/${locale}` || normalized.startsWith(`/${locale}/`)
   );
@@ -115,7 +139,7 @@ export default async function middleware(
   const legacyForumResponse = await handleLegacyForum(req, legacyPathname);
   if (legacyForumResponse) return legacyForumResponse;
 
-  const legacyWordPressResponse = handleLegacyWpPaths(req, legacyPathname);
+  const legacyWordPressResponse = await handleLegacyWpPaths(req, legacyPathname);
   if (legacyWordPressResponse) return legacyWordPressResponse;
 
   // 0d. Yalnizca normalizasyon (locale / trailing slash / .html) gerekiyorsa
@@ -206,18 +230,12 @@ export default async function middleware(
       ? NextResponse.next()
       : devLocaleRewrite ?? intlMiddleware(req);
 
-  // 8. Security Headers â€” HSTS, nosniff, clickjacking korumasÄ± (Madde 14)
-  if (process.env.NODE_ENV === "production") {
-    res.headers.set(
-      "Strict-Transport-Security",
-      "max-age=63072000; includeSubDomains; preload"
-    );
-  }
-  res.headers.set("X-Content-Type-Options", "nosniff");
-  // next.config.mjs `headers()` ile aynı değer: DENY. CSP'de `frame-ancestors 'none'`
-  // ile birlikte tam clickjacking koruması sağlar (SAMEORIGIN çelişki yaratıyordu).
-  res.headers.set("X-Frame-Options", "DENY");
-  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  // 8. Güvenlik header'ları burada DEĞİL — tek kaynak `next.config.mjs`
+  //    `headers()` bloğu (`source: "/:path*"`). Eskiden üç yer (vercel.json,
+  //    next.config.mjs, middleware) aynı dört başlığı ayrı ayrı yazıyordu;
+  //    değerler eşit olsa da hangisinin kazanacağı belirsizdi. next.config
+  //    hem `next dev`/`next start` hem Vercel tarafında çalıştığı ve CDN
+  //    statiklerini de kapsadığı için o bırakıldı, buradaki tekrar silindi.
   return res;
 }
 

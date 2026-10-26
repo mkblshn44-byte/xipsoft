@@ -1,14 +1,8 @@
 "use server";
 
 import { unstable_cache } from "next/cache";
-import pool from "@/lib/database";
-import {
-  generateSlug,
-  ensureUniqueSlug,
-  buildPaginatedResult,
-  softDelete,
-  setPublishStatus,
-} from "@/lib/post-helpers";
+import pool from "@/lib/db/pool";
+import { generateSlug, ensureUniqueSlug } from "@/lib/blog/slug";
 import { shareBlogToTelegram } from "@/lib/telegram";
 import type { BlogPost, BlogPostInput } from "@/types/blog";
 import type { PaginatedResult } from "@/types/common";
@@ -16,7 +10,7 @@ import type { AuthUser } from "@/context/AuthContext";
 import { getServerActionContext } from "@/lib/api-guard";
 import { SITE_URL } from "@/lib/site-url";
 import { invalidateBlogCaches } from "@/lib/blog-cache";
-import { BLOG_BY_SLUG_SQL } from "@/lib/blog-post-page";
+import { BLOG_BY_SLUG_SQL } from "@/lib/blog/detail";
 import {
   invalidateRedirectCache,
   recordBlogPostSlugChange,
@@ -26,7 +20,64 @@ import {
   setBlogListCache,
   getBlogPostCache,
   setBlogPostCache,
-} from "@/lib/redis";
+} from "@/lib/redis/blog-cache";
+
+const ALLOWED_TABLES = ["blog_posts"] as const;
+
+function assertAllowedTable(table: string, action: string): boolean {
+  if ((ALLOWED_TABLES as readonly string[]).includes(table)) return true;
+  console.error(`${action}: Invalid table "${table}" - not in whitelist`);
+  return false;
+}
+
+async function softDelete(table: string, id: string): Promise<boolean> {
+  try {
+    if (!assertAllowedTable(table, "softDelete")) return false;
+    await pool.query(`UPDATE ${table} SET deleted_at = NOW() WHERE id = $1`, [id]);
+    return true;
+  } catch (error) {
+    console.error(`softDelete(${table}) error:`, error);
+    return false;
+  }
+}
+
+async function setPublishStatus(
+  table: string,
+  id: string,
+  publish: boolean,
+): Promise<boolean> {
+  try {
+    if (!assertAllowedTable(table, "setPublishStatus")) return false;
+    if (publish) {
+      await pool.query(
+        `UPDATE ${table} SET status = 'published', published_at = NOW(), updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL`,
+        [id],
+      );
+    } else {
+      await pool.query(
+        `UPDATE ${table} SET status = 'draft', published_at = NULL, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL`,
+        [id],
+      );
+    }
+    return true;
+  } catch (error) {
+    console.error(`setPublishStatus(${table}) error:`, error);
+    return false;
+  }
+}
+
+function buildPaginatedResult<T>(
+  rows: Record<string, unknown>[],
+  pageSize: number,
+  offset: number,
+  mapper: (row: Record<string, unknown>) => T,
+): PaginatedResult<T> {
+  return {
+    data: rows.slice(0, pageSize).map(mapper),
+    hasMore: rows.length > pageSize,
+    nextOffset: offset + pageSize,
+  };
+}
 
 // ── Mapper (SRP: sadece satır → tip dönusumu) ────────────────────────────────
 
@@ -136,11 +187,13 @@ const getCachedAdjacentBlogPosts = unstable_cache(
 export async function getPublishedBlogPostsAction(
   pageSize = 6,
   offset = 0,
-  category?: string
+  category?: string,
+  search?: string
 ): Promise<PaginatedResult<BlogPost> & { error?: boolean }> {
-  // Kategori (etiket) filtresi cache anahtarına dahil edilir ki farklı
-  // kategori sayfaları birbirinin önbelleğini kirletmesin.
-  const cacheKey = `${pageSize}-${offset}-${category?.trim() || "all"}`;
+  // Kategori (etiket) ve arama terimi cache anahtarına dahil edilir ki farklı
+  // sorgular birbirinin önbelleğini kirletmesin.
+  const searchTerm = search?.trim() || null;
+  const cacheKey = `${pageSize}-${offset}-${category?.trim() || "all"}-${searchTerm ?? "none"}`;
 
   // 1. Önce Redis'e bak
   const cached = await getBlogListCache(cacheKey);
@@ -162,10 +215,20 @@ export async function getPublishedBlogPostsAction(
        FROM Blog_posts bp
        LEFT JOIN users u ON u.id = bp.author_id
        WHERE bp.status = 'published' AND bp.deleted_at IS NULL
-         AND ($3::text IS NULL OR $3 = ANY(bp.tags))
+         AND ($3::text IS NULL OR EXISTS (
+              SELECT 1 FROM unnest(bp.tags) AS category_tag
+              WHERE lower(category_tag) = lower($3)
+            ))
+         AND ($4::text IS NULL
+              OR bp.title ILIKE '%' || $4 || '%'
+              OR bp.description ILIKE '%' || $4 || '%'
+              OR EXISTS (
+                   SELECT 1 FROM unnest(bp.tags) AS t
+                   WHERE t ILIKE '%' || $4 || '%'
+                 ))
        ORDER BY bp.published_at DESC
        LIMIT $1 OFFSET $2`,
-      [pageSize + 1, offset, category?.trim() || null]
+      [pageSize + 1, offset, category?.trim() || null, searchTerm]
     );
 
     const hasMore = rows.length > pageSize;
@@ -227,6 +290,15 @@ export interface BlogCategoryCount {
  * kategorik taksonomi olarak kullanılır. Sonuç `blog-content` etiketiyle
  * önbelleklenir → publish/update sonrası `invalidateBlogCaches()` temizler.
  */
+/**
+ * Sidebar'da gösterilecek maksimum kategori sayısı.
+ *
+ * DB'de 1.500+ yazı ve ~1.400 farklı etiket var; sınırsız liste sidebar'ı
+ * ~60.000px yüksekliğe çıkarıyordu. Sayfa 10 yazı/sayfa yüklediği için
+ * yüzlerce kategoriyi listelemek kullanıcıya da hiçbir şey kazandırmıyor.
+ */
+const MAX_BLOG_CATEGORIES = 24;
+
 const getCachedBlogCategories = unstable_cache(
   async (): Promise<BlogCategoryCount[]> => {
     const { rows } = await pool.query<{ name: string; count: number }>(
@@ -236,13 +308,42 @@ const getCachedBlogCategories = unstable_cache(
        WHERE bp.status = 'published' AND bp.deleted_at IS NULL
          AND tag IS NOT NULL AND btrim(tag) <> ''
        GROUP BY tag
-       ORDER BY count DESC, tag ASC`
+       ORDER BY count DESC, tag ASC
+       LIMIT $1`,
+      [MAX_BLOG_CATEGORIES]
     );
     return rows.map((row) => ({ name: row.name, count: Number(row.count) }));
   },
   ["blog-categories"],
   { revalidate: 300, tags: ["blog-content"] }
 );
+
+/**
+ * Yayınlanmış toplam yazı sayısı — sidebar'daki "Tümü" rozetinde kullanılır.
+ * `blogs.length` (o an yüklenen sayfa) kullanılırsa "Tümü 10" yazarken
+ * tek bir kategoride 127 görünür; tutarsız bir UI üretiyordu.
+ */
+const getCachedBlogTotalCount = unstable_cache(
+  async (): Promise<number> => {
+    const { rows } = await pool.query<{ total: number }>(
+      `SELECT COUNT(*)::int AS total
+       FROM Blog_posts
+       WHERE status = 'published' AND deleted_at IS NULL`
+    );
+    return Number(rows[0]?.total ?? 0);
+  },
+  ["blog-total-count"],
+  { revalidate: 300, tags: ["blog-content"] }
+);
+
+export async function getBlogTotalCountAction(): Promise<number> {
+  try {
+    return await getCachedBlogTotalCount();
+  } catch (err) {
+    console.error("getBlogTotalCountAction error:", err);
+    return 0;
+  }
+}
 
 export async function getBlogCategoriesAction(): Promise<BlogCategoryCount[]> {
   try {

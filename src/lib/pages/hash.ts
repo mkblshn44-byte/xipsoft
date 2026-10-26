@@ -5,6 +5,7 @@
 import crypto from "node:crypto";
 import { slugify } from "@/utils/slugify";
 import { SITE_URL } from "@/lib/site-url";
+import { servicePath } from "@/lib/content-path";
 import type { PublishedPage } from "./types";
 
 export function normalizeSlug(value: string): string {
@@ -29,7 +30,7 @@ export function normalizePublishedPage(page: PublishedPage | undefined): Publish
     return {
       ...page,
       canonicalUrl: isLocalCanonical
-        ? `${SITE_URL}/hizmetler/${page.slug}`
+        ? `${SITE_URL}${servicePath(page.slug)}`
         : canonical.toString(),
     };
   } catch {

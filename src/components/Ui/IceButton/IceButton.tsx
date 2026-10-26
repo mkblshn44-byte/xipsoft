@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * IceButton — Evrensel "Teklif Al" butonu.
- * Buz / glass blur efekti, tüm sayfalarda tutarlı görünüm.
+ * IceButton — Saydam yüzeyli, mavi çerçeveli evrensel "Teklif Al" butonu.
  */
 import { motion } from "motion/react";
-import { Zap } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import { cn } from "@/utils";
-import { teklifModal } from "@/components/Common/TeklifModal/TeklifModal";
+import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
 
 interface IceButtonProps {
   label?: string;
@@ -32,43 +31,31 @@ export default function IceButton({
   };
 
   const sizeClasses = {
-    sm: "px-4 py-2 text-xs gap-1.5",
-    md: "px-5 py-2.5 text-sm gap-2",
-    lg: "px-7 py-3.5 text-sm gap-2",
+    sm: "px-4 py-2.5 text-xs gap-2",
+    md: "px-5 py-3 text-sm gap-2.5",
+    lg: "px-7 py-3.5 text-sm gap-3",
   };
 
   return (
+    // `btn-glint` → "Teklif Al" butonunda üzerinden geçen ışık süpürmesi
+    // (tbg-12 `glint` keyframe'i). Basma efekti kendi `whileTap`'inde kalır.
     <motion.button
       onClick={handleClick}
       whileTap={{ scale: 0.96 }}
       className={cn(
-        "relative inline-flex items-center justify-center font-bold rounded-xl",
-        "text-neon-300 tracking-wide",
-        // neon mor glass base
-        "bg-gradient-to-br from-neon-500/25 via-neon-600/12 to-neon-500/20",
-        "border border-neon-500/40",
-        "backdrop-blur-md",
-        "shadow-[0_0_20px_rgba(157,114,255,0.24),inset_0_1px_0_rgba(255,255,255,0.12)]",
-        // hover
-        "hover:border-neon-400/60",
-        "hover:from-neon-500/35 hover:via-neon-600/20 hover:to-neon-400/30",
-        "hover:shadow-[0_0_32px_rgba(157,114,255,0.42),inset_0_1px_0_rgba(255,255,255,0.18)]",
-        "transition-all duration-300",
-        "active:scale-95",
+        "btn-glint group relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-neon-500/60 bg-transparent",
+        "font-bold tracking-wide text-neon-300",
+        "shadow-btn-accent transition-all duration-200",
+        "hover:-translate-y-0.5 hover:border-neon-300 hover:shadow-btn-accent-lg",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+        "active:translate-y-0 active:scale-[0.98]",
         fullWidth && "w-full",
         sizeClasses[size],
         className,
       )}
     >
-      {/* İç üst parlaklık */}
-      <span className="absolute inset-0 rounded-xl bg-gradient-to-b from-white/12 via-white/4 to-transparent pointer-events-none" />
-      {/* Alt çizgi */}
-      <span className="absolute inset-x-0 bottom-0 h-[1px] rounded-b-xl bg-gradient-to-r from-transparent via-neon-400/45 to-transparent pointer-events-none" />
-      {/* Sol kenar ışığı */}
-      <span className="absolute inset-y-0 left-0 w-[1px] rounded-l-xl bg-gradient-to-b from-transparent via-neon-400/35 to-transparent pointer-events-none" />
-
-      <Zap className="w-3.5 h-3.5 relative z-10 text-neon-300 drop-shadow-[0_0_5px_rgba(157,114,255,0.7)] shrink-0" />
-      <span className="relative z-10">{label}</span>
+      <span>{label}</span>
+      <XipIcon name="arrow-right" glow="strong" halo="red" className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
     </motion.button>
   );
 }

@@ -7,8 +7,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { getClientIp } from "@/lib/rate-limit";
+import { ensureSiteVisitorAnalyticsSchema } from "@/lib/db/site-visitors";
 
 export const runtime = "nodejs";
 
@@ -57,8 +58,28 @@ function parseUA(ua: string | null): {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const { page_url, referrer, session_id } = body;
+    const body: unknown = await req.json();
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Geçersiz istek gövdesi" }, { status: 400 });
+    }
+    const input = body as Record<string, unknown>;
+    const { page_url, referrer, session_id, visit_token, duration_seconds, transfer_bytes } = input;
+
+    if (
+      typeof visit_token !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(visit_token)
+    ) {
+      return NextResponse.json({ error: "Geçersiz ziyaret kimliği" }, { status: 400 });
+    }
+
+    const duration = Number.isSafeInteger(duration_seconds)
+      ? Math.min(Math.max(Number(duration_seconds), 0), 86_400)
+      : 0;
+    const transferredBytes = Number.isSafeInteger(transfer_bytes)
+      ? Math.min(Math.max(Number(transfer_bytes), 0), 2_147_483_647)
+      : 0;
+
+    await ensureSiteVisitorAnalyticsSchema();
 
     const ip = getClientIp(req);
 
@@ -72,45 +93,48 @@ export async function POST(req: NextRequest) {
 
     // Ülke bloğu kontrolü
     if (country) {
-      pool.query(
+      const blocked = await pool.query(
         `SELECT 1 FROM country_blocklist WHERE country_code = $1 LIMIT 1`,
-        [country]
-      ).then((res) => {
-        if (res.rows.length > 0) return; // engellendi, kayıt atla
-        insertVisitor();
-      }).catch(() => insertVisitor());
-    } else {
-      insertVisitor();
+        [country],
+      );
+      if (blocked.rows.length > 0) return NextResponse.json({ success: true, blocked: true });
     }
 
-    function insertVisitor() {
-      pool.query(
-        `INSERT INTO site_visitors
-           (ip_address, page_url, user_agent, referrer,
-            country, city, cf_ray, cf_ipcountry, asn,
-            device_type, browser, os, is_bot, session_id)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-        [
-          ip,
-          page_url || "/",
-          ua || null,
-          referrer || null,
-          country,
-          city,
-          cf_ray,
-          cf_ipcountry,
-          asn,
-          device_type,
-          browser,
-          os,
-          is_bot,
-          session_id || null,
-        ]
-      ).catch(() => {});
-    }
+    await pool.query(
+      `INSERT INTO site_visitors
+         (ip_address, page_url, user_agent, referrer,
+          country, city, cf_ray, cf_ipcountry, asn,
+          device_type, browser, os, is_bot, session_id,
+          visit_token, duration_seconds, transfer_bytes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+       ON CONFLICT (visit_token) WHERE visit_token IS NOT NULL
+       DO UPDATE SET
+         duration_seconds = GREATEST(COALESCE(site_visitors.duration_seconds, 0), EXCLUDED.duration_seconds),
+         transfer_bytes = GREATEST(COALESCE(site_visitors.transfer_bytes, 0), EXCLUDED.transfer_bytes)`,
+      [
+        ip,
+        typeof page_url === "string" ? page_url : "/",
+        ua || null,
+        typeof referrer === "string" ? referrer : null,
+        country,
+        city,
+        cf_ray,
+        cf_ipcountry,
+        asn,
+        device_type,
+        browser,
+        os,
+        is_bot,
+        typeof session_id === "string" ? session_id : null,
+        visit_token,
+        duration,
+        transferredBytes,
+      ],
+    );
 
     return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ success: false }, { status: 400 });
+  } catch (error) {
+    console.error("[API:track] ziyaret kaydedilemedi:", error);
+    return NextResponse.json({ error: "Ziyaret kaydedilemedi" }, { status: 500 });
   }
 }

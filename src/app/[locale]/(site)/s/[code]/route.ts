@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import pool from '@/lib/database';
+import pool from '@/lib/db/pool';
 import { SITE_URL } from '@/lib/site-url';
 
 export const runtime = 'nodejs';

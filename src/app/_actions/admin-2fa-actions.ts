@@ -18,13 +18,11 @@
  */
 
 import { cookies } from "next/headers";
-import { queryOne } from "@/lib/database";
+import { randomInt } from "node:crypto";
+import { queryOne } from "@/lib/db/pool";
+import { storeAdmin2faOtp, verifyAdmin2faOtp } from "@/lib/db/admin-2fa";
 import { createSessionCookie, SECURE_COOKIE_OPTIONS, verifySessionCookie } from "@/lib/security";
 import { getAdmin2faConfig } from "@/lib/admin-2fa-config";
-import {
-  sendTelegramAdmin2faOtp,
-  verifyTelegramAdmin2faOtp,
-} from "@/lib/telegram-2fa";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -40,6 +38,81 @@ interface AdminUser {
 type PendingAdmin =
   | { ok: true; user: AdminUser; chatId: string }
   | { ok: false; error: string };
+
+function generateOtp(): string {
+  return randomInt(100000, 1000000).toString();
+}
+
+async function sendTelegramAdmin2faOtp(
+  chatId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) return { success: false, error: "TELEGRAM_BOT_TOKEN eksik" };
+
+  const otp = generateOtp();
+  try {
+    await storeAdmin2faOtp(chatId, otp);
+  } catch (error) {
+    console.error("[Admin 2FA] OTP persistence failed:", error);
+    return {
+      success: false,
+      error: "Doğrulama kodu güvenli şekilde kaydedilemedi. Lütfen sistem yöneticisine bildirin.",
+    };
+  }
+
+  const text = [
+    "🔐 <b>XipSoft Admin — 2FA Kodu</b>",
+    "",
+    `Kodunuz: <code>${otp}</code>`,
+    "",
+    "⏱ 5 dakika geçerlidir.",
+    "<i>Bu kodu kimseyle paylasmayın.</i>",
+  ].join("\n");
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+    });
+    const result = await response.json();
+    if (!result.ok) {
+      return { success: false, error: result.description ?? "Telegram hatası" };
+    }
+    return { success: true };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Telegram baglantı hatası",
+    };
+  }
+}
+
+async function verifyTelegramAdmin2faOtp(
+  chatId: string,
+  code: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const result = await verifyAdmin2faOtp(chatId, code.trim());
+    switch (result.status) {
+      case "ok":
+        return { success: true };
+      case "not_found":
+        return { success: false, error: "Kod bulunamadı. Lütfen yeni kod isteyin." };
+      case "expired":
+        return { success: false, error: "Kodun süresi doldu. Lütfen yeni kod isteyin." };
+      case "locked":
+        return { success: false, error: "Çok fazla hatalı deneme. Kod iptal edildi — yeni kod isteyin." };
+      case "wrong":
+        return { success: false, error: `Kod hatalı. Kalan deneme: ${result.remaining}` };
+      default:
+        return { success: false, error: "Beklenmeyen durum. Lütfen tekrar deneyin." };
+    }
+  } catch (error) {
+    console.error("[Admin 2FA] OTP verification failed:", error);
+    return { success: false, error: "Kod doğrulanamadı. Lütfen tekrar deneyin." };
+  }
+}
 
 /**
  * Bekleyen admin oturumunu session JWT'den çözer.

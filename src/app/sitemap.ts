@@ -5,11 +5,14 @@
  * Google'a gönderilecek tüm URL'leri, lastModified ve changeFrequency
  * bilgileriyle birlikte döndürür.
  *
- * Kapsam:
- *  - Statik sayfalar (ana sayfa, hizmetler, hakkımızda, iletişim, vb.)
- *  - Dinamik: /blog/[slug]   → Blog_posts tablosundan
- *  - Dinamik: /hizmetler/[slug] → services tablosu (is_active = true)
- *  - Dinamik: /hizmetler/[slug]/[sehir] → pages tablosu (status=published, tüm source_type) + service_city_seo
+ * Kapsam (DB'den türeyen TEK liste):
+ *  - `/hizmetler` hub'ı + aktif ana hizmet detayı (`services.row_type='main'`)
+ *  - Yayınlanmış, indekslenebilir il/İstanbul ilçe (hizmet × konum) sayfaları
+ *  - Hiyerarşik içerik ağacı (kategori/sayfa, `kind='custom'`) — `.html` kanonik
+ *  - `/blog` ve yayınlanmış `/blog/[slug]` yazıları (URL biçimi uzantısız)
+ *
+ * Kanonik uzantı kararı `@/lib/content-path` fonksiyonlarından gelir; burada
+ * `.html` elle yazılmaz (policy ile sitemap arasında sapma oluşmasın).
  *
  * Mimari kural (MIMARI.md §8): Sitemap'e YALNIZCA NeonDB'deki aktif
  * kayıtlardan türeyen URL'ler girer. Statik slug listesi / fallback kullanılmaz;
@@ -19,10 +22,15 @@
 
 import type { MetadataRoute } from "next";
 import { unstable_cache } from "next/cache";
-import pool from "@/lib/database";
-import { getPublishedDistrictPageSlugs } from "@/lib/pages";
-import { getAllPublishedServiceCities } from "@/lib/database";
+import pool from "@/lib/db/pool";
+import { getPublishedDistrictPageSlugs } from "@/lib/pages/published";
 import { SITE_URL } from "@/lib/site-url";
+import {
+  serviceLocationPath,
+  servicePath,
+  treeNodeCanonicalPath,
+} from "@/lib/content-path";
+import { pageCacheKey, withPageCache } from "@/lib/redis/page-cache";
 
 
 // Build aşamasında database.ts mock DB kullandığı için sitemap'i build sırasında
@@ -50,36 +58,6 @@ async function getBlogEntries(): Promise<Array<{ slug: string; updatedAt: Date }
   }
 }
 
-// ── Hizmet slug + updated_at ──────────────────────────────────────────────
-
-async function getServiceEntries(): Promise<Array<{ slug: string; updatedAt: Date }>> {
-  // Mimari kural (MIMARI.md §8): sitemap'e yalnızca NeonDB'deki aktif
-  // hizmetler girer. Statik `FALLBACK_SERVICE_SLUGS` listesine DÜŞÜLMEZ;
-  // aksi halde DB'den silinen/pasifleştirilen bir hizmet sitemap'te kalır ve
-  // GSC'de "Bulunamadı (404)" üretir.
-  if (!process.env.DATABASE_URL) return [];
-
-  try {
-    const { rows } = await pool.query<{ slug: string; updated_at: Date | null }>(
-      `SELECT slug, updated_at
-       FROM services
-       WHERE is_active = true
-       ORDER BY sort_order ASC`,
-    );
-
-    return rows.map((row) => ({
-      slug: row.slug,
-      updatedAt: row.updated_at ?? new Date(),
-    }));
-  } catch (error) {
-    console.warn(
-      "[sitemap] service lookup unavailable, emitting no service URLs:",
-      error instanceof Error ? error.message : error,
-    );
-    return [];
-  }
-}
-
 async function getLocalDistrictPageEntries(): Promise<Array<{ slug: string; sehir: string; updatedAt: Date }>> {
   try {
     return await getPublishedDistrictPageSlugs();
@@ -88,25 +66,39 @@ async function getLocalDistrictPageEntries(): Promise<Array<{ slug: string; sehi
   }
 }
 
-// `force-dynamic` sitemap her istekte çalıştığı için tablo sorgularını 1 saat
-// `unstable_cache` ile sar; böylece Neon'a gereksiz yük binmez.
-const getCachedServiceEntries = unstable_cache(
-  getServiceEntries,
-  ["sitemap-service-entries"],
+// ── Aktif ana hizmet detay sayfaları ────────────────────────────────────────
+// `row_type='main'` satırları pillar sayfalar; bunlar sitemap'te eksikti,
+// yani hizmetler yalnızca konum varyasyonlarıyla (hizmet × il) listeleniyordu.
+async function getActiveServiceEntries(): Promise<Array<{ slug: string; updatedAt: Date }>> {
+  if (!process.env.DATABASE_URL) return [];
+  try {
+    const { rows } = await pool.query<{ slug: string; updated_at: Date }>(
+      `SELECT slug, updated_at
+         FROM services
+        WHERE row_type = 'main'
+          AND is_active = TRUE
+          AND is_deleted = FALSE
+        ORDER BY updated_at DESC`,
+    );
+    return rows.map((r) => ({ slug: r.slug, updatedAt: r.updated_at }));
+  } catch {
+    return [];
+  }
+}
+
+const getCachedActiveServices = unstable_cache(
+  getActiveServiceEntries,
+  ["sitemap-active-services-v1"],
   { revalidate: 3600, tags: ["sitemap", "services"] },
 );
+
+// `force-dynamic` sitemap her istekte çalıştığı için tablo sorgularını 1 saat
+// `unstable_cache` ile sar; böylece Neon'a gereksiz yük binmez.
 const getCachedBlogEntries = unstable_cache(
   getBlogEntries,
   ["sitemap-blog-entries"],
   { revalidate: 3600, tags: ["sitemap", "blog"] },
 );
-// Hizmet × şehir (service_city_seo) yayınlanmış şehir sayfaları.
-const getCachedServiceCityEntries = unstable_cache(
-  getAllPublishedServiceCities,
-  ["sitemap-service-city-entries"],
-  { revalidate: 3600, tags: ["sitemap", "service-city-seo"] },
-);
-
 // ── Statik sayfa içerik tarihleri ────────────────────────────────────────────
 // Statik sayfaların metinleri `xip_dynamic_content` (content_type='page_meta')
 // tablosunda tutulur. Sitemap'e HER İSTEKTE `new Date()` yazmak yerine sayfanın
@@ -137,6 +129,36 @@ const getCachedStaticPageDates = unstable_cache(
   { revalidate: 3600, tags: ["sitemap", "page-content"] },
 );
 
+// ── Hiyerarşik içerik ağacı (kategori/sayfa) ─────────────────────────────────
+// Yalnızca yayınlanmış, indekslenebilir, kanonik biçimi `.html` olan özel
+// ağaç düğümleri listelenir. Eski hizmet×konum satırları (kind='location')
+// `/hizmetler/...` akışında ayrıca ele alınır; burada tekrarlanmaz.
+async function getContentTreeEntries(): Promise<Array<{ fullPath: string; updatedAt: Date }>> {
+  if (!process.env.DATABASE_URL) return [];
+  try {
+    const { rows } = await pool.query<{ full_path: string; updated_at: Date }>(
+      `SELECT full_path, updated_at
+         FROM pages
+        WHERE kind = 'custom'
+          AND is_deleted = FALSE
+          AND status = 'published'
+          AND is_indexable = TRUE
+          AND full_path IS NOT NULL
+        ORDER BY updated_at DESC
+       LIMIT 50000`,
+    );
+    return rows.map((row) => ({ fullPath: row.full_path, updatedAt: row.updated_at }));
+  } catch {
+    return [];
+  }
+}
+
+const getCachedContentTreeEntries = unstable_cache(
+  getContentTreeEntries,
+  ["sitemap-content-tree-entries-v1"],
+  { revalidate: 3600, tags: ["sitemap", "content-tree"] },
+);
+
 /**
  * Statik çerçeve rotaları → `xip_dynamic_content.page_meta` kategori eşlemesi.
  * `category`, sayfanın içerik kaydının DB'deki anahtarıdır; lastModified
@@ -156,36 +178,39 @@ const STATIC_PAGES: Array<{ path: string; category: string }> = [
 ];
 
 // ── Ana sitemap ────────────────────────────────────────────────────────────
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   // Statik sayfaların GERÇEK güncelleme tarihleri (DB page_meta kayıtlarından).
   const staticPageDates = await getCachedStaticPageDates();
 
-  const staticPages: MetadataRoute.Sitemap = STATIC_PAGES.map(({ path, category }) => ({
+  // Statik çerçeve sayfaları (kod rotaları, uzantısız kanonik). Eskiden yalnızca
+  // `/blog` süzülüyordu → hub ve diğer çerçeveler sitemap'te hiç yoktu.
+  const staticFramePages: MetadataRoute.Sitemap = STATIC_PAGES.map(({ path, category }) => ({
     url: path === "/" ? SITE_URL : `${SITE_URL}${path}`,
     lastModified: staticPageDates[category],
   }));
 
-  // Dinamik: hizmet sayfaları
-  const serviceEntries = await getCachedServiceEntries();
-  const servicePages: MetadataRoute.Sitemap = serviceEntries.map(({ slug, updatedAt }) =>
-    toEntry(`${SITE_URL}/hizmetler/${slug}`, updatedAt),
+  // ── Dinamik: aktif ana hizmetler (pillar detay sayfaları) ─────────────────
+  const servicePages: MetadataRoute.Sitemap = (await getCachedActiveServices()).map(
+    ({ slug, updatedAt }) => toEntry(`${SITE_URL}${servicePath(slug)}`, updatedAt),
   );
 
   // ── Dinamik: yayınlanmış ilçe/şehir sayfaları ───────────────────────────
   // Yalnızca manuel olarak yazılmış, yayınlanmış ve indekslenebilir yerel
   // sayfalar sitemap'e girer; template/AI kaynaklı noindex sayfalar dışarıda kalır.
-  const districtPages: MetadataRoute.Sitemap = (await getLocalDistrictPageEntries()).map(
+  const locationPages: MetadataRoute.Sitemap = (await getLocalDistrictPageEntries()).map(
     ({ slug, sehir, updatedAt }) =>
-      toEntry(`${SITE_URL}/hizmetler/${slug}/${sehir}`, updatedAt),
-  );
-
-  const serviceCityPages: MetadataRoute.Sitemap = (await getCachedServiceCityEntries()).map(
-    ({ serviceSlug, citySlug, updatedAt }) =>
-      toEntry(`${SITE_URL}/hizmetler/${serviceSlug}/${citySlug}`, updatedAt),
+      toEntry(`${SITE_URL}${serviceLocationPath(slug, sehir)}`, updatedAt),
   );
 
   // Dinamik: blog yazıları
   const blogEntries = await getCachedBlogEntries();
+
+  // Dinamik: hiyerarşik içerik ağacı (kategori + sayfa). Kanonik yol tek
+  // kaynaktan (`treeNodeCanonicalPath`) türer → ağaçla politika sapamaz.
+  const contentTreePages: MetadataRoute.Sitemap = (await getCachedContentTreeEntries()).map(
+    ({ fullPath, updatedAt }) =>
+      toEntry(`${SITE_URL}${treeNodeCanonicalPath(fullPath)}`, updatedAt),
+  );
 
   // Yayınlanmış TÜM blog yazıları listelenir (ince içerik de indexlenir; bkz.
   // blog/[slug]/page.tsx indeksleme politikası). Sitemap ile robots direktifleri
@@ -198,15 +223,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // forum linkleri middleware'de 301 ile /blog/<slug> adresine bağlanır.
 
   return dedupeSitemap([
-    ...staticPages,
+    ...staticFramePages,
     ...servicePages,
-    ...districtPages,
-    ...serviceCityPages,
+    ...locationPages,
     ...blogPages,
+    ...contentTreePages,
   ]);
 }
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
+
+/**
+ * Sitemap yanıtı Redis'te 1 saat tutulur (bkz. `page:sitemap:{hash}`).
+ *
+ * JSON'a yazılırken `lastModified` Date'i ISO metnine döner; okuma tarafında
+ * geri çevrilir — aksi halde Next XML üretirken `.toISOString()` çağrısını
+ * string üzerinde çalıştırıp patlar.
+ */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const entries = await withPageCache(
+    pageCacheKey("sitemap", "root"),
+    async () =>
+      (await buildSitemap()).map(({ lastModified, ...rest }) => ({
+        ...rest,
+        lastModified: lastModified ? new Date(lastModified).toISOString() : null,
+      })),
+    { ttl: 60 * 60 },
+  );
+  return entries.map(({ lastModified, ...rest }) => ({
+    ...rest,
+    lastModified: lastModified ? new Date(lastModified) : undefined,
+  })) as MetadataRoute.Sitemap;
+}
 
 /** Statik şekilli sitemap girdisi üretir (tüm dinamik kaynaklar için ortak). */
 export function toSitemapEntry(url: string, lastModified: Date): SitemapEntry {

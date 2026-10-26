@@ -1,0 +1,115 @@
+/* ═══════════════════════════════════════════════════════════
+   LAB — tbg-12 · TEMA KATMANI (kullanıcı teslimi, KISMİ)
+
+   Kullanıcının verdiği dosya Tailwind v4 söz dizimi kullanıyordu
+   (`@import "tailwindcss"` + `@theme`). Bu proje Tailwind v3.3
+   kullandığı için katman, davranışı bozmadan v3 karşılığına çevrildi:
+
+     @theme { --color-x: … }      →  :root { --color-x: … }
+     @theme { @keyframes … }      →  kök seviyede @keyframes
+     --animate-x: <animasyon>     →  aynı adla :root'ta durur
+                                     (kullanımı: animation: var(--animate-x))
+
+   `@property` ve `translate`/`scale` özellikleri saf CSS olduğu için
+   olduğu gibi korundu.
+
+   DİKKAT: Bileşenin KENDİ kuralları (track / thumb / sheen / glint /
+   squeeze uygulamaları) ve markup'ı HENÜZ YOK — bu dosya yalnızca
+   token + keyframe katmanını taşır. Bileşen CSS'i geldiğinde buraya
+   eklenir. Şu anki hâliyle hiçbir şey render etmez.
+   ═══════════════════════════════════════════════════════════ */
+
+/* @property — gradyan açısını animasyonlanabilir yapar */
+@property --tbg12-sheen {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+:root {
+  --color-tbg12-bg: #0c0e14;
+  --color-tbg12-glow: #232834;
+  --color-tbg12-well: #171a22;
+  --color-tbg12-line: #2a2f3c;
+  --color-tbg12-ink: #eef1f7;
+  /* Kaynakta iki kez tanımlıydı: #a2aabd ve ardından oklch(...).
+     v4'te son değer kazandığı için oklch korundu. */
+  --color-tbg12-mut: oklch(0.74 0.025 265);
+  --color-tbg12-on: #11141c;
+  --color-tbg12-focus: #9fb0ff;
+
+  --shadow-tbg12-thumb: 0 4px 14px -4px rgb(0 0 0 / 0.8), inset 0 1px 1px rgb(255 255 255 / 0.9), inset 0 -2px 4px rgb(0 0 0 / 0.3);
+  --font-tbg12-sans: 'Familjen Grotesk', system-ui, sans-serif;
+
+  --animate-tbg12-sheen: tbg12-sheen 5s linear infinite;
+  --animate-tbg12-glint: tbg12-glint 5s ease-in-out infinite;
+  --animate-tbg12-sq1: tbg12-sq1 0.5s ease;
+  --animate-tbg12-sq2: tbg12-sq2 0.5s ease;
+  --animate-tbg12-sq3: tbg12-sq3 0.5s ease;
+}
+
+@keyframes tbg12-sheen {
+  to {
+    --tbg12-sheen: 360deg;
+  }
+}
+
+@keyframes tbg12-glint {
+  0%,
+  60% {
+    translate: -120% 0;
+  }
+
+  80%,
+  100% {
+    translate: 120% 0;
+  }
+}
+
+@keyframes tbg12-sq1 {
+  40% {
+    scale: 1.16 0.82;
+  }
+
+  70% {
+    scale: 0.94 1.08;
+  }
+
+  100% {
+    scale: 1 1;
+  }
+}
+
+@keyframes tbg12-sq2 {
+  40% {
+    scale: 1.16 0.82;
+  }
+
+  70% {
+    scale: 0.94 1.08;
+  }
+
+  100% {
+    scale: 1 1;
+  }
+}
+
+@keyframes tbg12-sq3 {
+  40% {
+    scale: 1.16 0.82;
+  }
+
+  70% {
+    scale: 0.94 1.08;
+  }
+
+  100% {
+    scale: 1 1;
+  }
+}
+
+/* Stage kök kuralı — full-bleed sözleşmesi */
+.tbg-12 {
+  width: 100%;
+  min-height: 100svh;
+}

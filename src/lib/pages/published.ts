@@ -2,9 +2,11 @@
  * pages/published.ts — Yayınlanmış sayfa çözümleme + sitemap segmentleri.
  */
 
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { unstable_cache } from "next/cache";
+import { pageCacheKey, withPageCache } from "@/lib/redis/page-cache";
 import { normalizePublishedPage, normalizeSlug } from "./hash";
+import { toSchemaMarkup } from "@/lib/schema-markup";
 import type { PublishedPage } from "./types";
 import {
   isIndexableLocation,
@@ -30,6 +32,7 @@ async function queryPublishedPageBySlug(
          meta_description AS "metaDescription",
          canonical_url AS "canonicalUrl",
          og_image_url AS "ogImageUrl",
+         schema_markup AS "schemaMarkup",
          status,
          source_type AS "sourceType",
          content_hash AS "contentHash",
@@ -42,7 +45,10 @@ async function queryPublishedPageBySlug(
        LIMIT 1`,
       [normalizedPath],
     );
-    return normalizePublishedPage(rows[0]);
+    // JSONB ham değeri (çift kodlanmış string olabilir) şema listesine indirgenir.
+    const row = rows[0];
+    if (!row) return null;
+    return normalizePublishedPage({ ...row, schemaMarkup: toSchemaMarkup(row.schemaMarkup) });
   } catch (error) {
     console.warn("[Pages] published full-path lookup unavailable:", error instanceof Error ? error.message : error);
     return null;
@@ -57,11 +63,15 @@ export function getPublishedPageBySlug(fullPath: string): Promise<PublishedPage 
     .join("/");
   if (!normalizedPath) return Promise.resolve(null);
 
-  return unstable_cache(
-    () => queryPublishedPageBySlug(normalizedPath),
-    ["published-page-v2", normalizedPath],
-    { revalidate: 3600, tags: ["local-pages", "sitemap"] },
-  )();
+  // Redis read-through (24 saat) → Next veri katmanı önbelleği → Neon.
+  // Anahtar: page:slug:{sha1(normalizedPath)}.
+  return withPageCache(pageCacheKey("slug", normalizedPath), () =>
+    unstable_cache(
+      () => queryPublishedPageBySlug(normalizedPath),
+      ["published-page-v3", normalizedPath],
+      { revalidate: 3600, tags: ["local-pages", "sitemap"] },
+    )(),
+  );
 }
 
 /**
@@ -116,6 +126,84 @@ export function getPublishedDistrictPageSegment(
   )();
 }
 
+type DistrictSlugRow = {
+  slug: string;
+  updated_at: Date;
+  source_type: string | null;
+  location_type: string | null;
+  location_slug: string | null;
+  parent_slug: string | null;
+};
+
+/** Ortak satır → sitemap girdisi dönüşümü (index ve legacy sorgular paylaşır). */
+function mapDistrictSlugRows(
+  rows: DistrictSlugRow[],
+): Array<{ slug: string; sehir: string; updatedAt: Date }> {
+  return rows.flatMap(({ slug, updated_at, source_type, location_type, location_slug, parent_slug }) => {
+    const parts = slug.split("/");
+    if (parts.length !== 2) return [];
+    const [servicePart, sehirPart] = parts;
+    if (!servicePart || !sehirPart) return [];
+
+    const decision = {
+      locationType: location_type,
+      sourceType: source_type,
+      parentLocationSlug: parent_slug,
+      locationSlug: location_slug,
+    };
+    if (!isKeepableLocation(decision) || !isIndexableLocation(decision)) return [];
+
+    return [{ slug: servicePart, sehir: sehirPart, updatedAt: updated_at }];
+  });
+}
+
+/**
+ * Birincil kaynak: konsolidasyon sonrası tek gerçek kaynak olan
+ * `service_page_index` view'ı (`services` location satırlarından türer).
+ * `2026-10-17-services-consolidate.sql` ile `pages` kaldırıldığında da çalışır.
+ */
+async function queryDistrictSlugsFromIndex(): Promise<DistrictSlugRow[]> {
+  const { rows } = await pool.query<DistrictSlugRow>(
+    `SELECT spi.url_slug            AS slug,
+            spi.updated_at          AS updated_at,
+            spi.source_type         AS source_type,
+            spi.location_type       AS location_type,
+            spi.location_slug       AS location_slug,
+            spi.parent_location_slug AS parent_slug
+       FROM service_page_index spi
+      WHERE spi.row_type = 'location'
+        AND spi.status = 'published'
+        AND spi.url_slug LIKE '%/%'
+      ORDER BY spi.updated_at DESC
+      LIMIT 8000`,
+  );
+  return rows;
+}
+
+/**
+ * Yedek kaynak (legacy): view mevcut değilse (konsolidasyon öncesi ortamlar)
+ * doğrudan `pages` tablosundan okur. MIMARI.md §7.1 — "view kullanılamazsa
+ * mevcut sorgu/fallback akışı sürer".
+ */
+async function queryDistrictSlugsFromPages(): Promise<DistrictSlugRow[]> {
+  const { rows } = await pool.query<DistrictSlugRow>(
+    `SELECT p.slug, p.updated_at,
+            p.source_type,
+            l.location_type,
+            l.slug AS location_slug,
+            parent.slug AS parent_slug
+       FROM pages p
+       JOIN locations l ON l.id = p.location_id
+       LEFT JOIN locations parent ON parent.id = l.parent_id
+       WHERE p.status = 'published'
+         AND p.is_deleted = FALSE
+         AND p.slug LIKE '%/%'
+       ORDER BY p.updated_at DESC
+       LIMIT 8000`,
+  );
+  return rows;
+}
+
 /**
  * Sitemap için TUTULAN lokasyon sayfalarının slug'larını döndürür.
  *
@@ -125,53 +213,23 @@ export function getPublishedDistrictPageSegment(
  *
  * İller ve allowlist dışındaki ilçeler tutulur/yönlendirilir; ancak şablon
  * içerikli sayfalar indekslenmeye hazır sayılmaz ve sitemap'e girmez.
+ *
+ * Kaynak sırası: `service_page_index` (konsolide, birincil) → `pages` (yedek).
  */
 async function queryPublishedDistrictPageSlugs(): Promise<
   Array<{ slug: string; sehir: string; updatedAt: Date }>
 > {
   if (!process.env.DATABASE_URL) return [];
   try {
-    const { rows } = await pool.query<{
-      slug: string;
-      updated_at: Date;
-      source_type: string | null;
-      location_type: string | null;
-      location_slug: string | null;
-      parent_slug: string | null;
-    }>(
-      `SELECT p.slug, p.updated_at,
-              p.source_type,
-              l.location_type,
-              l.slug AS location_slug,
-              parent.slug AS parent_slug
-       FROM pages p
-       JOIN locations l ON l.id = p.location_id
-       LEFT JOIN locations parent ON parent.id = l.parent_id
-       WHERE p.status = 'published'
-         AND p.is_deleted = FALSE
-         AND p.slug LIKE '%/%'
-       ORDER BY p.updated_at DESC
-       LIMIT 8000`,
+    return mapDistrictSlugRows(await queryDistrictSlugsFromIndex());
+  } catch (error) {
+    console.warn(
+      "[Pages] route index lookup unavailable, falling back to pages:",
+      error instanceof Error ? error.message : error,
     );
-    return rows.flatMap(({ slug, updated_at, source_type, location_type, location_slug, parent_slug }) => {
-      const parts = slug.split("/");
-      if (parts.length !== 2) return [];
-      const [servicePart, sehirPart] = parts;
-      if (!servicePart || !sehirPart) return [];
-
-      const decision = {
-        locationType: location_type,
-        sourceType: source_type,
-        parentLocationSlug: parent_slug,
-        locationSlug: location_slug,
-      };
-      if (
-        !isKeepableLocation(decision) ||
-        !isIndexableLocation(decision)
-      ) return [];
-
-      return [{ slug: servicePart, sehir: sehirPart, updatedAt: updated_at }];
-    });
+  }
+  try {
+    return mapDistrictSlugRows(await queryDistrictSlugsFromPages());
   } catch {
     return [];
   }
@@ -183,17 +241,24 @@ export function getPublishedDistrictPageSlugs(): Promise<
   // En ağır sorgulardan biri (5000 satır): sitemap + generateStaticParams
   // her çalıştığında Neon'a düşmemesi için cache'lenir; admin panelinden
   // güncellemede revalidateTag("local-pages"/"sitemap") ile temizlenir.
-  return unstable_cache(
-    queryPublishedDistrictPageSlugs,
-    ["published-district-page-slugs"],
-    { revalidate: 3600, tags: ["local-pages", "sitemap"] },
-  )();
-}
+  // Redis katmanı `sitemap:` alanında tutulur → invalidateSitemapCache() yeter.
+  return withPageCache(pageCacheKey("sitemap", "district-slugs"), () =>
+    unstable_cache(
+      queryPublishedDistrictPageSlugs,
+      ["published-district-page-slugs-v2"],
+      { revalidate: 3600, tags: ["local-pages", "sitemap"] },
+    )(),
+  );}
 
 /**
  * İlçe (aynı zamanda bileşik "il-ilce") URL segmentleri için hedef İL slug'ını
- * döndürür. İlçe sayfaları pasife alındığı için bu URL'ler 301/308 ile il
- * sayfasına taşınır. Segment zaten bir il ise null döner (kendine yönlenmesin).
+ * döndürür. `status = 'paused'` (duraklatılmış) ilçe sayfaları bu URL'lerden
+ * 301/308 ile il sayfasına taşınır. Segment zaten bir il ise null döner
+ * (kendine yönlenmesin).
+ *
+ * ÖNEMLİ (17.10.2026): `is_deleted = TRUE` (kalıcı olarak kaldırılmış) sayfalar
+ * BURADA eşleşmez → ile yönlendirilmez, 404 döner. Böylece "duraklatıldı"
+ * (308 ile ile taşınır) ile "kaldırıldı" (404) davranışları ayrışır.
  */
 async function queryProvinceSlugForLegacyLocation(
   serviceSlug: string,
@@ -206,6 +271,7 @@ async function queryProvinceSlugForLegacyLocation(
          JOIN locations l ON l.id = p.location_id AND l.location_type = 'district'
          LEFT JOIN locations parent ON parent.id = l.parent_id AND parent.is_active = TRUE
         WHERE p.slug = $1
+          AND p.is_deleted = FALSE
         LIMIT 1`,
       [`${serviceSlug}/${segment}`],
     );

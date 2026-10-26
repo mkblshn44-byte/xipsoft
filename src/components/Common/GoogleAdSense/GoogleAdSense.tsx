@@ -54,7 +54,7 @@ function ShimmerPlaceholder({ size }: { size: AdBannerSize }) {
         className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite]"
         style={{
           background:
-            'linear-gradient(90deg, transparent 0%, rgba(167,139,250,0.08) 50%, transparent 100%)',
+            'linear-gradient(90deg, transparent 0%, rgba(167, 139, 250,0.08) 50%, transparent 100%)',
         }}
       />
       <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-600">

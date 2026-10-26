@@ -2,24 +2,28 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import {
-  ArrowRight, Sparkles, Globe, Smartphone, Palette, Code, Zap, Shield,
-  Layers, Database, Search, BarChart2, Monitor, Terminal, Cloud, Lock, Eye,
-  FileCheck, AlertTriangle, Server, Brain, Bot, Workflow, Cpu, TrendingUp,
-  Target, Users, MousePointer, GitBranch, RefreshCw, Code2, Link2, Webhook,
-  GitMerge, PieChart, FileText, Filter, CheckCircle, Package, type LucideIcon,
-} from "lucide-react";
-import type { ServicePageData } from "@/lib/database";
+import XipIcon from "@/components/Ui/Icon";
+import type { ServicePageData } from "@/lib/db/services";
 import { cn } from "@/utils";
 import { normalizeBrandColor } from "@/lib/brand-color";
+import { servicePath } from "@/lib/content-path";
+import GlassServiceCard from "@/components/Ui/GlassServiceCard";
 
-const SERVICE_ICON_MAP: Record<string, LucideIcon> = {
-  Globe, Smartphone, Palette, Code, Zap, Shield, Layers, Database, Search,
-  BarChart2, Monitor, Terminal, Cloud, Lock, Eye, FileCheck, AlertTriangle,
-  Server, Brain, Bot, Workflow, Cpu, TrendingUp, Target, Users, MousePointer,
-  GitBranch, RefreshCw, Code2, Link2, Webhook, GitMerge, PieChart, FileText,
-  Filter, CheckCircle, Package,
-};
+// XipSoft özel ikon seti — DB `badgeIcon` adlarıyla birebir aynı anahtarlar.
+// `ServicePageClient.SERVICE_ICONS` ile aynı aile (içe aktarma döngüsü olmasın
+// diye burada bağımsız tutulur).
+const SERVICE_ICON_NAMES = new Set<string>([
+  "Globe", "Smartphone", "Palette", "Code", "Zap", "Shield", "Layers", "Database",
+  "Search", "BarChart2", "Monitor", "Terminal", "Cloud", "Lock", "Eye", "FileCheck",
+  "AlertTriangle", "Server", "Brain", "Bot", "Workflow", "Cpu", "TrendingUp",
+  "Target", "Users", "MousePointer", "GitBranch", "RefreshCw", "Code2", "Link2",
+  "Webhook", "GitMerge", "PieChart", "FileText", "Filter", "CheckCircle", "Package",
+]);
+
+function getIcon(service: ServicePageData): string {
+  const name = (service as { badgeIcon?: string }).badgeIcon || "Globe";
+  return SERVICE_ICON_NAMES.has(name) ? name : "Globe";
+}
 
 interface RelatedServicesProps {
   /** NeonDB `services` kaynağından gelen hizmetler (bkz. MIMARI.md). */
@@ -28,11 +32,6 @@ interface RelatedServicesProps {
   tags?: string[];
   limit?: number;
   className?: string;
-}
-
-function getIcon(service: ServicePageData): LucideIcon {
-  const name = (service as any).badgeIcon || "Globe";
-  return SERVICE_ICON_MAP[name] || Globe;
 }
 
 export default function RelatedServices({
@@ -81,7 +80,7 @@ export default function RelatedServices({
               İlgili Hizmetler
             </span>
           </div>
-          <h2 className="text-xl md:text-2xl font-bold text-zinc-100 tracking-tight">
+          <h2 className="text-xl md:text-2xl font-bold text-zinc-100 tracking-tight brand-gradient-text">
             Sizin için uygun çözümler
           </h2>
         </div>
@@ -89,7 +88,7 @@ export default function RelatedServices({
           href="/hizmetler"
           className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-prism-violet transition-colors"
         >
-          Tüm Hizmetler <ArrowRight className="w-3.5 h-3.5" />
+          Tüm Hizmetler <XipIcon name="arrow-right" className="w-3.5 h-3.5" />
         </Link>
       </div>
 
@@ -104,67 +103,23 @@ export default function RelatedServices({
 
 function ServiceCard({ service, index }: { service: ServicePageData; index: number }) {
   const color = normalizeBrandColor(service.features?.[0]?.color ?? "#ddd6fe");
-  const Icon = getIcon(service);
+  const iconName = getIcon(service);
 
   return (
-    <motion.article
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.08 }}
-      className="group relative rounded-2xl overflow-hidden border border-white/[0.04] bg-white/[0.02] transition-all duration-500 hover:-translate-y-1 hover:border-prism-cyan/30"
     >
-      <Link
-        href={`/hizmetler/${service.slug}`}
-        className="block p-6 h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-prism-cyan/50"
-      >
-        <div className="flex items-start gap-4 mb-4">
-          <div
-            className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${color}20, ${color}08)`,
-              border: `1px solid ${color}30`,
-              boxShadow: `0 0 14px ${color}20`,
-            }}
-          >
-            <Icon className="w-5 h-5" style={{ color }} />
-          </div>
-          <div className="flex-1 min-w-0">
-            {service.badge && (
-              <span
-                className={cn(
-                  "inline-block text-[10px] font-mono uppercase tracking-[0.2em] mb-1.5",
-                  (service as any).badgeColor || "text-zinc-400"
-                )}
-              >
-                {service.badge}
-              </span>
-            )}
-            <h3 className="font-bold text-[0.95rem] text-zinc-100 group-hover:text-white leading-snug line-clamp-2">
-              {service.title}
-            </h3>
-          </div>
-        </div>
-        {service.subtitle && (
-          <p className="text-xs text-zinc-500 leading-relaxed line-clamp-3">
-            {service.subtitle}
-          </p>
-        )}
-        <div className="mt-4 pt-4 border-t border-white/[0.04] flex items-center justify-between">
-          <div className="flex flex-wrap gap-1.5">
-            {(service.servicesTag ?? []).slice(0, 2).map((tag) => (
-              <span
-                key={tag.name}
-                className="px-2 py-0.5 rounded-md text-[10px] font-mono bg-white/[0.03] border border-white/[0.04] text-zinc-400"
-              >
-                {tag.name}
-              </span>
-            ))}
-          </div>
-          <span className="inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider text-prism-cyan opacity-0 group-hover:opacity-100 transition-opacity">
-            İncele <ArrowRight className="w-3 h-3" />
-          </span>
-        </div>
-      </Link>
-    </motion.article>
+      <GlassServiceCard
+        title={service.title}
+        description={service.subtitle ?? ""}
+        icon={<XipIcon name={iconName} className="h-6 w-6" style={{ color }} />}
+        href={servicePath(service.slug)}
+        accentColor={color}
+        badge={service.badge}
+        tags={(service.servicesTag ?? []).slice(0, 2).map((tag) => tag.name)}
+      />
+    </motion.div>
   );
 }

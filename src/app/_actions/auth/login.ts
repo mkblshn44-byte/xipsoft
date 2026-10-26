@@ -3,7 +3,7 @@
 import { cookies, headers } from "next/headers";
 import bcrypt from "bcryptjs";
 import argon2 from "argon2";
-import { queryOne } from "@/lib/database";
+import { queryOne } from "@/lib/db/pool";
 import { createSessionCookie, SECURE_COOKIE_OPTIONS } from "@/lib/security";
 import { verifyTurnstile } from "@/lib/turnstile";
 

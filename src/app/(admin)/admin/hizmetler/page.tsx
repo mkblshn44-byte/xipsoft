@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import HizmetlerClient from "./HizmetlerClient";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Hizmetler | Admin XipSoft",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminHizmetlerPage() {
-  return <HizmetlerClient />;
+  redirect("/admin/cms/content-tree");
 }

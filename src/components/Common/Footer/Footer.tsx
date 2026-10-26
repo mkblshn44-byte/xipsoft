@@ -12,11 +12,11 @@ import { useRef } from "react";
  * kendi sayfalarından ve "Tüm Hizmetler" girişinden erişilebilir kalır.
  */
 const SERVICE_LINKS = [
-  ["Web Yazılım", "/hizmetler/web-yazilim-tasarim"],
-  ["Mobil Uygulama", "/hizmetler/mobil-uygulama"],
-  ["Yapay Zeka", "/hizmetler/yapay-zeka-ml"],
-  ["Siber Güvenlik", "/hizmetler/siber-guvenlik"],
-  ["SEO & Pazarlama", "/hizmetler/seo-dijital-pazarlama"],
+  ["Web Yazılım", "/hizmetler/web-yazilim-tasarim1.html"],
+  ["Mobil Uygulama", "/hizmetler/mobil-uygulama.html"],
+  ["Yapay Zeka", "/hizmetler/yapay-zeka-ml.html"],
+  ["Siber Güvenlik", "/hizmetler/siber-guvenlik.html"],
+  ["SEO & Pazarlama", "/hizmetler/seo-dijital-pazarlama.html"],
   ["Tüm Hizmetler", "/hizmetler"],
 ] as const;
 
@@ -110,7 +110,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/teklif"
+                  href="/contact-us"
                   className="text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
                   Teklif Al
@@ -122,14 +122,17 @@ const Footer = () => {
 
         {/* Alt bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-edge pt-6 sm:flex-row">
-          <p className="text-xs text-ink-dim">© 2026 XipSoft · Tüm hakları saklıdır.</p>
+          {/* NOT (A11Y): `text-ink-dim` (#64748b) koyu zeminde 4.5:1 kontrast
+              eşiğinin altında kalıyordu (Lighthouse: color-contrast). Küçük
+              metinlerde `ink-muted` (#94a3b8) kullanılıyor. */}
+          <p className="text-xs text-ink-muted">© 2026 XipSoft ürünüdür eşi ve benzeri bulunamaz.</p>
 
           <nav aria-label="Yasal" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             {LEGAL_LINKS.map(([label, href]) => (
               <Link
                 key={href}
                 href={href}
-                className="text-xs text-ink-dim transition-colors duration-200 hover:text-ink-muted"
+                className="text-xs text-ink-muted transition-colors duration-200 hover:text-ink"
               >
                 {label}
               </Link>

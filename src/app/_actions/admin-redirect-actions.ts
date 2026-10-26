@@ -1,8 +1,9 @@
 'use server';
 
-import pool from '@/lib/database';
+import pool from '@/lib/db/pool';
 import { requireAdminAction } from '@/lib/api-guard';
 import { invalidateRedirectCache, upsertRedirect } from '@/lib/redirect-handler';
+import { pausePublishedNodeForRedirectSource } from '@/lib/seo-conflict-guard';
 import {
   normalizeRedirectSource,
   normalizeRedirectTarget,
@@ -40,6 +41,11 @@ export async function createRedirect(input: {
       isActive: true,
       createdBy,
     });
+
+    // Çakışma koruması: bu yolu redirect kaynağı yaptıysak ve altında yayınlı
+    // bir ağaç sayfası varsa sayfa duraklar — aksi halde route redirect'i
+    // gölgede bırakır ve taşıma kararı çalışmaz.
+    await pausePublishedNodeForRedirectSource(normalizedSource);
 
     return { success: true, redirect: result };
   } catch (error) {
@@ -134,6 +140,11 @@ export async function updateRedirect(id: string, input: {
     }
 
     invalidateRedirectCache();
+    // Yönlendirme yeniden ACTIVE olduysa aynı yoldaki yayınlı sayfa gölgede
+    // kalmasın (çakışma koruması, bkz. createRedirect).
+    if (result.rows[0].is_active) {
+      await pausePublishedNodeForRedirectSource(result.rows[0].source_path);
+    }
     return { success: true, redirect: result.rows[0] };
   } catch (error) {
     console.error("updateRedirect error:", error);

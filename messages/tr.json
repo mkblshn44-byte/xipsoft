@@ -63,7 +63,9 @@
     }
   },
   "XipSoftTypo": {
-    "subtitle": "XipSoft Yazılım & Teknoloji"
+    "subtitle": "XipSoft Yazılım & Teknoloji",
+    "sloganTitle": "YAZILIM & TEKNOLOJİ",
+    "sloganDecor": "TEKNOLOJİ"
   },
   "nav": {
     "about": "Hakkımızda",
@@ -196,7 +198,7 @@
     "techStack": {
       "title": "Teknoloji Yığınımız",
       "subtitle": "Endüstri standardı araçlarla, projenize en uygun teknolojiyi seçiyor ve uyguluyoruz.",
-      "cta": "Sonsuza dek süren bir mimari için"
+      "cta": "xipsoft-seo.webp"
     },
     "reviews": {
       "title": "Müşteri Yorumları",

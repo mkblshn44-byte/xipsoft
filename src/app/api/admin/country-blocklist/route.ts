@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { invalidateCountryBlockCache } from "@/middleware-utils/country-blocklist";
 import { extractAuthContext, requireAdmin } from "@/lib/api-guard";
 

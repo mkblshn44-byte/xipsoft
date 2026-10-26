@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { List, ChevronRight, Menu } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 
 interface TOCItem {
   id: string;
@@ -93,9 +93,10 @@ export function TableOfContents({
           onClick={() => setIsOpen(!isOpen)}
           className="lg:hidden flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors mb-4"
         >
-          <Menu className="w-4 h-4" />
+          <XipIcon name="menu" className="w-4 h-4" />
           <span>{title}</span>
-          <ChevronRight
+          <XipIcon
+            name="chevron-right"
             className={`w-4 h-4 transition-transform ${isOpen ? "rotate-90" : ""}`}
           />
         </button>
@@ -109,7 +110,7 @@ export function TableOfContents({
       >
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-zinc-200 mb-3 flex items-center gap-2">
-            <List className="w-4 h-4 text-purple-400" />
+            <XipIcon name="list" className="w-4 h-4 text-purple-400" />
             {title}
           </h3>
           <nav>

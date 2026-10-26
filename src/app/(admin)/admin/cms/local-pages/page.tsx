@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { listPages } from "@/app/_actions/admin-local-pages-actions";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ function first(value: string | string[] | undefined): string {
 async function getOptions() {
   try {
     const [services, locations] = await Promise.all([
-      pool.query(`SELECT id, title FROM services WHERE is_active = TRUE ORDER BY sort_order, title`),
+      pool.query(`SELECT id, title FROM services WHERE is_active = TRUE AND row_type = 'main' ORDER BY sort_order, title`),
       pool.query(`SELECT id::text, name, slug, location_type FROM locations WHERE is_active = TRUE ORDER BY location_type, name`),
     ]);
     return { services: services.rows, locations: locations.rows, error: null };

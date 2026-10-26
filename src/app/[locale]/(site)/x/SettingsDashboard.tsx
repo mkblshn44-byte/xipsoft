@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { User, Lock, Bell, Shield, Save, LogOut } from 'lucide-react'
+import XipIcon from '@/components/Ui/Icon'
 import TitleText from '@/components/Common/TitleText/TitleText'
 import { useRouter } from 'next/navigation'
 import { changePasswordAction } from '@/app/_actions/auth/password'
@@ -184,37 +184,37 @@ export default function SettingsDashboard() {
     <div className="flex flex-col md:flex-row gap-8">
       {/* Sidebar */}
       <aside className="w-full md:w-64 shrink-0">
-        <div className="bg-white/5 border border-white/10 rounded-[28px] p-4">
+        <div className="bg-white/5 border border-white/10 rounded-xl p-4">
           <div className="px-4 pt-2 pb-4">
             <TitleText tag="h2" variant="glass" className="text-white">Ayarlar</TitleText>
             <p className="text-[11px] text-white/40">@{user.display_name}</p>
           </div>
           <nav aria-label="Ayarlar menüsü" className="flex flex-col gap-2">
             <button type="button" onClick={() => setActiveTab('profile')} className={tabBtn('profile')} aria-pressed={activeTab === 'profile'}>
-              <span className="flex items-center gap-2"><User size={14} aria-hidden="true" /> Profil</span>
+              <span className="flex items-center gap-2"><XipIcon name="user" size={14} aria-hidden="true" /> Profil</span>
             </button>
             <button type="button" onClick={() => setActiveTab('security')} className={tabBtn('security')} aria-pressed={activeTab === 'security'}>
-              <span className="flex items-center gap-2"><Lock size={14} aria-hidden="true" /> Güvenlik</span>
+              <span className="flex items-center gap-2"><XipIcon name="lock" size={14} aria-hidden="true" /> Güvenlik</span>
             </button>
             <button type="button" onClick={() => setActiveTab('privacy')} className={tabBtn('privacy')} aria-pressed={activeTab === 'privacy'}>
-              <span className="flex items-center gap-2"><Shield size={14} aria-hidden="true" /> gizlilik</span>
+              <span className="flex items-center gap-2"><XipIcon name="shield" size={14} aria-hidden="true" /> gizlilik</span>
             </button>
             <button type="button" onClick={() => setActiveTab('notifications')} className={tabBtn('notifications')} aria-pressed={activeTab === 'notifications'}>
-              <span className="flex items-center gap-2"><Bell size={14} aria-hidden="true" /> Bildirimler</span>
+              <span className="flex items-center gap-2"><XipIcon name="bell" size={14} aria-hidden="true" /> Bildirimler</span>
             </button>
             <button
               type="button"
               onClick={async () => { await logoutAction(); router.push('/') }}
               className="text-left px-4 py-3 rounded-2xl text-xs -black uppercase tracking-widest border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-2 mt-2"
             >
-              <LogOut size={14} aria-hidden="true" /> Çıkıs Yap
+              <XipIcon name="log-out" size={14} aria-hidden="true" /> Çıkıs Yap
             </button>
           </nav>
         </div>
       </aside>
 
       {/* Content */}
-      <main className="flex-1 bg-white/[0.02] border border-white/10 rounded-[2rem] p-8">
+      <main className="flex-1 bg-white/[0.02] border border-white/10 rounded-xl p-8">
 
         {activeTab === 'profile' && (
           <div className="space-y-6">
@@ -222,7 +222,7 @@ export default function SettingsDashboard() {
               <TitleText tag="h2" variant="glass" className="text-white">Profil Bilgileri</TitleText>
               <button onClick={handleProfileSave} disabled={profileSaving}
                 className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/80 hover:bg-blue-600 text-white -black rounded-xl text-xs uppercase tracking-widest disabled:opacity-50">
-                <Save size={14} aria-hidden="true" /> {profileSaving ? 'Kaydediliyor...' : 'Kaydet'}
+                <XipIcon name="save" size={14} aria-hidden="true" glow="strong" /> {profileSaving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
             {profileMsg && <p className="text-sm text-green-400" role="status">{profileMsg}</p>}
@@ -347,7 +347,7 @@ export default function SettingsDashboard() {
               </div>
             ) : notifications.length === 0 ? (
               <div className="text-center py-12">
-                <Bell size={32} className="mx-auto mb-3 text-white/20" />
+                <XipIcon name="bell" size={32} className="mx-auto mb-3 text-white/20" />
                 <p className="text-white/40 text-sm">Henüz bildirim yok</p>
               </div>
             ) : (

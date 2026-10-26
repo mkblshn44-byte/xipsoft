@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "motion/react";
 import { cn } from "@/utils";
+import { PALETTE } from "@/config/palette";
 
 type LedVariant = "fire" | "prism" | "dark-fire";
 
@@ -12,29 +13,35 @@ interface LedBorderProps {
   speed?: number;
 }
 
+// Renkler ham hex değil merkezi paletten gelir (tek doğruluk kaynağı).
+const A = PALETTE.neon[500];   // ana mavi
+const AL = PALETTE.neon[300];  // açık mavi
+/** Parıltı için neon-500'ün rgb karşılığı (renk değişirse palette.ts ile birlikte güncellenir). */
+const glow = (a: number) => `rgba(167, 139, 250,${a})`;
+
 const gradients: Record<LedVariant, { thin: string; thick: string }> = {
   fire: {
-    thin: "linear-gradient(90deg, transparent 0%, #a78bfa 15%, #a78bfa 35%, #a78bfa 50%, #a78bfa 65%, #a78bfa 85%, transparent 100%)",
-    thick: "linear-gradient(90deg, transparent 0%, #a78bfa 12%, #a78bfa 30%, #a78bfa 50%, #a78bfa 70%, #a78bfa 88%, transparent 100%)",
+    thin: `linear-gradient(90deg, transparent 0%, ${A} 15%, ${A} 35%, ${A} 50%, ${A} 65%, ${A} 85%, transparent 100%)`,
+    thick: `linear-gradient(90deg, transparent 0%, ${A} 12%, ${A} 30%, ${A} 50%, ${A} 70%, ${A} 88%, transparent 100%)`,
   },
   prism: {
-    thin: "linear-gradient(90deg,transparent,#ddd6fe,#a78bfa,#a78bfa,#a78bfa,#ddd6fe,transparent)",
-    thick: "linear-gradient(90deg,transparent,#ddd6fe,#a78bfa,#a78bfa,#a78bfa,#ddd6fe,transparent)",
+    thin: `linear-gradient(90deg,transparent,${AL},${A},${A},${A},${AL},transparent)`,
+    thick: `linear-gradient(90deg,transparent,${AL},${A},${A},${A},${AL},transparent)`,
   },
   "dark-fire": {
-    thin: "linear-gradient(90deg,transparent,#000000 15%,#a78bfa 50%,#000000 85%,transparent)",
-    thick: "linear-gradient(90deg,transparent,#000000 12%,#a78bfa 50%,#000000 88%,transparent)",
+    thin: `linear-gradient(90deg,transparent,#000000 15%,${A} 50%,#000000 85%,transparent)`,
+    thick: `linear-gradient(90deg,transparent,#000000 12%,${A} 50%,#000000 88%,transparent)`,
   },
 };
 
 const shadows: Record<LedVariant, { thin: string; thick: string }> = {
   fire: {
-    thin: "0 0 10px rgba(249,115,22,0.70), 0 0 20px rgba(251,191,36,0.30)",
-    thick: "0 0 14px rgba(249,115,22,0.85), 0 0 32px rgba(251,191,36,0.40)",
+    thin: `0 0 10px ${glow(0.7)}, 0 0 20px ${glow(0.3)}`,
+    thick: `0 0 14px ${glow(0.85)}, 0 0 32px ${glow(0.4)}`,
   },
   prism: {
-    thin: "0 0 10px rgba(167,139,250,0.40), 0 0 20px rgba(34,211,238,0.20)",
-    thick: "0 0 14px rgba(167,139,250,0.50), 0 0 28px rgba(34,211,238,0.30)",
+    thin: `0 0 10px ${glow(0.1)}, 0 0 20px ${glow(0.06)}`,
+    thick: `0 0 14px ${glow(0.14)}, 0 0 28px ${glow(0.08)}`,
   },
   "dark-fire": {
     thin: "none",

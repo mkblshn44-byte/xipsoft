@@ -18,15 +18,13 @@
  *
  * NOT: Forum kaldırıldı; "Forum"/"ForumReply" tipleri artık kabul edilmez.
  *
- * İş mantığı `@/lib/content-api` içinde tek kaynaktan yönetilir; `/api/content`
- * rotası aynı handler'ları Paylaşır (DRY).
+ * İş mantığı `@/lib/content/handlers/*` içinde tek kaynaktan yönetilir; `/api/content`
+ * rotası aynı handler'ları paylaşır (DRY).
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import {
-  handleBlogIngest,
-  handleRedirectIngest,
-} from "@/lib/content-api";
+import { handleBlogIngest } from "@/lib/content/handlers/blog";
+import { handleRedirectIngest } from "@/lib/content/handlers/redirect";
 import { guardContentApiRead, guardContentApiRequest } from "@/lib/content/request-guard";
 
 export const runtime = "nodejs";

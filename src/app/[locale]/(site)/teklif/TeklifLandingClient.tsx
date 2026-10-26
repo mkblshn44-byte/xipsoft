@@ -12,8 +12,8 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, MessageCircle, Mail, CheckCircle2 } from "lucide-react";
-import { teklifModal } from "@/components/Common/TeklifModal/TeklifModal";
+import XipIcon from "@/components/Ui/Icon";
+import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
 import { BRAND, BRAND_COLORS } from "@/config/brand.config";
 
 const GUARANTEES = [
@@ -59,14 +59,10 @@ export default function TeklifLandingClient() {
         <button
           type="button"
           onClick={() => teklifModal.open()}
-          className="inline-flex items-center gap-2 rounded-xl px-8 py-4 text-sm font-bold text-white transition-all duration-300 hover:scale-[1.03]"
-          style={{
-            background: `linear-gradient(135deg, ${ACCENT}, ${SECONDARY}cc)`,
-            boxShadow: `0 0 20px ${ACCENT}25`,
-          }}
+          className="site-cta-primary group inline-flex items-center gap-2 rounded-xl px-8 py-4 text-sm font-bold shadow-[0_6px_20px_rgba(167, 139, 250,0.14)] transition-all duration-200 hover:-translate-y-0.5"
         >
           Teklif Formunu Aç
-          <ArrowRight className="h-4 w-4" />
+          <XipIcon name="arrow-right" glow="strong" halo="red" className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
         </button>
 
         <a
@@ -81,7 +77,7 @@ export default function TeklifLandingClient() {
             border: "1px solid rgba(52,211,153,0.30)",
           }}
         >
-          <MessageCircle className="h-4 w-4" />
+          <XipIcon name="message-circle" glow="soft" className="h-4 w-4" />
           WhatsApp&apos;tan Yazın
         </a>
       </div>
@@ -89,7 +85,7 @@ export default function TeklifLandingClient() {
       <ul className="mx-auto mb-10 flex max-w-xl flex-col items-center gap-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-x-8">
         {GUARANTEES.map((item) => (
           <li key={item} className="flex items-center gap-2 text-sm text-zinc-400">
-            <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: SECONDARY }} />
+            <XipIcon name="check-circle" glow="soft" className="h-4 w-4 shrink-0" style={{ color: SECONDARY }} />
             {item}
           </li>
         ))}
@@ -102,7 +98,7 @@ export default function TeklifLandingClient() {
         </Link>{" "}
         bize ulaşabilir veya{" "}
         <a href={`mailto:${BRAND.email}`} className="inline-flex items-center gap-1 text-cyan-300 hover:underline">
-          <Mail className="h-3.5 w-3.5" />
+          <XipIcon name="mail" glow="none" className="h-3.5 w-3.5" />
           {BRAND.email}
         </a>{" "}
         adresine yazabilirsiniz.

@@ -3,12 +3,12 @@
 /**
  * SpaceCanvas — WebGL2 uzay sahnesi: yıldız alanı ve nebula.
  *
- * Hero arka planında render edilir: yıldız alanı ve renkli nebula bulutu.
- * Tüm ağır iş GPU'da (fragment shader) yapılır.
+ * Hero arka planında render edilir: yoğun yıldız alanı + mor/cyan nebula
+ * bulutu. Tüm ağır iş GPU'da (fragment shader) yapılır.
  *
  * UYARLAMA NOTLARI:
  * - `bg-background` (Tailwind v4 shadcn token) → `bg-neon-bg` (XipSoft paleti).
- * - Ay/gezegen katmanı KALDIRILDI; yalnızca yıldız alanı ve nebula korunuyor.
+ * - Ay/gezegen/deniz katmanı KALDIRILDI; yalnızca yıldız alanı ve nebula.
  *
  * FAIL-SAFE: WebGL2 desteklenmezse düz koyu zemin gösterilir (hero boş kalmaz).
  */
@@ -121,8 +121,10 @@ function compile(gl: WebGL2RenderingContext, type: number, source: string) {
   return shader;
 }
 
-// Mobilde 0.5, masaüstünde 0.75 — GPU yükünü ve main thread busy time'ı düşürür
-const RENDER_SCALE = typeof window !== "undefined" && window.innerWidth < 768 ? 0.5 : 0.75;
+// RENDER_SCALE: modül düzeyinde window.innerWidth okumak layout reflow'u
+// tetikler (Lighthouse: forced reflow). Her zaman 0.75 ile başla,
+// canvas mount sonrası ResizeObserver zaten doğru boyutu verir.
+const RENDER_SCALE = 0.75;
 
 export default function SpaceCanvas({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -130,14 +132,19 @@ export default function SpaceCanvas({ className }: { className?: string }) {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
+    // matchMedia: layout reflow tetiklemez (window.innerWidth aksine)
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
   }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    // Mobilde WebGL canvas hiç başlatılmaz — GPU ve main thread yükü sıfırlanır
-    if (isMobile) return;
+    if (!canvas || isMobile) return;
+    // Mobilde canvas hiç kurulmasın: `isMobile` state'i hydration sonrası
+    // döndüğü için bu effect ilk commit'te bir kez ÇALIŞIYOR ve gereksiz yere
+    // WebGL2 context + shader compile yapıyordu (emüle telefon testinde
+    // ölçülen israf). Sync matchMedia bu denemeyi tamamen engeller.
+    if (window.matchMedia("(max-width: 768px)").matches) return;
     const gl = canvas.getContext("webgl2", { antialias: false, alpha: false });
     if (!gl) {
       setUnsupported(true);
@@ -176,13 +183,9 @@ export default function SpaceCanvas({ className }: { className?: string }) {
     const uTravel = gl.getUniformLocation(program, "uTravel");
     const uMouse = gl.getUniformLocation(program, "uMouse");
 
-    // Boyut YALNIZCA ResizeObserver'dan gelir (entry.contentRect).
-    // Önceden mount anında `canvas.getBoundingClientRect()` çağrılıyordu;
-    // yeni stiller uygulanırken bu senkron layout okuması forced reflow
-    // tetikleyebiliyordu. RO ilk callback'inde mevcut boyutu zaten verir.
     let sized = false;
+    const scale = Math.min(window.devicePixelRatio || 1, 2) * RENDER_SCALE;
     const applySize = (cssWidth: number, cssHeight: number) => {
-      const scale = Math.min(window.devicePixelRatio || 1, 2) * RENDER_SCALE;
       canvas.width = Math.max(1, Math.floor(cssWidth * scale));
       canvas.height = Math.max(1, Math.floor(cssHeight * scale));
       gl.viewport(0, 0, canvas.width, canvas.height);
@@ -212,8 +215,6 @@ export default function SpaceCanvas({ className }: { className?: string }) {
     let travel = 0;
     let last = performance.now();
     const startedAt = last;
-    // Mobilde frame skip: ~30fps ile main thread yükünü yarıya indir
-    const isLowEndMobile = window.innerWidth < 768;
     let skipCount = 0;
 
     const draw = (now: number) => {
@@ -221,7 +222,7 @@ export default function SpaceCanvas({ className }: { className?: string }) {
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
 
-      travel += dt * 0.025;
+      travel += dt * 0.015;
 
       mouse.x += (mouse.tx - mouse.x) * 0.04;
       mouse.y += (mouse.ty - mouse.y) * 0.04;
@@ -235,11 +236,7 @@ export default function SpaceCanvas({ className }: { className?: string }) {
 
     const loop = (now: number) => {
       if (sized && visible && !document.hidden) {
-        const elapsedSec = (now - startedAt) / 1000;
-        // Yıldız animasyonu sakinleştikten sonra daha az frame çizerek GPU yükünü azalt.
-        const isIdle = elapsedSec > 7;
-        const skipMod = isIdle ? (isLowEndMobile ? 6 : 3) : (isLowEndMobile ? 2 : 1);
-        skipCount = (skipCount + 1) % skipMod;
+        skipCount = (skipCount + 1) % 2;
         if (skipCount === 0) {
           draw(now);
         } else {
@@ -265,7 +262,6 @@ export default function SpaceCanvas({ className }: { className?: string }) {
     };
   }, [isMobile]);
 
-  // Mobilde canvas hiç render edilmez — düz koyu zemin yeterli
   if (isMobile) return <div className={className} aria-hidden="true"><div className="size-full bg-neon-bg" /></div>;
 
   return (
@@ -273,8 +269,6 @@ export default function SpaceCanvas({ className }: { className?: string }) {
       {unsupported ? (
         <div className="size-full bg-neon-bg" />
       ) : (
-        // will-change: transform → tarayıcı canvas'ı ayrı compositor katmanına alır
-        // → JS animasyon döngüsü main thread'i bloke etse bile görüntü bozulmaz
         <canvas ref={canvasRef} className="block size-full" style={{ willChange: "transform" }} />
       )}
     </div>

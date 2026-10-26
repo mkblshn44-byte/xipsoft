@@ -1,8 +1,9 @@
-import { ArrowRight, MessageCircle, CheckCircle2 } from "lucide-react";
+import XipIcon from "@/components/Ui/Icon";
 import Link from "next/link";
 import Container from "@/components/Common/Container/Container";
 import Hero from "@/components/Landing/Hero";
 import { BRAND, BRAND_COLORS } from "@/config/brand.config";
+import { PALETTE } from "@/config/palette";
 import type { HomeHeroCopy } from "@/types/common";
 import DeferredHomeSection from "./DeferredHomeSection";
 
@@ -25,8 +26,8 @@ function BottomCTASection() {
       className="relative overflow-hidden rounded-3xl border border-white/[0.07] py-16 px-6 md:px-16 text-center"
       style={{
         background:
-          "linear-gradient(135deg, rgba(167,139,250,0.06) 0%, rgba(2,6,23,0.98) 40%, rgba(34,211,238,0.04) 100%)",
-        boxShadow: "0 0 80px rgba(167,139,250,0.07), inset 0 1px 0 rgba(255,255,255,0.06)",
+          "linear-gradient(135deg, rgba(167, 139, 250,0.06) 0%, rgba(5, 8, 17,0.98) 40%, rgba(18, 20, 28,0.06) 100%)",
+        boxShadow: "0 0 80px rgba(167, 139, 250,0.06), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
       {/* Dekoratif arka plan ışığı */}
@@ -49,12 +50,12 @@ function BottomCTASection() {
         {/* Ana başlık */}
         <h2
           id="cta-bottom-title"
-          className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-4"
+          className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight mb-4 brand-gradient-text"
         >
           Mevcut sitenizin ücretsiz{" "}
           <span
             style={{
-              background: `linear-gradient(135deg, ${SECONDARY}, ${ACCENT})`,
+              backgroundImage: `linear-gradient(135deg, ${PALETTE.goldGradient.mid}, ${ACCENT})`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -75,7 +76,7 @@ function BottomCTASection() {
         <ul className="flex flex-col sm:flex-row flex-wrap justify-center gap-x-8 gap-y-2 mb-10">
           {trustItems.map((item) => (
             <li key={item} className="flex items-center gap-2 text-sm text-zinc-400">
-              <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: SECONDARY }} />
+              <XipIcon name="check-circle" glow="soft" className="w-4 h-4 shrink-0" style={{ color: SECONDARY }} />
               {item}
             </li>
           ))}
@@ -84,15 +85,11 @@ function BottomCTASection() {
         {/* CTA Butonları */}
         <div className="flex flex-wrap justify-center gap-4">
           <Link
-            href="/teklif"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm text-white transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(167,139,250,0.35)]"
-            style={{
-              background: `linear-gradient(135deg, ${ACCENT}, ${SECONDARY}cc)`,
-              boxShadow: `0 0 20px ${ACCENT}25`,
-            }}
+            href="/contact-us"
+            className="site-cta-primary inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-sm transition-all duration-300 hover:scale-[1.03]"
           >
             Ücretsiz Danışmanlık Alın
-            <ArrowRight className="w-4 h-4" />
+            <XipIcon name="arrow-right" glow="strong" halo="red" className="w-4 h-4" />
           </Link>
 
           <a
@@ -106,7 +103,7 @@ function BottomCTASection() {
               boxShadow: "0 0 16px rgba(16,185,129,0.10)",
             }}
           >
-            <MessageCircle className="w-4 h-4" />
+            <XipIcon name="message-circle" glow="soft" className="w-4 h-4" />
             WhatsApp&apos;tan Yazın
           </a>
         </div>
@@ -150,12 +147,6 @@ export default function HomePageComponents({ heroCopy }: { heroCopy?: Partial<Ho
       <Container withPadding>
         <section className="home-below-fold" aria-label="Müşteri yorumları">
           <DeferredHomeSection section="testimonials" />
-        </section>
-      </Container>
-
-      <Container withPadding>
-        <section className="home-below-fold" style={{ position: "relative", zIndex: 0 }} aria-label="Programlama dilleri">
-          <DeferredHomeSection section="languages" />
         </section>
       </Container>
 
