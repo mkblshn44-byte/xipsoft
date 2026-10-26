@@ -28,7 +28,7 @@
  *   npm run seo:location-status              → önizleme (dry-run, yazmaz)
  *   npm run seo:location-status -- --apply   → değişiklikleri uygula
  */
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { isPriorityDistrict } from "@/config/priority-locations";
 
 const applyChanges = process.argv.includes("--apply");

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Middleware â€” Ana Handler
  *
  * TÃ¼m istekler bu dosyadan geÃ§er. ModÃ¼ler yapÄ±:
@@ -40,6 +40,7 @@ const PUBLIC_FILES = new Set([
   "/robots.txt",
   "/ads.txt",
   "/sitemap.xml",
+  "/llms.txt",
 ]);
 
 // Silinen (soft-delete) iÃ§erik kalÄ±plarÄ± â€” 410 Gone dÃ¶ner (Google'a "artÄ±k yok" mesajÄ±)

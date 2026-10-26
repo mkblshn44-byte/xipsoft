@@ -63,11 +63,3 @@ export function trackContactSubmit(): void {
     value: 1,
   });
 }
-
-/** Hizmet sayfasına tıklandı */
-export function trackServiceClick(serviceSlug: string): void {
-  trackEvent("hizmet_tikla", {
-    event_category: "Engagement",
-    event_label: serviceSlug,
-  });
-}

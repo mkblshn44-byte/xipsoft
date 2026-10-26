@@ -1,0 +1,40 @@
+# XipSoft Yazılım ve Teknoloji Sistemleri
+
+> Next.js 15 tabanlı yüksek hızlı kurumsal web siteleri, özel yazılım çözümleri, mobil uygulama geliştirme ve kurumsal siber güvenlik hizmetleri sunan İstanbul merkezli teknoloji şirketi.
+
+XipSoft Yazılım ve Teknoloji Sistemleri, modern web mimarileri (Next.js 15, React, TypeScript), güvenli backend sistemleri, cross-platform ve native mobil uygulamalar geliştiren; kurumsal firmalara sızma testi, güvenlik denetimi ve teknik SEO danışmanlığı sağlayan bir teknoloji ve yazılım firmasıdır.
+
+## Ana Hizmetler ve Çözümler
+
+- [Özel Web Yazılım & Kurumsal Tasarım](https://xipsoft.net/hizmetler/web-yazilim-tasarim1): Modern Next.js 15, React ve bulut mimarileriyle geliştirilen, Core Web Vitals uyumlu, ultra hızlı ve SEO odaklı kurumsal web projeleri ve özel web uygulamaları.
+- [Mobil Uygulama Geliştirme](https://xipsoft.net/hizmetler/mobil-uygulama): iOS ve Android platformları için yüksek performanslı, ölçeklenebilir native ve React Native cross-platform mobil uygulama çözümleri.
+- [Siber Güvenlik & Sızma Testi](https://xipsoft.net/hizmetler/siber-guvenlik): Web, mobil ve ağ altyapıları için kapsamlı penetrasyon testleri (pentest), güvenlik açığı taraması, zafiyet yönetimi ve kurumsal güvenlik danışmanlığı.
+- [Teknik SEO & Dijital Pazarlama](https://xipsoft.net/hizmetler/seo-dijital-pazarlama): Core Web Vitals optimizasyonu, crawl budget yönetimi, semantik HTML5, JSON-LD yapılandırılmış veri ve arama motoru optimizasyonu.
+- [Masaüstü Yazılım Çözümleri](https://xipsoft.net/hizmetler/masaustu-yazilim): Windows, macOS ve Linux işletim sistemleri için C#, .NET, C++ ve Electron tabanlı yüksek performanslı kurumsal masaüstü uygulamaları.
+- [Yapay Zeka & Makine Öğrenimi Entegrasyonu](https://xipsoft.net/hizmetler/yapay-zeka-ml): İş süreçlerini optimize eden LLM (Büyük Dil Modelleri) entegrasyonları, yapay zeka ajanları, doğal dil işleme ve kestirimci veri analitiği.
+- [Bulut Bilişim & DevOps / SRE](https://xipsoft.net/hizmetler/bulut-bilisim): AWS, Azure ve Google Cloud üzerinde yüksek erişilebilirlikli mikroservis mimarileri, Docker/Kubernetes orkestrasyonu, CI/CD süreçleri ve sistem izleme.
+
+## Kurumsal Kimlik ve İletişim
+
+- **Şirket Adı:** XipSoft Yazılım ve Teknoloji Sistemleri
+- **Kısa Ad:** XipSoft
+- **Web Sitesi:** https://xipsoft.net
+- **Adres:** Nurol Tower, İzzet Paşa, Yeni Yol Cd. No:3 Kat:22, 34381 Şişli / İstanbul, Türkiye
+- **E-posta:** info@xipsoft.net
+- **Telefon:** +90 544 454 84 44
+- **Faaliyet Alanı:** Türkiye ve Avrupa
+- **Sektör:** Yazılım, Bilişim Teknolojileri ve Siber Güvenlik
+
+## Temel Bölümler ve Kaynaklar
+
+- [Hizmetler Hub](https://xipsoft.net/hizmetler): Tüm ana ve yerel hizmet kategorileri.
+- [Teknoloji Blogu](https://xipsoft.net/blog): Yazılım mimarisi, siber güvenlik, teknik SEO ve teknoloji analizleri.
+- [Hakkımızda](https://xipsoft.net/hakkimizda): Şirket misyonu, vizyonu ve kurumsal değerleri.
+- [Referanslar & Projeler](https://xipsoft.net/references): Tamamlanan kurumsal projeler ve başarı hikayeleri.
+- [İletişim & Teklif Al](https://xipsoft.net/contact-us): Proje danışmanlığı, teklif formu ve iletişim kanalları.
+
+## Doğrulama ve Sosyal Profiller
+
+- LinkedIn: https://www.linkedin.com/company/xipsoft
+- GitHub: https://github.com/xipsoft
+- X / Twitter: https://twitter.com/xipsoft

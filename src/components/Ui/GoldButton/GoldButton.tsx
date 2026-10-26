@@ -72,7 +72,7 @@ export default function GoldButton({
       {icon && iconPosition === "left" && (
         <span className="mr-2">{icon}</span>
       )}
-      <span className="font-luxury">{children}</span>
+      <span className="font-display">{children}</span>
       {icon && iconPosition === "right" && (
         <span className="ml-2">{icon}</span>
       )}

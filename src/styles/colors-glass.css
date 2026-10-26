@@ -205,20 +205,49 @@ h2 {
   text-shadow: 0 8px 28px rgba(148, 163, 184, 0.18);
 }
 
-/* Site metinleri, `(site)` layout kabında Plus Jakarta Sans kullanır. */
+h1,
+h2 {
+  font-family: var(--font-brand), system-ui, sans-serif !important;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display), system-ui, sans-serif !important;
+}
+
+/* Site metinleri Inter; başlıklar ve gezinme Rajdhani kullanır. */
 .site-headings,
 .site-headings * {
   font-family: var(--font-body), sans-serif !important;
 }
-.site-headings nav,
-.site-headings nav * {
-  font-family: var(--font-navbar), system-ui, sans-serif !important;
+.site-headings header nav,
+.site-headings header nav * {
+  font-family: var(--font-brand), system-ui, sans-serif !important;
+}
+.site-headings :is(h1, h2) {
+  font-family: var(--font-brand), system-ui, sans-serif !important;
+}
+.site-headings :is(h3, h4, h5, h6) {
+  font-family: var(--font-display), system-ui, sans-serif !important;
+}
+.site-headings :is(.site-cta-primary, .site-cta-secondary, .font-display, .font-luxury, .font-stat) {
+  font-family: var(--font-display), system-ui, sans-serif !important;
+}
+.site-headings h1.font-display,
+.site-headings h2.font-display {
+  font-family: var(--font-brand), system-ui, sans-serif !important;
+}
+.site-cta-primary,
+.site-cta-secondary {
+  font-family: var(--font-display), system-ui, sans-serif !important;
 }
 
 /* Site başlıkları: hero h1 marka mavisi, diğer h1 kırık beyaz, h2 gri + loş gölge.
    Alt çizgi (h1/h2 ::after) loş mavi kalır. */
 .site-headings h1 {
-  font-family: var(--font-display), system-ui, sans-serif !important;
+  font-family: var(--font-brand), system-ui, sans-serif !important;
   text-transform: uppercase !important;
   color: var(--color-text-primary) !important;
   text-shadow: 0 8px 28px rgba(167, 139, 250, 0.12);
@@ -227,7 +256,7 @@ h2 {
 }
 
 .site-headings h2 {
-  font-family: var(--font-display), system-ui, sans-serif !important;
+  font-family: var(--font-brand), system-ui, sans-serif !important;
   text-transform: uppercase !important;
   color: var(--color-text-muted) !important;
   text-shadow: 0 8px 28px rgba(148, 163, 184, 0.18);
@@ -244,6 +273,7 @@ h2 {
 .site-headings .hero-title,
 .site-headings .title-text-glass--hero,
 .hero-title {
+  font-family: var(--font-brand), system-ui, sans-serif !important;
   color: var(--hero-title-color) !important;
   background: none !important;
   -webkit-background-clip: unset !important;
@@ -408,6 +438,7 @@ h2 {
 
 /* Hero variant — marka mavisi (buz gümüş cam gradient yerine düz safir mavi) */
 .title-text-glass--hero {
+  font-family: var(--font-brand), system-ui, sans-serif !important;
   color: var(--hero-title-color) !important;
   background: none !important;
   -webkit-background-clip: unset !important;

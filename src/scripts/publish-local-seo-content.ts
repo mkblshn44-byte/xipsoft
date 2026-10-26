@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { PRIORITY_DISTRICTS } from "@/config/priority-locations";
 
 /**

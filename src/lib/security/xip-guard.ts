@@ -33,6 +33,8 @@ import {
 } from "@/lib/security/local-window";
 
 const BLOCK_KEY_PREFIX = "xip:block:";
+const STATIC_PATTERN =
+  /\.(?:svg|png|jpg|jpeg|gif|webp|woff2?|ttf|eot|css|js|map|ico|json|txt|xml)$/i;
 
 /** 10 saniyede 35 vuruşu geçen IP geçici bloğa alınır. */
 const RATE_LIMIT_WINDOW_SECONDS = 10;
@@ -135,6 +137,17 @@ function guardResponse(status: 403 | 429, retryAfterSeconds?: number): NextRespo
  * @returns bloklanmışsa gönderilecek cevap, geçtiyse `null` (middleware akışa devam eder)
  */
 export async function xipGuardCheck(req: NextRequest): Promise<NextResponse | null> {
+  const { pathname } = req.nextUrl;
+  if (
+    pathname === "/api/track" ||
+    pathname.startsWith("/api/track/") ||
+    pathname.startsWith("/_next/") ||
+    pathname === "/favicon.ico" ||
+    STATIC_PATTERN.test(pathname)
+  ) {
+    return null;
+  }
+
   // getClientIp: güvenilir `cf-connecting-ip`/`x-real-ip`, o da yoksa XFF'in SON
   // girdisi. İlk girdi istemcinin kendisinin yazdığı değerdir; ona güvenmek
   // `X-Forwarded-For: 8.8.8.8` ile hem blok aşımı hem de masum IP'yi blokatma

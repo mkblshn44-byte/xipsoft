@@ -13,7 +13,7 @@ const reviews = [
     name: "Aykut S.",
     role: "E-Ticaret Girişimcisi",
     color: V,
-    text: "XipSoft ile web sitemizi yeniledikten sonra organik Google trafiğimiz %140 arttı ve yüklenme süremiz 1.2 saniyeye düştü. Çalışan ekip sorumlusundan telefona bakan arkadaşa kadar hepsi tam anlamıyla profesyonel.",
+    text: "XipSoft ile web sitemizi yeniledikten sonra organik Google trafiğimiz %140 arttı ve yüklenme süremiz 1,2 saniyeye düştü. Ekipteki herkes, yöneticilerden telefona yanıt veren çalışma arkadaşlarına kadar, son derece profesyoneldi.",
     highlight: "%140 organik trafik artışı",
     rating: 5,
   },
@@ -21,7 +21,7 @@ const reviews = [
     name: "Çiğdem P.",
     role: "Muhasebe & Finans Danışmanı",
     color: V,
-    text: "Başından sonuna her şey mi güzel olur derseniz evet olur. Projenin her aşamasında anında geri dönüş ve şeffaf ilerleme raporları. Sektöründe tek diyebileceğim firmalardan.",
+    text: "Bir proje baştan sona bu kadar iyi ilerler mi diye sorarsanız, evet. Her aşamada hızlı geri dönüş aldık ve süreç şeffaf raporlarla ilerledi. Sektöründe öne çıkan firmalardan biri.",
     highlight: "Şeffaf süreç & anlık geri dönüş",
     rating: 5,
   },
@@ -29,7 +29,7 @@ const reviews = [
     name: "Oğuz T.",
     role: "Kurumsal Yazılım Direktörü",
     color: V,
-    text: "Sektörde birçok firma ile çalışıp en iyi özverili ve profesyonelliği bulduğum firma. Özellikle güvenlik odaklı geliştirme yaklaşımları ve KVKK uyum süreci eksiksiz yönetildi.",
+    text: "Sektörde birçok firmayla çalıştım; özveri ve profesyonellik açısından en iyi deneyimi XipSoft'ta yaşadım. Özellikle güvenlik odaklı geliştirme yaklaşımları ve KVKK uyum süreci eksiksiz yönetildi.",
     highlight: "KVKK uyum süreci eksiksiz",
     rating: 5,
   },
@@ -37,7 +37,7 @@ const reviews = [
     name: "Meltem M.",
     role: "SaaS Platform Kurucusu",
     color: V,
-    text: "Herhangi bir konuda sorun yaşamadığım, çok ilgili bir ekibe sahip ve istediğiniz şekilde hizmet veren yazılım firması. Teslim sonrası destek gerçekten var — sadece söz değil.",
+    text: "İhtiyaçlarımıza uygun hizmet sunan, ilgili bir ekibe sahip bir yazılım firması. Teslimat sonrası destek gerçekten var; sadece sözde kalmıyor.",
     highlight: "Teslim sonrası destek gerçek",
     rating: 5,
   },
@@ -60,8 +60,12 @@ export default function MusteriYorumlari() {
 
       {/* Yorum kartları */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {reviews.map((r) => (
-          <div key={r.name} className="group relative home-reveal">
+        {reviews.map((r, index) => (
+          <div
+            key={r.name}
+            className="group relative review-card-enter"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
             <GlassCard className="home-liquid-glass relative flex flex-col gap-5 p-8 overflow-hidden transition-all duration-500 hover:-translate-y-1.5">
               {/* Arka plan orb */}
               <div
@@ -81,7 +85,7 @@ export default function MusteriYorumlari() {
 
               {/* Ölçülebilir başarı verisi */}
               <div
-                className="rounded-lg px-3 py-2 text-xs font-semibold"
+                className="font-stat rounded-lg px-3 py-2 text-xs font-semibold"
                 style={{
                   background: `${r.color}15`,
                   border: `1px solid ${r.color}30`,

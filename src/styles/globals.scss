@@ -35,13 +35,13 @@ body {
 /* ─── GLİF: WEBFONT ALT KÜMESİ TETİKLEMESİN ────────────────
    next/font, istenen subset'lerden fazlasının @font-face kuralını da basar.
    → ve ✓ latin/latin-ext kapsamı dışında kaldığı için Chrome bu gliflerde
-   Open Sans'ın hiç kullanılmayan alt küme dosyalarını indiriyordu (2 dosya =
+  Inter'ın hiç kullanılmayan alt küme dosyalarını indiriyordu (2 dosya =
    74 KB, kritik yolda). Bu aile için daha SONRA tanımlanan unicode-range
    kuralı, Chrome'un yüz-eşleştirmede ters sırada taraması sayesinde önce
    gelir: glif yerel fontla çizilir, indirme tamamen durur (içerik/DB metni
    dahil her yerde). */
 @font-face {
-  font-family: "Open Sans";
+  font-family: "Inter";
   font-weight: 300 800;
   font-style: normal;
   src: local("Arial"), local("Liberation Sans"), local("Roboto"), local("Helvetica Neue");
@@ -94,8 +94,7 @@ body {
 }
 
 .navbar, .-navbar {
-  /* Navbar tipografisi — Orbitron (--font-navbar). Tek kaynak: src/fonts/fonts.ts */
-  font-family: var(--font-navbar), system-ui, sans-serif !important;
+  font-family: var(--font-brand), system-ui, sans-serif !important;
   font-weight: 400;
   letter-spacing: 0.04em;
   text-rendering: optimizeLegibility;

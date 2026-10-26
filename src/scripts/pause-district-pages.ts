@@ -12,7 +12,7 @@
  *   npm run seo:pause-districts                (önizleme; varsayılan)
  *   npm run seo:pause-districts -- --apply     (değişiklikleri uygula)
  */
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { isPriorityDistrict } from "@/config/priority-locations";
 
 const applyChanges = process.argv.includes("--apply");

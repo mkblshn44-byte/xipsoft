@@ -19,14 +19,22 @@ export const TRACKING_QUERY_PARAMS = [
 ] as const;
 
 const BLOCKED_BOTS = ["AhrefsBot", "SemrushBot", "DotBot", "MJ12bot", "BLEXBot"];
-const AI_BOTS = [
+// Search & citation bots — fetch pages for user-requested answers and citations
+export const AI_SEARCH_BOTS = [
   "GPTBot",
+  "PerplexityBot",
+  "OAI-SearchBot",
+  "Claude-Web",
+];
+
+// Crawlers collecting data for training or large-scale datasets
+export const AI_TRAINING_BOTS = [
   "CCBot",
+  "Bytespider",
+  "Google-Extended",
   "ClaudeBot",
   "anthropic-ai",
-  "Google-Extended",
   "FacebookBot",
-  "Bytespider",
 ];
 
 const BLOCKED_PATHS = [
@@ -56,7 +64,12 @@ export default function robots(): MetadataRoute.Robots {
         disallow: "/",
       },
       {
-        userAgent: AI_BOTS,
+        userAgent: AI_SEARCH_BOTS,
+        allow: "/",
+        disallow: ["/api/", "/admin/"],
+      },
+      {
+        userAgent: AI_TRAINING_BOTS,
         disallow: "/",
       },
     ],

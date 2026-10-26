@@ -1,4 +1,4 @@
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 import { performSEOAudit, saveSEOAudit, type PageAuditData } from "@/lib/seo-audit";
 
 interface PageRow extends PageAuditData {

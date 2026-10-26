@@ -1,4 +1,4 @@
-import { displayFont, bodyFont, navbarFont } from "@/fonts/fonts";
+import { brandFont, displayFont, bodyFont } from "@/fonts/fonts";
 import { cn } from "@/utils";
 import { ldJson } from "@/lib/ld-json";
 import type { Metadata, Viewport } from "next";
@@ -109,7 +109,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const cls = cn(
     displayFont.variable,
     bodyFont.variable,
-    navbarFont.variable,
+    brandFont.variable,
     "min-h-screen scroll-smooth overflow-x-hidden",
   );
 

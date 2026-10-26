@@ -21,6 +21,21 @@
   animation: home-reveal 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+@keyframes review-card-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.review-card-enter {
+  animation: review-card-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
 @keyframes tech-card-enter {
   from {
     opacity: 0;
@@ -35,6 +50,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .home-reveal,
+  .review-card-enter,
   .tech-card-reveal {
     animation: none;
   }

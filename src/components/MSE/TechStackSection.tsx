@@ -249,7 +249,6 @@ export default function TechStackSection() {
 
       {/* Alt CTA */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 text-center mt-16 text-ink-muted text-sm md:text-base home-reveal flex flex-col sm:flex-row items-center justify-center gap-3">
-        <span>Sonsuza dek süren bir mimari için</span>
         <IceButton label="ücretsiz teklif alın" size="sm" className="inline-flex" />
       </div>
 

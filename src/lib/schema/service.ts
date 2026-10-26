@@ -10,7 +10,7 @@
 import { SITE_URL } from "@/lib/site-url";
 import { BRAND, DEFAULT_OG_IMAGE_URL } from "@/config/brand.config";
 import { servicePath } from "@/lib/content-path";
-import { SCHEMA_CONTEXT } from "./shared";
+import { SCHEMA_CONTEXT, SOCIAL_PROFILES } from "./shared";
 
 /** Konum kapsamı — schema.org areaServed karşılığı. */
 export interface ServiceAreaServed {
@@ -25,6 +25,8 @@ export interface ServiceSchemaInput {
   name: string;
   /** Meta açıklama ile aynı metin (Google snippet'i bu metni kullanır). */
   description: string;
+  /** Kısa özet — AI ve arama motorları için abstract */
+  abstract?: string;
   /** Göreli (`/hizmetler/x`) veya mutlak URL. */
   url: string;
   /** Hizmet tipi — genelde hizmet başlığı. */
@@ -50,6 +52,7 @@ export function serviceSchema(input: ServiceSchemaInput) {
     "@type": input.professional ? "ProfessionalService" : "Service",
     name: input.name,
     description: input.description,
+    abstract: input.abstract || input.description,
     url,
     image,
     serviceType: input.serviceType,
@@ -59,6 +62,11 @@ export function serviceSchema(input: ServiceSchemaInput) {
       "@id": `${SITE_URL}/#organization`,
       name: BRAND.name,
       url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: DEFAULT_OG_IMAGE_URL,
+      },
+      sameAs: SOCIAL_PROFILES,
     },
     areaServed: {
       "@type": area.type,

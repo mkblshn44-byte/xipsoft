@@ -4,11 +4,12 @@
 
 import { SITE_URL } from "@/lib/site-url";
 import { DEFAULT_OG_IMAGE_URL } from "@/config/brand.config";
-import { SCHEMA_CONTEXT } from "./shared";
+import { SCHEMA_CONTEXT, SOCIAL_PROFILES } from "./shared";
 
 export function BlogSchemaFromDb(post: {
   title: string;
   description: string;
+  abstract?: string;
   url: string;
   datePublished?: string;
   dateModified?: string;
@@ -38,6 +39,7 @@ export function BlogSchemaFromDb(post: {
     "@id": `${pageUrl}#blogposting`,
     headline: post.title,
     description: post.description,
+    abstract: post.abstract || post.description,
     url: pageUrl,
     datePublished: post.datePublished,
     // dateModified: Google Content Freshness sinyali — updated_at ile dolduruluyor
@@ -83,6 +85,7 @@ export function BlogSchemaFromDb(post: {
       name: "XipSoft Yazılım ve Teknoloji Sistemleri",
       url: SITE_URL,
       logo: { "@type": "ImageObject", url: DEFAULT_OG_IMAGE_URL },
+      sameAs: SOCIAL_PROFILES,
     },
     isPartOf: { "@id": `${SITE_URL}/blog#blog` },
     // Task 13: E-E-A-T citations — her bir dış kaynak CreativeWork olarak şemaya eklenir

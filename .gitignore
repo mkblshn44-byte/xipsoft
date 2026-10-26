@@ -27,3 +27,6 @@ db-backups-*/
 
 # Eski ham DB dizini (production veri + bağlantı bilgisi içerir)
 sql/
+
+.vercel
+.env*

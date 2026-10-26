@@ -154,7 +154,7 @@ export default function Hero({
             : "max-w-4xl py-24 lg:py-28",
         )}
       >
-        <h1 className="hero-title font-display text-4xl font-semibold leading-tight tracking-tight text-balance sm:text-6xl lg:text-7xl">
+        <h1 className="hero-title font-brand text-4xl font-semibold leading-tight tracking-tight text-balance sm:text-6xl lg:text-7xl">
           {titleLine1 && (
             <span
               className={cn(

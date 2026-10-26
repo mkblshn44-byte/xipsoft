@@ -4,7 +4,7 @@
  *
  *   node .\node_modules\.bin\tsx.cmd --env-file=.env.local src/scripts/inspect-about-meta.ts
  */
-import pool from "@/lib/database";
+import pool from "@/lib/db/pool";
 
 async function main() {
   const { rows } = await pool.query(

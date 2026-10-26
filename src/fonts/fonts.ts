@@ -1,4 +1,4 @@
-import { Chakra_Petch, Open_Sans, Orbitron } from "next/font/google";
+import { Audiowide, Inter, Rajdhani } from "next/font/google";
 
 // NOT (next/font kısıtı): `preload` değeri DEĞİŞKEN/ENV OLAMAZ. SWC font
 // loader seçenekleri statik okur ve literal dışı değeri
@@ -10,9 +10,7 @@ import { Chakra_Petch, Open_Sans, Orbitron } from "next/font/google";
 // "kullanılmamış" sayılıyor. Prod'da manifest head'e yazılıyor
 // (next.config.mjs Windows font-manifest plugin'i) ve uyarı üretemez.
 // ─── DISPLAY / BAŞLIK FONTU ─────────────────────────────────────────────────
-// Chakra Petch — köşeli, keskin "çelik" başlık fontu (marka kimliği).
-// NOT: next/font bu sürümde Chakra Petch'i STATİK ağırlıklı tanımlar (değişken
-// ekseni yok) → `weight` zorunlu.
+// Rajdhani — başlıklar ve gezinme için; Latin Extended Türkçe gliflerini içerir.
 //
 // PERF (LCP): `preload: true`, preload edilen HER ağırlık × subset için
 // <head>'e <link rel=preload> yazar. Tek bildirimde 4 ağırlık × 2 subset =
@@ -22,7 +20,7 @@ import { Chakra_Petch, Open_Sans, Orbitron } from "next/font/google";
 // Bu yüzden iki bildirim: yalnızca hero'nun kullandığı 600 preload edilir
 // (`font-display font-semibold`), 400/500/700 CSS keşfinden sonra gelir.
 // @font-face'lerin heği basılmaya devam eder → görünüm birebir aynı.
-const displayFontCritical = Chakra_Petch({
+const displayFontCritical = Rajdhani({
   subsets: ["latin", "latin-ext"],
   weight: ["600"],
   variable: "--font-display",
@@ -30,7 +28,7 @@ const displayFontCritical = Chakra_Petch({
   preload: true,
 });
 
-const displayFontRest = Chakra_Petch({
+const displayFontRest = Rajdhani({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "700"],
   display: "swap",
@@ -43,34 +41,32 @@ export const displayFont = {
   className: `${displayFontCritical.className} ${displayFontRest.className}`,
 };
 
+// Audiowide — navbar ve ana başlıklar (H1/H2) için marka vurgu fontu.
+export const brandFont = Audiowide({
+  subsets: ["latin", "latin-ext"],
+  weight: "400",
+  variable: "--font-brand",
+  display: "swap",
+  preload: false,
+});
+
 // ─── BODY / IÇERIK FONTU ──────────────────────────────────────────────────────
-// Open Sans — okunabilir genel metin fontu. Ağırlık belirtilmediğinde
+// Inter — okunabilir genel metin fontu. Ağırlık belirtilmediğinde
 // next/font değişken font eksenini kullanır.
-export const bodyFont = Open_Sans({
+export const bodyFont = Inter({
   subsets: ["latin", "latin-ext"],
   variable: "--font-body",
   display: "swap",
   preload: true, // ana içerik fontu — öncelikli yükle (literal şart, yukarıdaki not)
 });
 
-// NOT (PERF): değişken font — 6 statik ağırlık (400–900) yerine tek WOFF2.
-// Orbitron wght 400–900 eksenini içerir; `font-weight: 400` (globals.scss
-// `.navbar`) ve Tailwind kalınlıkları aynı dosyadan karşılanır.
-export const navbarFont = Orbitron({
-  // Orbitron yalnızca `latin` subset'i sunar (latin-ext YOK) → Türkçe
-  // ğ/ş/ı/İ karakterleri fallback fonttan gelir. Bilinçli tercih.
-  subsets: ["latin"],
-  variable: "--font-navbar",
-  display: "swap",
-  // NOT (PERF): preload KAPALI — navbar metni LCP adayı değil; kritik yolda
-  // yer kaplamaması için CSS keşfinden sonra yüklenir.
-  preload: false,
-});
+// Navbar font export'u mevcut tüketicilerle geriye dönük uyumludur.
+export const navbarFont = brandFont;
 
 // ─── ALIASES (geriye dönük uyumluluk) ─────────────────────────────────────────
 // Playfair Display + Cinzel emekli: çelik kimliğinde yuvarlak serif yok.
-// `font-luxury` / `font-premium` sınıf adları tailwind tarafında sırasıyla
-// display (Chakra Petch) ve navbar (Orbitron) fontuna bağlı.
+// `font-luxury` / `font-premium` sınıf adları Tailwind tarafında aynı Rajdhani
+// display fontunu kullanır.
 export const titleFont = displayFont;
 export const titleFontBold = displayFont;
 export const bodyFontBase = bodyFont;

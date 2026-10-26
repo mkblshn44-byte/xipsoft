@@ -10,8 +10,8 @@ const TOKEN = "test-token";
 
 let calls: Command[] = [];
 
-function request(headers: Record<string, string>): NextRequest {
-  return new NextRequest("https://xipsoft.test/blog/yazı", { headers });
+function request(headers: Record<string, string>, pathname = "/blog/yazı"): NextRequest {
+  return new NextRequest(`https://xipsoft.test${pathname}`, { headers });
 }
 
 function installFetch(reply: (cmd: Command) => unknown): void {
@@ -44,6 +44,17 @@ test("Upstash env tanımsızsa guard no-op ve Redis'e hiç gitmiyor", async () =
   const response = await xipGuardCheck(request({ "cf-connecting-ip": "203.0.113.7" }));
   assert.equal(response, null);
   assert.equal(calls.length, 0);
+});
+
+test("/api/track ve statik dosyalar XipGuard kontrolünü tüketmez", async () => {
+  enableUpstash();
+  installFetch(() => 1);
+
+  assert.equal(await xipGuardCheck(request({ "cf-connecting-ip": "203.0.113.8" }, "/api/track")), null);
+  assert.equal(await xipGuardCheck(request({ "cf-connecting-ip": "203.0.113.8" }, "/assets/logo.svg")), null);
+  assert.equal(await xipGuardCheck(request({ "cf-connecting-ip": "203.0.113.8" }, "/_next/other")), null);
+  assert.equal(calls.length, 0);
+  disableUpstash();
 });
 
 test("bloklanmış IP 403 + düz metin ile kesiliyor, sayaç okunmuyor", async () => {

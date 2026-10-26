@@ -58,11 +58,13 @@ const config: Config = {
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         body:    ["var(--font-body)", "sans-serif"],
-        navbar:  ["var(--font-navbar)", "sans-serif"],
+        brand:   ["var(--font-brand)", "sans-serif"],
+        navbar:  ["var(--font-brand)", "sans-serif"],
+        stat:    ["var(--font-display)", "sans-serif"],
         // Çelik kimliği: yuvarlak/serif lüks fontlar emekli — `luxury` ve
         // `premium` sınıf adları korunur ama keskin display fontuna eşlenir.
         luxury:  ["var(--font-display)", "sans-serif"],
-        premium: ["var(--font-navbar)", "sans-serif"],
+        premium: ["var(--font-display)", "sans-serif"],
         // mono: Tailwind varsayılan stack (ui-monospace, Menlo, Consolas, ...)
       },
 

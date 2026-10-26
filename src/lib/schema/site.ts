@@ -49,6 +49,7 @@ export function webPageSchema(opts: {
   description: string;
   url: string;
   breadcrumbs?: Array<{ name: string; url: string }>;
+  abstract?: string;
 }) {
   const url = opts.url.startsWith("http") ? opts.url : `${SITE_URL}${opts.url}`;
   return {
@@ -56,9 +57,27 @@ export function webPageSchema(opts: {
     "@type": "WebPage",
     name: opts.name,
     description: opts.description,
+    abstract: opts.abstract || opts.description,
     url,
-    isPartOf: { "@type": "WebSite", url: SITE_URL, name: "XipSoft Yazılım ve Teknoloji Sistemleri" },
-    publisher: { "@type": "Organization", name: "XipSoft Yazılım ve Teknoloji Sistemleri", url: SITE_URL },
+    isPartOf: {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: BRAND.name,
+    },
+    publisher: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: BRAND.name,
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: DEFAULT_OG_IMAGE_URL,
+        width: 1200,
+        height: 630,
+      },
+      sameAs: SOCIAL_PROFILES,
+    },
     ...(opts.breadcrumbs && { breadcrumb: breadcrumbSchema(opts.breadcrumbs) }),
   };
 }

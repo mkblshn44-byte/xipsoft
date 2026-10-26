@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import XipIcon from "@/components/Ui/Icon";
 import { useTranslations } from "next-intl";
 import { PALETTE } from "@/config/palette";
@@ -16,7 +16,7 @@ type StrengthCard = {
   color: string;
   badge?: string;
   title: string;
-  desc: string;
+  desc: ReactNode;
 };
 
 // Renkler: V (mor) ve C (cyan) arasında alt-alta dönüşümlü
@@ -33,7 +33,7 @@ const strengthCards: StrengthCard[] = [
     color: V,
     badge: "15+",
     title: "15 Yıllık Sektörel Otorite",
-    desc: "200+ tamamlanan proje ve 150+ memnun kurumsal müşteriyle elde edilmiş gerçek deneyim — referans listesi açık.",
+    desc: <><span className="font-stat">200+</span> tamamlanan proje ve <span className="font-stat">150+</span> memnun kurumsal müşteriyle elde edilmiş gerçek deneyim — referans listesi açık.</>,
   },
   {
     icon: "shield",
@@ -151,7 +151,7 @@ export default function WhyXipsoft() {
                       </div>
                       {card.badge && (
                         <span
-                          className="text-xs font-bold uppercase tracking-[0.3em]"
+                          className="font-stat text-xs font-bold uppercase tracking-[0.3em]"
                           style={{ color: card.color }}
                         >
                           {card.badge}

@@ -44,7 +44,7 @@ export default function IceButton({
       whileTap={{ scale: 0.96 }}
       className={cn(
         "btn-glint group relative inline-flex items-center justify-center overflow-hidden rounded-xl border border-neon-500/60 bg-transparent",
-        "font-bold tracking-wide text-neon-300",
+        "font-display font-bold tracking-wide text-neon-300",
         "shadow-btn-accent transition-all duration-200",
         "hover:-translate-y-0.5 hover:border-neon-300 hover:shadow-btn-accent-lg",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
