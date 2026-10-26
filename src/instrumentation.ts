@@ -14,10 +14,14 @@
  * iyileştirir.
  */
 export async function register(): Promise<void> {
-  if (process.env.NEXT_RUNTIME !== "nodejs") return;
-
-  const { ensureSiteVisitorAnalyticsSchema } = await import(
-    "@/lib/db/site-visitors"
-  );
-  await ensureSiteVisitorAnalyticsSchema();
+  // Next, instrumentation'ı EDGE için de derler. import'u PozİTİF `if` içine
+  // almak şart: erken return kullanırsan webpack koşullu derlemeyi (DCE)
+  // uygulamıyor ve `pg → fs` trace'i edge bundle'ında kırılıyor (`Module not
+  // found: Can't resolve 'fs'` → dev'de tüm sayfalar 500).
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { ensureSiteVisitorAnalyticsSchema } = await import(
+      "@/lib/db/site-visitors"
+    );
+    await ensureSiteVisitorAnalyticsSchema();
+  }
 }
