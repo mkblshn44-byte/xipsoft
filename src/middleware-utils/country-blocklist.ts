@@ -17,11 +17,35 @@ import pool from "@/lib/db/pool";
 const SNAPSHOT_TTL_MS = 5 * 60 * 1000; // 5 dakika
 const CACHE_PREFIX = "ctryblock";
 
+let schemaPromise: Promise<void> | null = null;
 let blockedSet: Set<string> | null = null;
 let snapshotExpiresAt = 0;
 let snapshotRequest: Promise<Set<string>> | null = null;
 
+export function ensureCountryBlocklistSchema(): Promise<void> {
+  if (!schemaPromise) {
+    schemaPromise = pool.query(
+      `CREATE TABLE IF NOT EXISTS country_blocklist (
+         id SERIAL PRIMARY KEY,
+         country_code VARCHAR(2) NOT NULL UNIQUE,
+         country_name TEXT NOT NULL DEFAULT '',
+         reason TEXT NOT NULL DEFAULT '',
+         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+       )`,
+    ).then(() => undefined).catch((error: unknown) => {
+      schemaPromise = null;
+      console.error(
+        "[country-blocklist] Şema hazırlanamadı:",
+        error instanceof Error ? error.message : error,
+      );
+      throw error;
+    });
+  }
+  return schemaPromise;
+}
+
 async function loadBlockedCountries(): Promise<Set<string>> {
+  await ensureCountryBlocklistSchema();
   const { rows } = await pool.query<{ country_code: string }>(
     `SELECT country_code FROM country_blocklist`
   );

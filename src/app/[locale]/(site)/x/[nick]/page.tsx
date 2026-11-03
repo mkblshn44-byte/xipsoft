@@ -9,6 +9,9 @@ import ProfilePageClient from "./ProfilePageClient";
 import JsonLd from "@/components/seo/JsonLd";
 import { personSchema } from "@/lib/schema/person";
 
+// Profil sayfası: unstable_cache 600 sn kullanıyor, ISR direktifi bunu tamamlar.
+export const revalidate = 600;
+
 interface ProfilePageProps {
   params: Promise<{ nick: string }>;
 }

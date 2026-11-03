@@ -9,6 +9,11 @@
  *
  * Arama motoru botları (Googlebot, Bingbot vb.) ASLA engellenmez —
  * SEO taraması için zorunludur.
+ *
+ * Googlebot/Bingbot IP doğrulaması (Reverse DNS):
+ *   Saldırganlar UA sahte yapabilir. Yalnızca gerçek Google/Bing IP aralıklarından
+ *   gelen istekler muaf tutulur; sahte UA'lar normal rate-limit zincirinden geçer.
+ *   Doğrulama sonucu Redis'te 6 saat cache'lenir → her istekte DNS sorgusu yok.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -22,14 +27,149 @@ const LOOPBACK_IPS = new Set(["127.0.0.1", "::1", "0.0.0.0", "::", "localhost"])
 
 /**
  * Majör arama motoru ve SEO botlarını tanımlayan User-Agent desenleri.
- * Bu botlar IP blocklist ve rate limit kontrolünden muaf tutulur.
+ * Bu botlar IP blocklist kontrolünden muaf tutulur — ANCAK IP doğrulaması
+ * yapılmadan rate-limit muafiyeti verilmez (bkz. isVerifiedSearchBot).
  */
 const SEARCH_BOT_PATTERN =
   /googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|sogou|exabot|facebot|ia_archiver|applebot|msnbot|teoma|ask jeeves|googlebot-image|googlebot-mobile|mediapartners-google|adsbot-google/i;
 
+/**
+ * Doğrulanmış Googlebot hostnameleri → IP'nin bu domaine ait olması gerekir.
+ * Kaynak: https://developers.google.com/search/docs/crawling-indexing/verifying-googlebot
+ */
+const GOOGLE_HOSTNAME_SUFFIX = "googlebot.com";
+const GOOGLE_ALT_SUFFIX = "google.com"; // özel tarayıcı botları bu domenden gelir
+const BING_HOSTNAME_SUFFIX = "search.msn.com";
+
+/** Redis'te bot doğrulama önbellek prefix'i (6 saatlik TTL). */
+const BOT_VERIFY_PREFIX = "botverify";
+const BOT_VERIFY_TTL = 60 * 60 * 6; // 6 saat
+const BOT_L1_TTL_MS = 10 * 60 * 1000; // 10 dakika süreç içi L1 önbellek
+const botVerifyL1 = new Map<string, { verified: boolean; expiresAt: number }>();
+
 export function isSearchBot(userAgent: string | null): boolean {
   if (!userAgent) return false;
   return SEARCH_BOT_PATTERN.test(userAgent);
+}
+
+/**
+ * IP'nin gerçekten Google/Bing'e ait olup olmadığını Reverse DNS ile doğrular.
+ *
+ * Algoritma (Google'ın resmi rehberi):
+ *  1. IP → hostname (PTR kaydı) — örn. "crawl-66-249-66-1.googlebot.com"
+ *  2. hostname → A/AAAA kaydı — özgün IP'ye dönmeli
+ *  3. Hostname soneki "googlebot.com" veya "google.com" / Bing için "search.msn.com" olmalı
+ *
+ * Çok katmanlı önbellek:
+ *  - L1 (In-Memory Map, 10 dk): Bot peş peşe 50 sayfa gezerken Redis'e dahi çıkmaz (0 komut).
+ *  - L2 (Redis, 6 saat): Instance'lar arası ortak havuz.
+ *  - DNS hata verirse fail-open (true dönülür) — SEO kaybı riskini minimize et.
+ */
+async function verifySearchBotIp(ip: string, userAgent: string): Promise<boolean> {
+  // Sadece Google ve Bing botlarını doğrula; diğerleri UA tespitine güven
+  const isGoogle = /googlebot|mediapartners-google|adsbot-google/i.test(userAgent);
+  const isBing = /bingbot|msnbot/i.test(userAgent);
+  if (!isGoogle && !isBing) return true; // diğer botlar (Yandex vb.) için muafiyet koru
+
+  // 1. Önce L1 süreç içi belleğe bak
+  const now = Date.now();
+  const l1 = botVerifyL1.get(ip);
+  if (l1 && l1.expiresAt > now) {
+    return l1.verified;
+  }
+
+  // 2. Redis'e bak (L2)
+  const redis = getRedisClient();
+  const cacheKey = `${BOT_VERIFY_PREFIX}:${ip}`;
+  if (redis) {
+    try {
+      const cached = await redis.get<string>(cacheKey);
+      if (cached !== null) {
+        const verifiedFromRedis = cached === "1";
+        if (botVerifyL1.size >= 1_000) botVerifyL1.delete(botVerifyL1.keys().next().value!);
+        botVerifyL1.set(ip, { verified: verifiedFromRedis, expiresAt: now + BOT_L1_TTL_MS });
+        return verifiedFromRedis;
+      }
+    } catch {
+      // Redis'e ulaşılamazsa DNS'e git
+    }
+  }
+
+  // Reverse DNS çözümlemesi — Node.js runtime (middleware nodejs runtime'da çalışır)
+  let verified = false;
+  try {
+    // PTR sorgusu: dns.promises modülü Next.js middleware'de (nodejs runtime) mevcut
+    const { promises: dnsPromises } = await import("dns");
+
+    // 1. PTR kaydı → hostname(ler)
+    let hostnames: string[] = [];
+    try {
+      hostnames = await Promise.race([
+        dnsPromises.reverse(ip),
+        new Promise<string[]>((_, reject) => setTimeout(() => reject(new Error("DNS timeout")), 2000)),
+      ]) as string[];
+    } catch {
+      // PTR kaydı yok veya timeout → fail-open
+      verified = true;
+    }
+
+    if (hostnames.length > 0) {
+      const expectedSuffix = isGoogle
+        ? [GOOGLE_HOSTNAME_SUFFIX, GOOGLE_ALT_SUFFIX]
+        : [BING_HOSTNAME_SUFFIX];
+
+      for (const hostname of hostnames) {
+        const h = hostname.toLowerCase().replace(/\.+$/, "");
+        const suffixOk = expectedSuffix.some((s) => h === s || h.endsWith(`.${s}`));
+        if (!suffixOk) continue;
+
+        // 2. Forward DNS: hostname → A kaydı → özgün IP'ye dönmeli
+        try {
+          const addresses = await Promise.race([
+            dnsPromises.resolve4(h).catch(() => dnsPromises.resolve6(h)),
+            new Promise<string[]>((_, reject) => setTimeout(() => reject(new Error("DNS timeout")), 2000)),
+          ]) as string[];
+          if (addresses.includes(ip)) {
+            verified = true;
+            break;
+          }
+        } catch {
+          // Forward DNS başarısız → bu hostname'i atla, diğerini dene
+        }
+      }
+    }
+  } catch {
+    // dns modülü yüklenemedi vb. → fail-open
+    verified = true;
+  }
+
+  // Sonucu L1 belleğe yaz
+  if (botVerifyL1.size >= 1_000) botVerifyL1.delete(botVerifyL1.keys().next().value!);
+  botVerifyL1.set(ip, { verified, expiresAt: now + BOT_L1_TTL_MS });
+
+  // Sonucu Redis'e yaz
+  if (redis) {
+    try {
+      await redis.set(cacheKey, verified ? "1" : "0", { ex: BOT_VERIFY_TTL });
+    } catch {
+      // yazma hatası akışı bozmaz
+    }
+  }
+
+  return verified;
+}
+
+/**
+ * User-Agent arama motoru botu olduğunu söylüyor VE IP doğrulamasından geçiyor mu?
+ * Rate-limit muafiyeti için bu fonksiyon kullanılır.
+ */
+export async function isVerifiedSearchBot(
+  userAgent: string | null,
+  ip: string,
+): Promise<boolean> {
+  if (!userAgent || !isSearchBot(userAgent)) return false;
+  if (isLoopbackIp(ip)) return true; // dev ortamı
+  return verifySearchBotIp(ip, userAgent);
 }
 
 export function isLoopbackIp(ip: string): boolean {

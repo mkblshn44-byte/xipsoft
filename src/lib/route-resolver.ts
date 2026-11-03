@@ -158,11 +158,26 @@ async function queryServiceRoute(slugArray: string[]): Promise<ResolvedServiceRo
   }
 }
 
-export function resolveServiceRoute(slugArray: string[]): Promise<ResolvedServiceRoute | null> {
+function normalizeServiceRouteSlugs(slugArray: string[]): string[] | null {
   const normalized = slugArray.map(normalizeSlug).filter(Boolean);
   if (normalized.length !== slugArray.length || normalized.length < 1 || normalized.length > 2) {
-    return Promise.resolve(null);
+    return null;
   }
+
+  return normalized;
+}
+
+/** Uncached variant for middleware, where Next's incremental cache is unavailable. */
+export function resolveServiceRouteUncached(
+  slugArray: string[],
+): Promise<ResolvedServiceRoute | null> {
+  const normalized = normalizeServiceRouteSlugs(slugArray);
+  return normalized ? queryServiceRoute(normalized) : Promise.resolve(null);
+}
+
+export function resolveServiceRoute(slugArray: string[]): Promise<ResolvedServiceRoute | null> {
+  const normalized = normalizeServiceRouteSlugs(slugArray);
+  if (!normalized) return Promise.resolve(null);
 
   return unstable_cache(
     () => queryServiceRoute(normalized),

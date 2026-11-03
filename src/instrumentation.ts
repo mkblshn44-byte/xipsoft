@@ -22,6 +22,22 @@ export async function register(): Promise<void> {
     const { ensureSiteVisitorAnalyticsSchema } = await import(
       "@/lib/db/site-visitors"
     );
-    await ensureSiteVisitorAnalyticsSchema();
+    await ensureSiteVisitorAnalyticsSchema().catch((err) =>
+      console.warn("[instrumentation] ensureSiteVisitorAnalyticsSchema failed:", err)
+    );
+
+    const { ensureCountryBlocklistSchema } = await import(
+      "@/middleware-utils/country-blocklist"
+    );
+    await ensureCountryBlocklistSchema().catch((err) =>
+      console.warn("[instrumentation] ensureCountryBlocklistSchema failed:", err)
+    );
+
+    const { ensureContentTreeSchema } = await import(
+      "@/lib/content-tree-policy"
+    );
+    await ensureContentTreeSchema().catch((err) =>
+      console.warn("[instrumentation] ensureContentTreeSchema failed:", err)
+    );
   }
 }

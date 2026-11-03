@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db/pool";
 import { extractAuthContext, requireAdmin } from "@/lib/api-guard";
+import { ensureCountryBlocklistSchema } from "@/middleware-utils/country-blocklist";
 
 export const runtime = "nodejs";
 
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
   if (guard !== null && "status" in guard) return guard;
 
   try {
+    await ensureCountryBlocklistSchema();
     const start = Date.now();
 
     const [orders, blog, blockedIPs, blockedCountries, recentThreats, dbPing] =

@@ -74,6 +74,47 @@ function refreshWindowMs(ttlSeconds: number): number {
   return Math.min(60 * 60 * 1000, Math.max(60 * 1000, (ttlSeconds * 1000) / 10));
 }
 
+// ── In-Memory L1 Cache for Page Cache ──────────────────────────────────────────
+// Upstash Redis'e yapılan GET çağrılarını aynı instance üzerinde 10 saniye boyunca
+// sıfıra indirir; yüksek trafik ve bot akınlarında Redis komut kotasını korur.
+interface L1PageEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+const L1_PAGE_MAX = 1_000;
+const L1_PAGE_TTL_MS = 10_000; // 10 saniye mikro önbellek
+const l1PageMap = new Map<string, L1PageEntry<unknown>>();
+
+function getPageFromL1<T>(key: string): { hit: true; value: T } | { hit: false } {
+  const entry = l1PageMap.get(key);
+  if (!entry) return { hit: false };
+  if (Date.now() > entry.expiresAt) {
+    l1PageMap.delete(key);
+    return { hit: false };
+  }
+  return { hit: true, value: entry.value as T };
+}
+
+function setPageToL1<T>(key: string, value: T, ttlMs = L1_PAGE_TTL_MS): void {
+  if (l1PageMap.size >= L1_PAGE_MAX) {
+    const oldest = l1PageMap.keys().next().value;
+    if (oldest !== undefined) l1PageMap.delete(oldest);
+  }
+  l1PageMap.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
+export function invalidateL1PageCache(keyOrPattern?: string): void {
+  if (!keyOrPattern) {
+    l1PageMap.clear();
+    return;
+  }
+  for (const k of l1PageMap.keys()) {
+    if (k === keyOrPattern || k.startsWith(keyOrPattern)) {
+      l1PageMap.delete(k);
+    }
+  }
+}
+
 /**
  * Read-through sarmalayıcı.
  *
@@ -87,6 +128,10 @@ export async function withPageCache<T>(
   load: () => Promise<T>,
   options: { ttl?: number; cacheEmpty?: boolean } = {},
 ): Promise<T> {
+  // 1. Önce L1 In-Memory Cache (0 ağ maliyeti, 0 Upstash komutu)
+  const l1 = getPageFromL1<T>(key);
+  if (l1.hit) return l1.value;
+
   const client = getRedisClient();
   if (!client) return load();
 
@@ -105,11 +150,17 @@ export async function withPageCache<T>(
   }
 
   if (envelope) {
-    if (now < envelope.soft) return envelope.v;
+    if (now < envelope.soft) {
+      setPageToL1(key, envelope.v);
+      return envelope.v;
+    }
     // Erken tazeleme penceresi: her istek değil, olasılıkla bir istek tazeler.
     const elapsed = now - envelope.soft;
     const window = refreshWindowMs(ttl);
-    if (Math.random() > Math.min(1, elapsed / window)) return envelope.v;
+    if (Math.random() > Math.min(1, elapsed / window)) {
+      setPageToL1(key, envelope.v);
+      return envelope.v;
+    }
   }
 
   // Isabet yok (veya tazeleme sırası bu isteğe düştü) → tek yükleyici kilidi alır.
@@ -131,7 +182,9 @@ export async function withPageCache<T>(
         if (raw) {
           const parsed: unknown = typeof raw === "string" ? JSON.parse(raw) : raw;
           if (parsed && typeof parsed === "object" && "v" in parsed) {
-            return (parsed as Envelope<T>).v;
+            const val = (parsed as Envelope<T>).v;
+            setPageToL1(key, val);
+            return val;
           }
         }
       } catch {
@@ -143,6 +196,7 @@ export async function withPageCache<T>(
 
   try {
     const value = await load();
+    setPageToL1(key, value);
     const isEmpty = value === null || value === undefined;
     if (!isEmpty || options.cacheEmpty !== false) {
       const writeTtl = isEmpty ? NEGATIVE_CACHE_TTL : ttl;
@@ -213,6 +267,8 @@ export async function invalidatePageCaches(input: {
   }
   if (keys.length === 0) return;
 
+  for (const k of keys) invalidateL1PageCache(k);
+
   try {
     await client.del(...keys);
   } catch {
@@ -231,6 +287,8 @@ export async function invalidateSitemapCache(): Promise<void> {
  * Next tarafındaki `revalidateTag("services")` karşılığıdır.
  */
 export async function invalidateServiceCaches(): Promise<void> {
+  invalidateL1PageCache("page:svc:");
+  invalidateL1PageCache("page:sitemap:");
   const client = getRedisClient();
   if (!client) return;
   try {
@@ -244,6 +302,7 @@ export async function invalidateServiceCaches(): Promise<void> {
 
 /** Tüm sayfa önbelleğini temizler (toplu içerik işlemleri / deploy sonrası). */
 export async function invalidateAllPageCaches(): Promise<void> {
+  invalidateL1PageCache();
   const client = getRedisClient();
   if (!client) return;
   try {

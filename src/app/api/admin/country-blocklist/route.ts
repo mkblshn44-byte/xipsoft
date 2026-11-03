@@ -7,7 +7,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db/pool";
-import { invalidateCountryBlockCache } from "@/middleware-utils/country-blocklist";
+import {
+  ensureCountryBlocklistSchema,
+  invalidateCountryBlockCache,
+} from "@/middleware-utils/country-blocklist";
 import { extractAuthContext, requireAdmin } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
@@ -18,6 +21,7 @@ export async function GET(req: NextRequest) {
   if (guard !== null && "status" in guard) return guard;
 
   try {
+    await ensureCountryBlocklistSchema();
     const { rows } = await pool.query(
       `SELECT id, country_code, country_name, reason, created_at
        FROM country_blocklist
@@ -48,6 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ISO 3166-1 alpha-2 formatı gerekli (ör. TR, US)" }, { status: 400 });
 
   try {
+    await ensureCountryBlocklistSchema();
     const { rows } = await pool.query(
       `INSERT INTO country_blocklist (country_code, country_name, reason)
        VALUES ($1, $2, $3)
@@ -79,6 +84,7 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "code veya id gerekli" }, { status: 400 });
 
   try {
+    await ensureCountryBlocklistSchema();
     let result;
     if (code) {
       result = await pool.query(
@@ -103,4 +109,3 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "İşlem başarısız" }, { status: 500 });
   }
 }
-

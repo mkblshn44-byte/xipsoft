@@ -10,6 +10,10 @@ import { unstable_cache } from "next/cache";
 import type { ServiceHubCategory, ServiceHubItem } from "@/types/common";
 import { normalizeBrandColor } from "@/lib/brand-color";
 import { queryDynamicContentFaq } from "@/lib/page-content";
+import { getRedisClient } from "@/lib/redis/client";
+
+const SERVICES_HUB_CACHE_KEY = "page:svc:hub-v3";
+const SERVICES_HUB_TTL = 3600; // 1 saat
 
 export interface HubFaqItem {
   question: string;
@@ -143,12 +147,32 @@ async function queryServicesHubData(): Promise<ServicesHubData> {
   }
 }
 
-export function getServicesHubData(): Promise<ServicesHubData> {
+export async function getServicesHubData(): Promise<ServicesHubData> {
+  const redis = getRedisClient();
+
+  // L1: Redis (1 saat)
+  if (redis) {
+    try {
+      const cached = await redis.get<ServicesHubData>(SERVICES_HUB_CACHE_KEY);
+      if (cached) return cached;
+    } catch { /* Redis'e ulaşılamazsa devam */ }
+  }
+
+  // L2: Next.js unstable_cache → DB
   // Admin panelinden hizmet güncellendiğinde revalidateTag("services") ile
-  // önbellek anında tazelenir. Anahtar sürümü (v2) DB şeması/içeriği
+  // önbellek anında tazelenir. Anahtar sürümü (v3) DB şeması/içeriği
   // değiştiğinde eski Data Cache kopyasının sızmasını engeller.
-  return unstable_cache(queryServicesHubData, ["services-hub-v3"], {
-    revalidate: 3600,
+  const result = await unstable_cache(queryServicesHubData, ["services-hub-v3"], {
+    revalidate: SERVICES_HUB_TTL,
     tags: ["services", "sitemap"],
   })();
+
+  // L1'e yaz
+  if (redis && result.services.length > 0) {
+    try {
+      await redis.set(SERVICES_HUB_CACHE_KEY, result, { ex: SERVICES_HUB_TTL });
+    } catch { /* yazma hatası akışı bozmaz */ }
+  }
+
+  return result;
 }

@@ -44,6 +44,29 @@ const TREE_POLICY_TTL_MS = 60_000;
 /** Bilinmeyen alt yolların harita büyümesini sınırla (rotadan bağımsız koruma). */
 const MAX_PATH_DECISIONS = 2_000;
 
+let schemaPromise: Promise<void> | null = null;
+
+export async function ensureContentTreeSchema(): Promise<void> {
+  if (!schemaPromise) {
+    schemaPromise = (async () => {
+      await pool.query("ALTER TABLE pages ADD COLUMN IF NOT EXISTS full_path TEXT");
+      await pool.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS pages_full_path_uq
+           ON pages (full_path)
+          WHERE full_path IS NOT NULL AND is_deleted = FALSE`,
+      );
+    })().catch((error: unknown) => {
+      schemaPromise = null;
+      console.error(
+        "[content-tree-policy] Şema hazırlanamadı:",
+        error instanceof Error ? error.message : error,
+      );
+      throw error;
+    });
+  }
+  return schemaPromise;
+}
+
 /**
  * YAYIN SAHİPLENME koşulu — `.html` kanonisi ve middleware kararı bunu kullanır.
  * Yalnız admin'in ağaçtan yarattığı `kind='custom'` düğümleri `.html` alır.
@@ -71,6 +94,7 @@ const pathDecisions = new Map<string, boolean>();
 let pathDecisionsExpiresAt = 0;
 
 async function loadTreeRoots(): Promise<Set<string>> {
+  await ensureContentTreeSchema();
   const { rows } = await pool.query<{ root: string }>(
     `SELECT DISTINCT split_part(full_path, '/', 1) AS root
        FROM pages
@@ -122,6 +146,7 @@ async function treeOwnsFullPath(fullPath: string): Promise<boolean> {
 
   let owned = false;
   try {
+    await ensureContentTreeSchema();
     const { rows } = await pool.query<{ found: number }>(
       `SELECT 1 AS found
          FROM pages

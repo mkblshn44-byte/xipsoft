@@ -66,23 +66,63 @@ export function getRedisClient() {
   return getClient();
 }
 
-// ─── Generic JSON cache (D3) ──────────────────────────────────────────────────
+// ─── Generic JSON cache (D3) + In-Memory L1 Cache ──────────────────────────────
+interface L1CacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+const L1_MAX_KEYS = 2_000;
+const l1Cache = new Map<string, L1CacheEntry<unknown>>();
 
-/** JSON değeri okur; Redis yok/hatalıysa `null` (fail-soft). */
+/** L1 bellekten oku — 5-10 saniyelik mikro önbellek (Upstash istek kotasını korur). */
+function getFromL1<T>(key: string): T | null {
+  const entry = l1Cache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    l1Cache.delete(key);
+    return null;
+  }
+  return entry.value as T;
+}
+
+/** L1 belleğe yaz (en fazla 10 sn). */
+function setToL1<T>(key: string, value: T, ttlSeconds: number): void {
+  const l1TtlMs = Math.min(10_000, Math.max(1_000, ttlSeconds * 1000));
+  if (l1Cache.size >= L1_MAX_KEYS) {
+    const oldest = l1Cache.keys().next().value;
+    if (oldest !== undefined) l1Cache.delete(oldest);
+  }
+  l1Cache.set(key, { value, expiresAt: Date.now() + l1TtlMs });
+}
+
+/** L1 bellekten anahtarları düşür. */
+function removeFromL1(keys: string[]): void {
+  for (const k of keys) {
+    l1Cache.delete(k);
+  }
+}
+
+/** JSON değeri okur; önce L1 (bellek), sonra L2 (Redis). Yok/hatalıysa `null` (fail-soft). */
 export async function cacheGet<T>(key: string): Promise<T | null> {
+  const l1 = getFromL1<T>(key);
+  if (l1 !== null) return l1;
+
   const client = getClient();
   if (!client) return null;
   try {
     const raw = await client.get<string>(key);
     if (!raw) return null;
-    return typeof raw === 'string' ? (JSON.parse(raw) as T) : (raw as T);
+    const parsed = typeof raw === 'string' ? (JSON.parse(raw) as T) : (raw as T);
+    setToL1(key, parsed, 10);
+    return parsed;
   } catch {
     return null;
   }
 }
 
-/** JSON değeri TTL ile yazar; Redis yok/hatalıysa sessizce geçer. */
+/** JSON değeri TTL ile yazar; L1 + Redis (L2). */
 export async function cacheSet(key: string, value: unknown, ttl: number): Promise<void> {
+  setToL1(key, value, ttl);
   const client = getClient();
   if (!client) return;
   try {
@@ -92,8 +132,9 @@ export async function cacheSet(key: string, value: unknown, ttl: number): Promis
   }
 }
 
-/** Verilen key'leri siler (boş liste no-op). */
+/** Verilen key'leri siler (boş liste no-op); L1 + Redis. */
 export async function cacheDel(keys: string[]): Promise<void> {
+  removeFromL1(keys);
   const client = getClient();
   if (!client || keys.length === 0) return;
   try {

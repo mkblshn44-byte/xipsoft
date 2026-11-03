@@ -8,6 +8,10 @@
 import pool from "@/lib/db/pool";
 import { unstable_cache } from "next/cache";
 import type { HomeHeroCopy } from "@/types/common";
+import { getRedisClient } from "@/lib/redis/client";
+
+/** Redis L1 önbellek için TTL (saniye) — unstable_cache ile aynı pencerede. */
+const PAGE_CONTENT_REDIS_TTL = 3600;
 
 export interface PageFaqItem {
   question: string;
@@ -60,13 +64,34 @@ export async function queryDynamicContentFaq(
   return queryDynamicFaq(type, category);
 }
 
-/** Bir sayfa kategorisinin SSS'lerini DB'den döndürür (1 saat cache). */
-export function getPageFaqs(category: string): Promise<PageFaqItem[]> {
-  return unstable_cache(
+/** Bir sayfa kategorisinin SSS'lerini DB'den döndürür (Redis L1 → unstable_cache L2, 1 saat). */
+export async function getPageFaqs(category: string): Promise<PageFaqItem[]> {
+  const redis = getRedisClient();
+  const cacheKey = `page:faq:${category}`;
+
+  // L1: Redis
+  if (redis) {
+    try {
+      const cached = await redis.get<PageFaqItem[]>(cacheKey);
+      if (cached) return cached;
+    } catch { /* Redis'e ulaşılamazsa devam */ }
+  }
+
+  // L2: Next.js unstable_cache → DB
+  const result = await unstable_cache(
     () => queryPageFaqs(category),
     ["page-faq", category],
-    { revalidate: 3600, tags: ["page-content", `page-faq:${category}`] },
+    { revalidate: PAGE_CONTENT_REDIS_TTL, tags: ["page-content", `page-faq:${category}`] },
   )();
+
+  // L1'e yaz
+  if (redis && result.length > 0) {
+    try {
+      await redis.set(cacheKey, result, { ex: PAGE_CONTENT_REDIS_TTL });
+    } catch { /* yazma hatası akışı bozmaz */ }
+  }
+
+  return result;
 }
 
 /** `{urun}` placeholder'ını gerçek ürün adıyla değiştirir. */
@@ -140,14 +165,38 @@ async function queryPageMeta(key: string): Promise<PageMeta | null> {
 }
 
 /**
- * Bir sayfanın <head> meta içeriğini DB'den döndürür (1 saat cache).
+ * Bir sayfanın <head> meta içeriğini DB'den döndürür (Redis L1 → unstable_cache L2, 1 saat).
  * Kayıt yoksa `null` döner; çağıran taraf kendi güvenli varsayılanını uygular.
  */
-export function getPageMeta(key: string): Promise<PageMeta | null> {
-  return unstable_cache(
+export async function getPageMeta(key: string): Promise<PageMeta | null> {
+  const redis = getRedisClient();
+  const cacheKey = `page:meta:${key}`;
+
+  // L1: Redis
+  if (redis) {
+    try {
+      const cached = await redis.get<PageMeta | null>(cacheKey);
+      if (cached !== undefined && cached !== null) return cached;
+      // "0" → negatif önbellek (kayıt yok, DB'ye gitme)
+      const raw = await redis.get<string>(cacheKey);
+      if (raw === "null") return null;
+    } catch { /* devam */ }
+  }
+
+  // L2: unstable_cache → DB
+  const result = await unstable_cache(
     () => queryPageMeta(key),
     ["page-meta", key],
-    { revalidate: 3600, tags: ["page-content", `page-meta:${key}`] },
+    { revalidate: PAGE_CONTENT_REDIS_TTL, tags: ["page-content", `page-meta:${key}`] },
   )();
+
+  // L1'e yaz (null da önbelleklenir — negatif cache)
+  if (redis) {
+    try {
+      await redis.set(cacheKey, result ?? "null", { ex: PAGE_CONTENT_REDIS_TTL });
+    } catch { /* yazma hatası akışı bozmaz */ }
+  }
+
+  return result;
 }
 

@@ -193,6 +193,19 @@ export async function resolveServicePage(slug: string): Promise<ResolvedServiceP
   return null;
 }
 
+/** Uncached service lookup for middleware, where Next's incremental cache is unavailable. */
+export async function resolveServicePageUncached(
+  slug: string,
+): Promise<ResolvedServicePage | null> {
+  const fromDb = await queryServiceFromDB(slug);
+  if (fromDb) return { service: fromDb, source: "db" };
+
+  const fallback = getServiceFallback(slug);
+  if (fallback) return { service: fallback, source: "fallback" };
+
+  return null;
+}
+
 async function queryAllActiveServices(): Promise<ServicePageData[]> {
   if (!process.env.DATABASE_URL) return [];
 

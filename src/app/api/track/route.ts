@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db/pool";
 import { getClientIp } from "@/lib/rate-limit";
 import { ensureSiteVisitorAnalyticsSchema } from "@/lib/db/site-visitors";
+import { ensureCountryBlocklistSchema } from "@/middleware-utils/country-blocklist";
 
 export const runtime = "nodejs";
 
@@ -87,19 +88,24 @@ export async function POST(req: NextRequest) {
 
     const ip = getClientIp(req);
 
-    const country      = getCountry(req);
-    const cf_ray       = req.headers.get("cf-ray");
+    const country = getCountry(req);
+    const cf_ray = req.headers.get("cf-ray");
     const cf_ipcountry = req.headers.get("cf-ipcountry");
-    const city         = req.headers.get("cf-ipcity") || req.headers.get("x-vercel-ip-city") || null;
-    const asn          = req.headers.get("cf-asn") || null;
+    const city = req.headers.get("cf-ipcity") || req.headers.get("x-vercel-ip-city") || null;
+    const asn = req.headers.get("cf-asn") || null;
 
     // Ülke bloğu kontrolü
     if (country) {
-      const blocked = await pool.query(
-        `SELECT 1 FROM country_blocklist WHERE country_code = $1 LIMIT 1`,
-        [country],
-      );
-      if (blocked.rows.length > 0) return NextResponse.json({ success: true, blocked: true });
+      try {
+        await ensureCountryBlocklistSchema();
+        const blocked = await pool.query(
+          `SELECT 1 FROM country_blocklist WHERE country_code = $1 LIMIT 1`,
+          [country],
+        );
+        if (blocked.rows.length > 0) return NextResponse.json({ success: true, blocked: true });
+      } catch (countryErr) {
+        console.warn("[track] country_blocklist kontrolü atlandı:", countryErr);
+      }
     }
 
     await pool.query(

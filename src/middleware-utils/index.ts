@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { routing } from '@/i18n/routing';
-import { blockIpIfNecessary, isSearchBot } from "./ip-blocklist";
+import { blockIpIfNecessary, isSearchBot, isVerifiedSearchBot } from "./ip-blocklist";
 import { checkRateLimit, checkPayloadSize } from "./rate-limiter";
 import { getClientIp } from "@/lib/rate-limit";
 import {
@@ -26,10 +26,10 @@ import { DELETED_PATH_SET, normalizeTrailingSlash, stripLocalePrefix, buildGoneR
 import { handleLegacyForum, handleLegacyWpPaths } from "./legacy-forum";
 import { handleRedirect } from "@/lib/redirect-handler";
 import { xipGuardCheck } from "@/lib/security/xip-guard";
-import { resolveServiceRoute } from "@/lib/route-resolver";
+import { resolveServiceRouteUncached } from "@/lib/route-resolver";
 import { SERVICE_SLUG_ALIASES } from "@/lib/service-content/aliases";
 import { isPublishedTreePath } from "@/lib/content-tree-policy";
-import { resolveServicePage } from "@/lib/db/services";
+import { resolveServicePageUncached } from "@/lib/db/services";
 
 async function handleMissingServicePath(pathname: string): Promise<NextResponse | null> {
   if (pathname === "/hizmetler" || !pathname.startsWith("/hizmetler/")) return null;
@@ -45,8 +45,8 @@ async function handleMissingServicePath(pathname: string): Promise<NextResponse 
 
   // One service segment: unknown or deleted service → 410.
   if (segments.length === 2) {
-    const route = await resolveServiceRoute([firstSlug]);
-    if (route?.rowType === "service" || await resolveServicePage(firstSlug)) return null;
+    const route = await resolveServiceRouteUncached([firstSlug]);
+    if (route?.rowType === "service" || await resolveServicePageUncached(firstSlug)) return null;
     if (await isPublishedTreePath(clean)) return null;
     return buildGoneResponse(clean) as unknown as NextResponse;
   }
@@ -196,20 +196,34 @@ export default async function middleware(
 
   const userAgent = req.headers.get("user-agent");
 
-  // Arama motoru botlarÄ± IP blocklist ve rate limit'ten tamamen muaf
-  const isBot = isSearchBot(userAgent);
+  // Arama motoru botları IP blocklist'ten tamamen muaf (UA bazlı hızlı kontrol).
+  // Rate-limit muafiyeti için IP doğrulaması gerekir (bkz. isVerifiedSearchBot).
+  const isBotByUA = isSearchBot(userAgent);
 
   // 1. IP Blocklist + Country Blocklist & Rate Limiting (parallel)
   const country = req.headers.get("cf-ipcountry") || req.headers.get("x-vercel-ip-country") || null;
-  const shouldApplyRateLimit = !isBot || pathname === "/api" || pathname.startsWith("/api/");
-  const [blockResponse, countryResponse, rateLimitResponse] = await Promise.all([
+
+  // Reverse DNS doğrulaması — sadece bot UA'lı istekler için, paralel çalıştır
+  const verifiedBotPromise = isBotByUA
+    ? isVerifiedSearchBot(userAgent, ip)
+    : Promise.resolve(false);
+
+  const shouldApplyRateLimit = !isBotByUA || pathname === "/api" || pathname.startsWith("/api/");
+  const [blockResponse, countryResponse, rateLimitResponse, isVerifiedBot] = await Promise.all([
     blockIpIfNecessary(ip, userAgent),
-    isBot ? Promise.resolve(null) : blockCountryIfNecessary(country),
+    isBotByUA ? Promise.resolve(null) : blockCountryIfNecessary(country),
     shouldApplyRateLimit ? checkRateLimit(req, pathname) : Promise.resolve(null),
+    verifiedBotPromise,
   ]);
   if (blockResponse) return blockResponse;
   if (countryResponse) return countryResponse;
-  if (rateLimitResponse) return rateLimitResponse;
+
+  // Doğrulanmamış bot (sahte UA) rate-limit'ten muaf değil
+  if (rateLimitResponse && !isVerifiedBot) return rateLimitResponse;
+  if (rateLimitResponse && isVerifiedBot) {
+    // Gerçek bot rate-limit aştı — çok nadir, ama logla ve geçir
+    console.warn(`[Middleware] Verified bot rate-limited: IP=${ip} UA=${userAgent?.slice(0, 80)}`);
+  }
 
   // 3. Payload Size Check
   const payloadResponse = checkPayloadSize(req, pathname);
