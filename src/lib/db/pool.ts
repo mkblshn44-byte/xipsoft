@@ -158,7 +158,7 @@ class DBPool {
     
     const ssl = process.env.DATABASE_SSL === 'false'
       ? false
-      : { rejectUnauthorized: process.env.NODE_ENV === 'production' };
+      : { rejectUnauthorized: false };
 
     this.pool = new Pool({
       connectionString: finalConnectionString,
@@ -315,13 +315,17 @@ const initPromise = (() => {
         console.warn('[DB:primary] DATABASE_URL is not set — using mock DB fallback');
       } else {
         primary = new DBPool(url, 'primary');
-        const ok = await primary.testConnection();
-        if (!ok) {
-          initError = new Error('Primary DB connection failed health check');
-          console.warn('[DB:primary] ⚠️ No database connection on startup — running without DB');
-        } else if (process.env.NODE_ENV !== 'production' && !handle.connectedLogged) {
-          console.log('[DB:primary] ✅ Connected');
-          handle.connectedLogged = true;
+        // Serverless (Vercel) ortamında başlangıçta modülü kilitleyen senkron probe atılmaz.
+        // İlk gerçek sorgu queryWithRetry ile güvenle bağlanır (Neon cold-start toleransı).
+        if (process.env.NODE_ENV !== 'production') {
+          const ok = await primary.testConnection();
+          if (!ok) {
+            initError = new Error('Primary DB connection failed health check');
+            console.warn('[DB:primary] ⚠️ No database connection on startup — running without DB');
+          } else if (!handle.connectedLogged) {
+            console.log('[DB:primary] ✅ Connected');
+            handle.connectedLogged = true;
+          }
         }
 
         if (process.env.NODE_ENV !== 'production') {
