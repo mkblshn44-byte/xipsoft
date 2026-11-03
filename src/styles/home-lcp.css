@@ -1,0 +1,57 @@
+/* Keep below-the-fold sections from competing with the hero during first paint. */
+.home-below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 520px;
+}
+
+/* ── Hero altı giriş animasyonu ──────────────────────────────────────────────
+   Bölümler eskiden `ssr: false` + IntersectionObserver ile yalnızca istemcide
+   render ediliyordu; JS çalışmadığında sayfa hero altında boş kalıyordu.
+   Artık içerik sunucuda basılır, belirme efekti bu CSS animasyonuyla (JS'siz)
+   yapılır. `animation-fill-mode` bilinçli olarak kullanılmaz: animasyon herhangi
+   bir nedenle çalışmazsa içerik yine de görünür kalır (opaklık 0'da kilitlenmez). */
+@keyframes home-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+.home-reveal {
+  animation: home-reveal 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes review-card-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.review-card-enter {
+  animation: review-card-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes tech-card-enter {
+  from {
+    opacity: 0;
+    transform: translateX(42px) scale(0.98);
+    filter: blur(3px);
+  }
+}
+
+.tech-card-reveal {
+  animation: tech-card-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-reveal,
+  .review-card-enter,
+  .tech-card-reveal {
+    animation: none;
+  }
+}

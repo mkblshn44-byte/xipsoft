@@ -1,0 +1,14 @@
+node_modules
+.next
+.vercel
+*.sql
+_diag_*.mjs
+.env.local
+.env*.local
+*.log
+# Gecici test/cikti dosyalari (curl header dump, kaydedilmis sayfa vb.)
+*.h
+*.tsbuildinfo
+sm.xml
+# GSC denetim dosyalari — deploya girmesin
+sorunluolanlar/
