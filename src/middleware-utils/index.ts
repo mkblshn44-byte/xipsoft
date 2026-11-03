@@ -89,19 +89,10 @@ export default async function middleware(
   const guardResponse = await xipGuardCheck(req);
   if (guardResponse) return guardResponse;
 
-  // 0a-pre. www → non-www — Vercel kendi routing katmanında 308 ürettiği için
-  // next.config.mjs redirect kuralı yetersiz kalıyor. Middleware Node.js
-  // runtime'da çalışıyor (build çıktısı: middleware.js.nft.json `pg` trace ediyor,
-  // `.next/server/edge/` üretilmiyor) → kesin 301 garantisi.
-  const host = req.headers.get("host") ?? "";
-    if (process.env.NODE_ENV === "production" && host.startsWith("www.")) {
-    const nonWwwHost = host.slice(4); // "www." kaldır
-    const target = new URL(req.url);
-    target.host = nonWwwHost;
-    const resp = NextResponse.redirect(target.toString(), { status: 301 });
-    resp.headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    return resp;
-  }
+  // 0a-pre. www → non-www — next.config.mjs `redirects()` içinde
+  // `has: [{ type: "host", value: "www.xipsoft.net" }]` kuralı Vercel edge'de
+  // middleware'den ÖNCE çalışır. Burada ikinci bir redirect olursa döngü oluşur.
+  // Bu blok kasıtlı olarak kaldırıldı; tek kaynak next.config.mjs'dir.
 
   // 0. URL normalizasyonu — trailing slash + TR locale öneki TEK adımda 301
   // next.config.mjs `trailingSlash: false` olduğu için:
@@ -130,8 +121,6 @@ export default async function middleware(
         ? basePath
         : stripLocalePrefix(basePath, routing.defaultLocale)
     ) || "/";
-
-  // NOT: www -> non-www redirect yukarida (0a-pre) middleware'de yapiliyor.
 
 
 
