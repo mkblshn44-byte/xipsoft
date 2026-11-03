@@ -27,15 +27,55 @@ export interface PoolHealth {
 }
 
 /**
+ * Veritabanı sorgusunda oluşan bir hatanın gerçek bir bağlantı/ağ arızası mı
+ * yoksa normal bir SQL/veri hatası mı (syntax, eksik sütun, unique constraint vb.)
+ * olduğunu ayırt eder. Yalnızca gerçek bağlantı kopmaları pool sağlığını etkiler.
+ */
+export function isConnectionFailure(err: unknown): boolean {
+  if (!err || typeof err !== "object") return true;
+  const pgErr = err as { code?: string; message?: string };
+  if (pgErr.code) {
+    const code = String(pgErr.code).toLowerCase();
+    // 08: connection exceptions, 57: operator intervention/shutdown, 53: insufficient resources
+    const prefix = code.slice(0, 2);
+    if (prefix === "08" || prefix === "57" || prefix === "53") return true;
+    if (
+      code === "econnreset" ||
+      code === "etimedout" ||
+      code === "econnrefused" ||
+      code === "enotfound"
+    ) {
+      return true;
+    }
+    // PostgreSQL standart veri/SQL hataları (42703 undefined column, 42P01 undefined table, 23505 unique violation vb.)
+    // sunucunun ayakta ve yanıt verebilir olduğunu gösterir; havuz sağlıksız DEĞİLDİR.
+    return false;
+  }
+  const msg = (pgErr.message || "").toLowerCase();
+  if (
+    msg.includes("timeout") ||
+    msg.includes("connection terminated") ||
+    msg.includes("connection reset") ||
+    msg.includes("socket") ||
+    msg.includes("network") ||
+    msg.includes("econnreset")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Pool sağlık metriklerini günceller — `DBPool` ve `MockPool` ortak (D1).
- * Başarısızlıkta 3 ardışık hatada sağlıksız işaretlenir; `logLabel` verilirse
- * yalnızca ilk işaretlemede log düşer (mock sessiz kalır).
+ * Yalnızca gerçek bağlantı arızalarında ardışık hata sayacı artar;
+ * SQL sözdizimi veya şema hataları havuzu gereksiz yere 'unhealthy' yapmaz.
  */
 function applyHealthUpdate(
   health: PoolHealth,
   latency: number,
   success: boolean,
   logLabel?: string,
+  isConnectionErr = true,
 ): void {
   health.totalQueries++;
   if (success) {
@@ -49,6 +89,11 @@ function applyHealthUpdate(
   }
 
   health.failedQueries++;
+  if (!isConnectionErr) {
+    // SQL/şema düzeyi hata — bağlantı havuzunun sağlığını düşürme.
+    return;
+  }
+
   health.consecutiveFailures++;
   if (health.consecutiveFailures === 3) {
     health.healthy = false;
@@ -117,24 +162,22 @@ class DBPool {
 
     this.pool = new Pool({
       connectionString: finalConnectionString,
-      // Serverless instance başına bağlantı sayısını sınırla; birden çok warm
-      // instance toplamda sağlayıcı bağlantı limitini aşmamalı.
-      // Artırıldı: 5 -> 10 (Neon free tier 100 conn, multiple instances için yeterli)
+      // Serverless (Vercel) ortamında zombi bağlantıları ve Neon uyku çakışmasını önlemek için min: 0
       max: 10,
-      min: 2, // Min 2 bağlantı tut - cold start önleme
-      idleTimeoutMillis: 60000, // 30s -> 60s: sık yeniden bağlanma maliyetini azalt
-      connectionTimeoutMillis: 5000, // 3s -> 5s: geçici ağ gecikmelerinde tolerans
-      statement_timeout: 15000, // 8s -> 15s: karmaşık sorgular için daha geniş zaman
+      min: 0,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000, // 10s: Neon compute wake-up (cold-start) toleransı
+      statement_timeout: 15000,
       ssl: ssl as any,
       application_name: `xipsoft-${name}`,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
-      // Connection validation - bozuk bağlantıları erken tespit et
-      allowExitOnIdle: false,
+      allowExitOnIdle: true,
     });
     this.pool.on("error", (err) => {
-      console.error(`[DB:${name}] Pool error:`, err.message);
-      this.health.healthy = false;
+      // Neon PgBouncer pooler boşta kalan soketleri kapattığında tetiklenir;
+      // tekil bir soket kopması tüm havuzu unhealthy yapmamalıdır.
+      console.warn(`[DB:${name}] Pool idle client closed:`, err.message);
     });
     this.pool.on("connect", () => {
       this.health.healthy = true;
@@ -142,8 +185,8 @@ class DBPool {
     });
   }
 
-  updateStats(latency: number, success: boolean) {
-    applyHealthUpdate(this.health, latency, success, this.name);
+  updateStats(latency: number, success: boolean, isConnectionErr = true) {
+    applyHealthUpdate(this.health, latency, success, this.name, isConnectionErr);
   }
 
   async testConnection(): Promise<boolean> {
@@ -155,10 +198,10 @@ class DBPool {
       this.health.consecutiveFailures = 0;
       this.health.avgLatency = Date.now() - t;
       return true;
-    } catch {
-      // Startup probe failed — mark unhealthy silently (no console.error spam)
+    } catch (err: any) {
+      console.warn(`[DB:${this.name}] Initial connection probe:`, err.message);
       this.health.healthy = false;
-      this.health.consecutiveFailures = 3; // skip the 1-2 failure window
+      this.health.consecutiveFailures = 1;
       return false;
     }
   }
@@ -281,26 +324,28 @@ const initPromise = (() => {
           handle.connectedLogged = true;
         }
 
-        healthInterval = setInterval(async () => {
-          if (!isDBPool(primary)) return;
-          const db = primary;
-          const t = Date.now();
-          try {
-            await db.pool.query('SELECT 1');
-            const wasUnhealthy = !db.health.healthy;
-            db.health.healthy = true;
-            db.health.consecutiveFailures = 0;
-            db.health.avgLatency = (db.health.avgLatency * 0.9) + ((Date.now() - t) * 0.1);
-            if (wasUnhealthy) {
-              console.log(`[DB:${db.name}] ✅ Recovered`);
+        if (process.env.NODE_ENV !== 'production') {
+          healthInterval = setInterval(async () => {
+            if (!isDBPool(primary)) return;
+            const db = primary;
+            const t = Date.now();
+            try {
+              await db.pool.query('SELECT 1');
+              const wasUnhealthy = !db.health.healthy;
+              db.health.healthy = true;
+              db.health.consecutiveFailures = 0;
+              db.health.avgLatency = (db.health.avgLatency * 0.9) + ((Date.now() - t) * 0.1);
+              if (wasUnhealthy) {
+                console.log(`[DB:${db.name}] ✅ Recovered`);
+              }
+            } catch (err: any) {
+              const wasHealthy = db.health.healthy;
+              db.health.healthy = false;
+              if (wasHealthy) console.warn(`[DB:${db.name}] ⚠️ Health check failed:`, err.message);
             }
-          } catch (err: any) {
-            const wasHealthy = db.health.healthy;
-            db.health.healthy = false;
-            if (wasHealthy) console.warn(`[DB:${db.name}] ⚠️ Health check failed:`, err.message);
-          }
-        }, 30000);
-        healthInterval.unref();
+          }, 30000);
+          healthInterval.unref();
+        }
       }
     } catch (err) {
       initError = err instanceof Error ? err : new Error(String(err));
@@ -416,7 +461,8 @@ const pool = new Proxy({} as Pool, {
           target.updateStats(Date.now() - t, true);
           return result;
         } catch (err) {
-          target.updateStats(Date.now() - t, false);
+          const isConnErr = isConnectionFailure(err);
+          target.updateStats(Date.now() - t, false, isConnErr);
           throw err;
         }
       }
