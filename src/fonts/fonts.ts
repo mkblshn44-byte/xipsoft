@@ -57,7 +57,10 @@ export const bodyFont = Inter({
   subsets: ["latin", "latin-ext"],
   variable: "--font-body",
   display: "swap",
-  preload: true, // ana içerik fontu — öncelikli yükle (literal şart, yukarıdaki not)
+  // Body fontu kritik zincire (HTML -> 5 woff2) girmesin; LCP adayı başlık
+  // fontu (displayFontCritical) zaten preload ediliyor. Body fontu CSS keşfiyle
+  // yüklenir, paint'i bloklamaz.
+  preload: false,
 });
 
 // Navbar font export'u mevcut tüketicilerle geriye dönük uyumludur.
