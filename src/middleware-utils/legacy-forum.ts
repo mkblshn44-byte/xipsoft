@@ -70,6 +70,27 @@ async function getPublishedBlogSlugs(): Promise<Set<string>> {
   return blogSlugSnapshotRequest;
 }
 
+/**
+ * WordPress / PHP probe URL'leri (wp-admin, wp-login, xmlrpc vb.) — site WordPress
+ * degildir; bu yollar kalici olarak yoktur. Tarama butcesini korumak ve bot
+ * gurultusunu azaltmak icin 410 Gone doner.
+ */
+export async function handleWordPressProbe(
+  _req: NextRequest,
+  pathname: string
+): Promise<NextResponse | null> {
+  const clean = pathname.replace(/(?:\.html)+$/i, "").replace(/\/+$/, "") || "/";
+  const lower = clean.toLowerCase();
+  if (
+    lower.startsWith("/wp-") ||
+    lower === "/xmlrpc.php" ||
+    lower.endsWith(".php")
+  ) {
+    return buildGoneResponse(clean) as unknown as NextResponse;
+  }
+  return null;
+}
+
 export async function handleLegacyForum(
   req: NextRequest,
   pathname: string

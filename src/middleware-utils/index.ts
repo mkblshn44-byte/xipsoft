@@ -23,7 +23,7 @@ import {
 } from "./admin-access";
 import { blockCountryIfNecessary } from "./country-blocklist";
 import { normalizeTrailingSlash, stripLocalePrefix, buildGoneResponse, isGonePath, stripHtmlExtension, shouldStripHtmlExtension } from "./seo-normalize";
-import { handleLegacyForum, handleLegacyWpPaths } from "./legacy-forum";
+import { handleLegacyForum, handleLegacyWpPaths, handleWordPressProbe } from "./legacy-forum";
 import { handleRedirect } from "@/lib/redirect-handler";
 import { xipGuardCheck } from "@/lib/security/xip-guard";
 import { resolveServiceRouteUncached } from "@/lib/route-resolver";
@@ -155,6 +155,9 @@ export default async function middleware(
 
   const legacyForumResponse = await handleLegacyForum(req, legacyPathname);
   if (legacyForumResponse) return legacyForumResponse;
+
+  const wpProbeResponse = await handleWordPressProbe(req, legacyPathname);
+  if (wpProbeResponse) return wpProbeResponse;
 
   const legacyWordPressResponse = await handleLegacyWpPaths(req, legacyPathname);
   if (legacyWordPressResponse) return legacyWordPressResponse;
