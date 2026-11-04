@@ -76,9 +76,9 @@ export default function RegisterPageClient() {
       </div>
 
       {/* ── Sağ: Register formu ── */}
-      <div className="relative flex flex-col w-full lg:w-1/2 xl:w-2/5 bg-zinc-950 overflow-y-auto">
+      <div className="relative flex flex-col w-full lg:w-1/2 xl:w-2/5 bg-space-950 overflow-y-auto">
         {/* Arka plan desen */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(156,124,34,0.12)_0%,_transparent_60%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(167,139,250,0.10)_0%,_transparent_60%)] pointer-events-none" />
 
         {/* Geri butonu */}
         <div className="hidden lg:flex px-8 pt-8 z-10">

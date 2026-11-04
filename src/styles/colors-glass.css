@@ -1111,28 +1111,6 @@ h6 {
   }
 }
 
-/* Site genelinde buton yüzeyleri saydam kalır; renkli kenarlık ve metin
-   durumları korunarak butonlar koyu zemin üzerinde ayırt edilebilir. */
-button,
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-[role="button"],
-a.site-cta-primary,
-a[class*="bg-"][class*="px-"][class*="rounded"] {
-  background-color: transparent !important;
-  background-image: none !important;
-}
-
-button[class*="text-black"],
-button[class*="text-zinc-950"],
-button[class*="text-slate-950"],
-a[class*="text-black"][class*="px-"][class*="rounded"],
-a[class*="text-zinc-950"][class*="px-"][class*="rounded"],
-a[class*="text-slate-950"][class*="px-"][class*="rounded"] {
-  color: var(--neon-300) !important;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════
    YARDIMCI KATMAN — yüzey/plaka yardımcı sınıfları (mor-siyah tema)
    Keskin hatlar (radius 0 + 45° pah), fırçalanmış metal yüzey, devre
