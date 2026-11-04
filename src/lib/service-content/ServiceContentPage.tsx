@@ -1,21 +1,9 @@
 /**
  * ServiceContentPage — hizmet/konum zincirinin TEK sunucu tarafı modülü.
  *
- * Bu dosya `/hizmetler/[...slug]` rotasının içindeki çözümleme, metadata,
- * JSON-LD ve render zincirini olduğu gibi taşır. İki çağıranı vardır:
- *
- *   1. `src/app/[locale]/(site)/hizmetler/[...slug]/page.tsx` — hâlâ mevcut
- *      olan özel rota; Next rota önceliği gereği `/hizmetler/...` isteklerini
- *      bu dosya karşılar.
- *   2. Kök catch-all `[...slug]/page.tsx` — `pages.full_path` üzerinden
- *      çözülen `kind='service' | 'location'` düğümlerini buraya delege eder.
- *      Rota silindiğinde (B8) tek satırlık bir sarma dosyası kalkar; davranış
- *      bu modülde durur.
- *
- * ÇAĞIRAN ARASINDAKİ TEK FARK segment köküdür ve `@/lib/service-content/request`
- * içindeki iki üreticiyle (`serviceContentRequestFromRoute` /
- * `serviceContentRequestFromTreePath`) tek noktada kapatılır; modülün geri
- * kalanı her zaman `hizmetler` kökü DAHİL segmentlerle çalışır.
+ * Bu dosya, kök catch-all `[...slug]/page.tsx` içinden çağrılan çözümleme,
+ * metadata, JSON-LD ve render zinciridir. Yalnızca `pages.full_path` üzerinden
+ * çözülen `kind='service' | 'location'` düğümleri buraya devredilir.
  *
  * `resolvedTree` (yalnızca kök catch-all dolar): ağaç `full_path` üzerinden bir
  * düğüm ÇÖZDÜYSE ama hizmet zinciri (view → `services` → `pages`) o adresi
@@ -97,7 +85,7 @@ import { SERVICE_SLUG_ALIASES } from "@/lib/service-content/aliases";
 // Hizmet/konum zinciri (`service_page_index` → `services` → `pages`) bir adresi
 // ÇÖZEMEDİĞİNDE, aynı yolda yayınlanmış bir içerik ağacı düğümü (`pages`)
 // aranır ve o düğüm açılır. Böylece admin panelden yayınlanan
-// `/hizmetler/<eski-kirik-adres>.html` dakikalar içinde canlı, SEO'su tam bir
+// `/hizmetler/<eski-kirik-adres>` dakikalar içinde canlı, SEO'su tam bir
 // sayfa olur; rota tasarımı ve mevcut hizmet/konum davranışı DEĞİŞMEZ (fallback
 // her zaman SON ÇAREDİR).
 //

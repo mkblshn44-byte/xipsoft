@@ -31,10 +31,8 @@ export interface ServiceFallbackEntry {
 
 /** 11 ana hizmet — kanonik slug → fallback içeriği. */
 export const SERVICE_FALLBACKS: Record<string, ServiceFallbackEntry> = {
-  // Slug DB'deki kanonik karşılığıyla birebir aynı olmalı: `services.slug`
-  // zamanında "web-yazilim-tasarim1" olarak taşındı, bu anahtar eski adıyla
-  // kalırsa DB erişilemediğinde iskelet bile üretilemiyor (404).
-  "web-yazilim-tasarim1": {
+  // Slug DB'deki kanonik karşılığıyla birebir aynı olmalı: `services.slug`.
+  "web-yazilim-tasarim": {
     title: "Web Yazılım & Tasarım",
     subtitle:
       "Kurumsal web siteleri ve ölçeklenebilir web uygulamaları; modern tasarım, yüksek performans ve SEO uyumu ile.",

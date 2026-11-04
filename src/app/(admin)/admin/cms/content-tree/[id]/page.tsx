@@ -24,7 +24,7 @@ export default async function EditContentNodePage({ params }: { params: Promise<
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900">İçeriği Düzenle</h1>
-          <p className="font-mono text-xs text-gray-400">/{node.fullPath}.html</p>
+          <p className="font-mono text-xs text-gray-400">/{node.fullPath}</p>
         </div>
       </div>
       <ContentNodeForm parents={options} node={node} />

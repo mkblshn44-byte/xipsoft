@@ -1,14 +1,9 @@
 /**
  * ContentTreeViews — içerik ağacı düğümlerinin ORGUN görünümü/metadata'sı.
  *
- * NEDEN AYRI DOSYA? Aynı `pages` düğümünü iki rota sunuyor:
- *   • kök catch-all `/[locale]/[...slug]`          → normal ağaç yolları
- *   • `/hizmetler/[...slug]`                       → hizmet/konum zinciri
- *     çözümsüz kaldığında (Kırık Link → Sayfa Aç) buraya düşer.
- *
- * Görünüm ve metadata tek kaynakta dursun diye buraya alındı; iki rotada
- * kopyalanırsa bir tarafın SEO çıktısı sessizce sapar (canonical/robots/
- * description farkı = GSC'de çift sinyal).
+ * The root catch-all is the single route for content-tree pages. Services use
+ * their shared content renderer from that route; all other nodes use these
+ * views and metadata.
  */
 import type { Metadata } from "next";
 import type { ReactElement } from "react";
@@ -22,6 +17,8 @@ import {
   type ContentTreeNode,
 } from "@/lib/content-tree";
 import MarkdownContent from "@/components/Common/MarkdownContent/MarkdownContent";
+import { ContactLeadForm } from "@/app/[locale]/(site)/contact-us/ContactPageClient";
+import { getAllReferences } from "@/lib/db/references";
 
 function nodeDescription(node: ContentTreeNode): string {
   const direct = node.metaDescription?.trim();
@@ -32,16 +29,17 @@ function nodeDescription(node: ContentTreeNode): string {
 }
 
 /**
- * Ağaç düğümünün metadata'sı. `hizmetler/[...slug]` fallback'inde de
- * kullanılır: kırık adres yayına alındığında sayfa DOĞRU canonical/robots ile
- * açılmalı, aksi halde rota `noindex` iskeleti basar ve yayın boşa gider.
+ * A content-tree node's metadata. A published tree page keeps its canonical,
+ * robots, and description consistent with the URL resolved by the catch-all.
  */
 export function buildContentTreeMetadata(node: ContentTreeNode): Metadata {
   return buildPageMetadata({
     title: node.metaTitle?.trim() || node.title,
     description: nodeDescription(node),
     canonicalPath: canonicalPathForNode(node),
-    titleAbsolute: Boolean(node.metaTitle?.includes("|")),
+    // DB iki yolla mutlak başlık söyleyebilir: açık kolon (`title_absolute`) ya da
+    // meta_title'ına zaten tam marka suffix'i yazılmış olması.
+    titleAbsolute: node.titleAbsolute || Boolean(node.metaTitle?.includes("|")),
     indexable: node.isIndexable,
     robotsOverride: node.robots,
     image: node.ogImageUrl ?? undefined,
@@ -103,6 +101,7 @@ export function CategoryView({
 }
 
 export function PageView({ node }: { node: ContentTreeNode }) {
+  const faqs = node.i18n?.tr?.faqs ?? [];
   return (
     <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <h1 className="text-3xl sm:text-4xl font-bold text-zinc-100 mb-8">
@@ -120,6 +119,24 @@ export function PageView({ node }: { node: ContentTreeNode }) {
       ) : (
         <p className="text-sm text-zinc-500">Bu sayfanın içeriği henüz girilmemiş.</p>
       )}
+      {node.fullPath === "contact-us" ? (
+        <div className="mt-12">
+          <ContactLeadForm />
+        </div>
+      ) : null}
+      {faqs.length > 0 ? (
+        <section className="mt-12 space-y-6" aria-labelledby="page-faq-title">
+          <h2 id="page-faq-title" className="text-2xl font-bold text-zinc-100">
+            Sıkça Sorulan Sorular
+          </h2>
+          {faqs.map((faq) => (
+            <div key={faq.question}>
+              <h3 className="font-semibold text-zinc-200">{faq.question}</h3>
+              <p className="mt-2 text-zinc-400">{faq.answer}</p>
+            </div>
+          ))}
+        </section>
+      ) : null}
     </article>
   );
 }
@@ -130,15 +147,50 @@ export function PageView({ node }: { node: ContentTreeNode }) {
  * `pages.schema_markup` doluysa JSON-LD olarak burada basılır: şema verisi DB
  * odaklıdır, koda sayfa türüne göre gömülmez (Talimat §2 Structured Data).
  */
-export function renderContentTree(result: ContentTreeResult): ReactElement {
+export async function renderContentTree(result: ContentTreeResult): Promise<ReactElement> {
   const { node, children } = result;
+  const references = node.fullPath === "references" ? await getAllReferences(true) : [];
   return (
     <>
       <JsonLd schemas={node.schemaMarkup ?? []} id={`tree-${node.id}`} />
       {node.nodeType === "category" ? (
         <CategoryView node={node} childNodes={children} />
       ) : (
-        <PageView node={node} />
+        <>
+          <PageView node={node} />
+          {references.length > 0 ? (
+            <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16" aria-label="Projelerimiz">
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {references.map((reference) => (
+                  <li
+                    key={reference.id}
+                    className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5"
+                  >
+                    <h2 className="font-semibold text-zinc-100">
+                      {reference.client_name || reference.title}
+                    </h2>
+                    <p className="mt-1 text-xs text-zinc-500">{reference.category}</p>
+                    {reference.description ? (
+                      <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                        {reference.description}
+                      </p>
+                    ) : null}
+                    {reference.project_url || reference.client_website ? (
+                      <a
+                        href={reference.project_url || reference.client_website || undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 inline-block text-sm text-cyan-300 hover:text-cyan-200"
+                      >
+                        Projeyi Görüntüle
+                      </a>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </>
       )}
     </>
   );

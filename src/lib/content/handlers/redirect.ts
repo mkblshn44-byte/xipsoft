@@ -1,5 +1,6 @@
 /**
- * Redirect ingest handler'ı — `seo_redirects` tablosuna 301/302/307/308 yazar.
+ * Redirect ingest handler'ı — `seo_redirects` tablosuna 301/302/307/308 ve
+ * hedefsiz 410 (Gone) yazar.
  *
  * Dış otomasyonların (n8n/Make vb.) eski bir yolu yeni bir yola kalıcı olarak
  * bağlaması için merkezi uç nokta. Yazma sonrası yönlendirme önbelleği
@@ -15,6 +16,7 @@ import {
   normalizeRedirectSource,
   normalizeRedirectTarget,
   isRedirectStatus,
+  requiresRedirectTarget,
 } from "@/lib/redirect-utils";
 import { fail } from "../response";
 
@@ -27,20 +29,28 @@ export async function handleRedirectIngest(body: Record<string, unknown>): Promi
   if (typeof sourceRaw !== "string" || !sourceRaw.trim()) {
     return fail(422, "VALIDATION_ERROR", "sourcePath: zorunludur (ör. /eski-sayfa)");
   }
-  if (typeof targetRaw !== "string" || !targetRaw.trim()) {
-    return fail(422, "VALIDATION_ERROR", "targetPath: zorunludur (ör. /yeni-sayfa veya https://ornek.com)");
-  }
 
   const statusCode = Number(statusRaw);
   if (!Number.isInteger(statusCode) || !isRedirectStatus(statusCode)) {
-    return fail(422, "VALIDATION_ERROR", "statusCode: 301 | 302 | 307 | 308");
+    return fail(422, "VALIDATION_ERROR", "statusCode: 301 | 302 | 307 | 308 | 410");
+  }
+  // 410 (Gone) hedefsiz yazılır; diğer tüm kodlar hedef zorunlu kılar.
+  if (typeof targetRaw !== "string" || !targetRaw.trim()) {
+    if (requiresRedirectTarget(statusCode)) {
+      return fail(422, "VALIDATION_ERROR", "targetPath: zorunludur (ör. /yeni-sayfa veya https://ornek.com)");
+    }
   }
 
   const isActive = isActiveRaw === undefined ? true : isActiveRaw === true || isActiveRaw === "true";
 
   const sourcePath = normalizeRedirectSource(sourceRaw);
-  const targetPath = normalizeRedirectTarget(targetRaw);
-  if (!sourcePath || !targetPath || sourcePath === targetPath) {
+  const targetPath = typeof targetRaw === "string" && targetRaw.trim()
+    ? normalizeRedirectTarget(targetRaw)
+    : null;
+  if (!sourcePath || (requiresRedirectTarget(statusCode) && !targetPath)) {
+    return fail(422, "VALIDATION_ERROR", "Geçerli bir sourcePath girin ve hedefle aynı olmayan bir adres");
+  }
+  if (targetPath && sourcePath === targetPath) {
     return fail(422, "VALIDATION_ERROR", "Geçerli ve birbirinden farklı sourcePath/targetPath girin");
   }
 

@@ -5,14 +5,14 @@
  * Google'a gönderilecek tüm URL'leri, lastModified ve changeFrequency
  * bilgileriyle birlikte döndürür.
  *
- * Kapsam (DB'den türeyen TEK liste):
- *  - `/hizmetler` hub'ı + aktif ana hizmet detayı (`services.row_type='main'`)
- *  - Yayınlanmış, indekslenebilir il/İstanbul ilçe (hizmet × konum) sayfaları
- *  - Hiyerarşik içerik ağacı (kategori/sayfa, `kind='custom'`) — `.html` kanonik
- *  - `/blog` ve yayınlanmış `/blog/[slug]` yazıları (URL biçimi uzantısız)
+ * Kapsam:
+ *  - Yayınlanmış `pages` kayıtları — kategori/konu/sayfa/hizmet (URL,
+ *    `canonicalPathForNode` ile üretilir)
+ *  - İndekslenebilir konum rotaları ve ayrı `blogs` tablosundaki blog yazıları
+ *  - Blog listesi (`/blog`) ayrı route olarak kalır.
  *
- * Kanonik uzantı kararı `@/lib/content-path` fonksiyonlarından gelir; burada
- * `.html` elle yazılmaz (policy ile sitemap arasında sapma oluşmasın).
+ * Canonical paths come from `@/lib/content-path`; legacy `.html` database
+ * values are normalized before they are emitted.
  *
  * Mimari kural (MIMARI.md §8): Sitemap'e YALNIZCA NeonDB'deki aktif
  * kayıtlardan türeyen URL'ler girer. Statik slug listesi / fallback kullanılmaz;
@@ -26,9 +26,9 @@ import pool from "@/lib/db/pool";
 import { getPublishedDistrictPageSlugs } from "@/lib/pages/published";
 import { SITE_URL } from "@/lib/site-url";
 import {
+  CONTENT_PAGE_KIND_SQL,
+  canonicalPathForNode,
   serviceLocationPath,
-  servicePath,
-  treeNodeCanonicalPath,
 } from "@/lib/content-path";
 import { pageCacheKey, withPageCache } from "@/lib/redis/page-cache";
 
@@ -66,32 +66,6 @@ async function getLocalDistrictPageEntries(): Promise<Array<{ slug: string; sehi
   }
 }
 
-// ── Aktif ana hizmet detay sayfaları ────────────────────────────────────────
-// `row_type='main'` satırları pillar sayfalar; bunlar sitemap'te eksikti,
-// yani hizmetler yalnızca konum varyasyonlarıyla (hizmet × il) listeleniyordu.
-async function getActiveServiceEntries(): Promise<Array<{ slug: string; updatedAt: Date }>> {
-  if (!process.env.DATABASE_URL) return [];
-  try {
-    const { rows } = await pool.query<{ slug: string; updated_at: Date }>(
-      `SELECT slug, updated_at
-         FROM services
-        WHERE row_type = 'main'
-          AND is_active = TRUE
-          AND is_deleted = FALSE
-        ORDER BY updated_at DESC`,
-    );
-    return rows.map((r) => ({ slug: r.slug, updatedAt: r.updated_at }));
-  } catch {
-    return [];
-  }
-}
-
-const getCachedActiveServices = unstable_cache(
-  getActiveServiceEntries,
-  ["sitemap-active-services-v1"],
-  { revalidate: 3600, tags: ["sitemap", "services"] },
-);
-
 // `force-dynamic` sitemap her istekte çalıştığı için tablo sorgularını 1 saat
 // `unstable_cache` ile sar; böylece Neon'a gereksiz yük binmez.
 const getCachedBlogEntries = unstable_cache(
@@ -99,13 +73,8 @@ const getCachedBlogEntries = unstable_cache(
   ["sitemap-blog-entries"],
   { revalidate: 3600, tags: ["sitemap", "blog"] },
 );
-// ── Statik sayfa içerik tarihleri ────────────────────────────────────────────
-// Statik sayfaların metinleri `xip_dynamic_content` (content_type='page_meta')
-// tablosunda tutulur. Sitemap'e HER İSTEKTE `new Date()` yazmak yerine sayfanın
-// GERÇEK içerik güncelleme tarihini (`updated_at`) kullanırız. Böylece
-// `lastModified` güvenilir bir sinyal olur; sürekli "bugün güncellendi" demek
-// arama motoru tarafında güvenilirliği düşürür. Kayıt yoksa `lastModified`
-// alanı hiç yazılmaz (uydurma tarih üretilmez).
+// Blog listing date remains in its separate page_meta record. Content pages
+// use `pages.updated_at` through the unified query below.
 async function getStaticPageDates(): Promise<Record<string, Date>> {
   if (!process.env.DATABASE_URL) return {};
   try {
@@ -129,17 +98,31 @@ const getCachedStaticPageDates = unstable_cache(
   { revalidate: 3600, tags: ["sitemap", "page-content"] },
 );
 
-// ── Hiyerarşik içerik ağacı (kategori/sayfa) ─────────────────────────────────
-// Yalnızca yayınlanmış, indekslenebilir, kanonik biçimi `.html` olan özel
-// ağaç düğümleri listelenir. Eski hizmet×konum satırları (kind='location')
-// `/hizmetler/...` akışında ayrıca ele alınır; burada tekrarlanmaz.
-async function getContentTreeEntries(): Promise<Array<{ fullPath: string; updatedAt: Date }>> {
+// ── Tek çatı: yayınlanmış ağaç (kategori/konu/sayfa) + hizmet satırları ───────
+// Planlanan hedef: içerik türü NE OLURSA OLSUN sitemap satırı `pages`'ten türer ve
+// URL'i rota/middleware ile AYNI fonksiyondan (`canonicalPathForNode`) doğar.
+//
+// `location` BİLREK DIŞARIDA: il/ilçe indeksleme listesi küratelidir (elle yazılmış
+// içerik + `PRIORITY_DISTRICTS`; bkz. `getPublishedDistrictPageSlugs` ve aşağıdaki
+// `locationPages`). Çatı sorgusu `pages`'teki 2009 konum satırının tamamını veriyor,
+// rota ise bir kısmını 308 ile merkez ilçeye taşıyor (ör.
+// `/hizmetler/devops-sre/mersin` → `mersin-akdeniz`). Sitemap redirect URL'i yayınlamaz,
+// bu yüzden konum adresleri route index'inden (`url_slug` = final adres) türer.
+//
+// `canonical_url` (CMS'te yazılan tam adres) doluysa O kullanılır: admin kanonik
+// değiştirdiğinde sitemap de değişir. Harici host'lu değer yok sayılır.
+async function getUnifiedPageEntries(): Promise<Array<{ path: string; kind: string; updatedAt: Date }>> {
   if (!process.env.DATABASE_URL) return [];
   try {
-    const { rows } = await pool.query<{ full_path: string; updated_at: Date }>(
-      `SELECT full_path, updated_at
+    const { rows } = await pool.query<{
+      full_path: string;
+      kind: string;
+      updated_at: Date;
+      canonical_url: string | null;
+    }>(
+      `SELECT full_path, kind, updated_at, canonical_url
          FROM pages
-        WHERE kind = 'custom'
+        WHERE kind IN (${CONTENT_PAGE_KIND_SQL}, 'service')
           AND is_deleted = FALSE
           AND status = 'published'
           AND is_indexable = TRUE
@@ -147,34 +130,47 @@ async function getContentTreeEntries(): Promise<Array<{ fullPath: string; update
         ORDER BY updated_at DESC
        LIMIT 50000`,
     );
-    return rows.map((row) => ({ fullPath: row.full_path, updatedAt: row.updated_at }));
+    return rows.map((row) => ({
+      path:
+        sitePathFromCanonicalUrl(row.canonical_url) ??
+        canonicalPathForNode({ fullPath: row.full_path, kind: row.kind }),
+      kind: row.kind,
+      updatedAt: row.updated_at,
+    }));
   } catch {
     return [];
   }
 }
 
-const getCachedContentTreeEntries = unstable_cache(
-  getContentTreeEntries,
-  ["sitemap-content-tree-entries-v1"],
-  { revalidate: 3600, tags: ["sitemap", "content-tree"] },
+/**
+ * `pages.canonical_url` → site-yöreli yol. Yalnızca kendi sitemize işaret eden
+ * mutlak adresler kabul edilir; harici/bozuk değer `undefined` döner ve çağıran
+ * türetilmiş kanonike düşer (sitemap asla başka domain'e URL yazmaz).
+ */
+function sitePathFromCanonicalUrl(raw: string | null): string | undefined {
+  const value = raw?.trim();
+  if (!value) return undefined;
+  try {
+    const url = new URL(value, SITE_URL);
+    if (url.origin !== new URL(SITE_URL).origin) return undefined;
+    const path = url.pathname.replace(/\/+$/, "").replace(/(?:\.html)+$/i, "");
+    return path || "/";
+  } catch {
+    return undefined;
+  }
+}
+
+const getCachedUnifiedPages = unstable_cache(
+  getUnifiedPageEntries,
+  ["sitemap-unified-pages-v5"],
+  { revalidate: 3600, tags: ["sitemap", "content-tree", "services", "local-pages"] },
 );
 
 /**
- * Statik çerçeve rotaları → `xip_dynamic_content.page_meta` kategori eşlemesi.
- * `category`, sayfanın içerik kaydının DB'deki anahtarıdır; lastModified
- * doğrudan o kaydın güncelleme tarihinden gelir.
+ * The blog listing is separate from the pages content tree.
  */
 const STATIC_PAGES: Array<{ path: string; category: string }> = [
-  { path: "/", category: "home" },
-  { path: "/hizmetler", category: "hizmetler" },
   { path: "/blog", category: "blog" },
-  { path: "/hakkimizda", category: "hakkimizda" },
-  { path: "/contact-us", category: "contact" },
-  { path: "/references", category: "references" },
-  { path: "/istanbul-yazilim-sirketi", category: "istanbul-yazilim-sirketi" },
-  { path: "/privacy-policy", category: "privacy-policy" },
-  { path: "/terms-of-service", category: "terms-of-service" },
-  { path: "/cookie-policy", category: "cookie-policy" },
 ];
 
 // ── Ana sitemap ────────────────────────────────────────────────────────────
@@ -189,11 +185,6 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: staticPageDates[category],
   }));
 
-  // ── Dinamik: aktif ana hizmetler (pillar detay sayfaları) ─────────────────
-  const servicePages: MetadataRoute.Sitemap = (await getCachedActiveServices()).map(
-    ({ slug, updatedAt }) => toEntry(`${SITE_URL}${servicePath(slug)}`, updatedAt),
-  );
-
   // ── Dinamik: yayınlanmış ilçe/şehir sayfaları ───────────────────────────
   // Yalnızca manuel olarak yazılmış, yayınlanmış ve indekslenebilir yerel
   // sayfalar sitemap'e girer; template/AI kaynaklı noindex sayfalar dışarıda kalır.
@@ -205,11 +196,11 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
   // Dinamik: blog yazıları
   const blogEntries = await getCachedBlogEntries();
 
-  // Dinamik: hiyerarşik içerik ağacı (kategori + sayfa). Kanonik yol tek
-  // kaynaktan (`treeNodeCanonicalPath`) türer → ağaçla politika sapamaz.
-  const contentTreePages: MetadataRoute.Sitemap = (await getCachedContentTreeEntries()).map(
-    ({ fullPath, updatedAt }) =>
-      toEntry(`${SITE_URL}${treeNodeCanonicalPath(fullPath)}`, updatedAt),
+  // Dinamik: tek çatı `pages` — kategori/konu/sayfa + hizmet/konum satırları.
+  // Kanonik yolu rota ve middleware ile AYNI fonksiyon üretir; tür kararı
+  // (`kind`) satırın kendisinden gelir, burada elle sınıflandırılmaz.
+  const unifiedPages: MetadataRoute.Sitemap = (await getCachedUnifiedPages()).map(
+    ({ path, updatedAt }) => toEntry(`${SITE_URL}${path}`, updatedAt),
   );
 
   // Yayınlanmış TÜM blog yazıları listelenir (ince içerik de indexlenir; bkz.
@@ -224,10 +215,9 @@ async function buildSitemap(): Promise<MetadataRoute.Sitemap> {
 
   return dedupeSitemap([
     ...staticFramePages,
-    ...servicePages,
     ...locationPages,
     ...blogPages,
-    ...contentTreePages,
+    ...unifiedPages,
   ]);
 }
 
@@ -242,7 +232,7 @@ type SitemapEntry = MetadataRoute.Sitemap[number];
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = await withPageCache(
-    pageCacheKey("sitemap", "root"),
+    pageCacheKey("sitemap", "root-v3"),
     async () =>
       (await buildSitemap()).map(({ lastModified, ...rest }) => ({
         ...rest,

@@ -1,17 +1,8 @@
 /**
  * service-content/request.ts — hizmet/konum isteğinin SAF (DB'siz) tanımı.
  *
- * `ServiceContentPage` modülü iki farklı rota tarafından çağrılıyor:
- *   - `/hizmetler/[...slug]` → route parametreleri `hizmetler` kökünün
- *     ALTINDAKİ segmentlerdir (`["web-yazilim", "adana.html"]`).
- *   - kök catch-all `[...slug]` → segmentler `hizmetler` kökünü İÇERİR
- *     (`["hizmetler", "web-yazilim", "adana.html"]`).
- *
- * Bu iki biçim farkı YALNIZCA burada kapatılır; zincirin geri kalanı her zaman
- * `SERVICE_CONTENT_ROOT` kökü DAHİL segmentlerle çalışır. Böylece bir adres
- * hangi rotadan gelirse gelsin aynı segmentlere, aynı kanonik karşılaştırmaya
- * ve aynı 308 kararına ulaşır — iki rota arasında davranış farkı üretecek tek
- * yer burasıdır, o da test edilmiştir (`request.test.ts`).
+ * `ServiceContentPage` yalnızca kök catch-all `[...slug]` tarafından çağrılır;
+ * segmentler `hizmetler` kökünü içerir (`["hizmetler", "web-yazilim"]`).
  *
  * Modül SAF kalmak zorundadır (sunucu bağımlılığı yok): kararlar DB'siz
  * doğrulanabilsin diye `ServiceContentPage`'ten ayrıldı.
@@ -37,19 +28,6 @@ export interface ServiceContentRequest {
    * bu adresi çözemezse bu düğüm açılır (404 yerine DB'deki içerik).
    */
   readonly resolvedTree?: ContentTreeResult;
-}
-
-/** `/hizmetler/[...slug]` route parametrelerinden istek üretir. */
-export function serviceContentRequestFromRoute(
-  rawSegments: readonly string[],
-): ServiceContentRequest {
-  return {
-    requestPath: `/${SERVICE_CONTENT_ROOT}/${rawSegments.join("/")}`,
-    pathSegments: [
-      SERVICE_CONTENT_ROOT,
-      ...rawSegments.map((segment) => stripContentExtension(segment)),
-    ],
-  };
 }
 
 /** Kök catch-all segmentlerinden (`hizmetler` kökü dahil) istek üretir. */

@@ -284,22 +284,11 @@ const nextConfig = {
   },
   async redirects() {
     return [
-      // ── www → non-www (301 kalıcı) — link juice korunur ─────────────────
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.xipsoft.net" }],
-        destination: "https://xipsoft.net/:path*",
-        permanent: true,
-      },
-      // ── http → https (301 kalıcı) — HTTPS sıralama sinyali ──────────────
-      ...(process.env.NODE_ENV === "production"
-        ? [{
-            source: "/:path*",
-            has: [{ type: "header", key: "x-forwarded-proto", value: "http" }],
-            destination: "https://xipsoft.net/:path*",
-            permanent: true,
-          }]
-        : []),
+      // ── www → non-www: Vercel Dashboard'da xipsoft.net primary domain,
+      // www.xipsoft.net ise Vercel tarafından 308 ile yönlendirilir.
+      // Burada ekstra redirect olursa döngü oluşur — kaldırıldı.
+      // ── http → https: Cloudflare proxy aktifse Cloudflare halleder.
+      // Vercel'de de SSL zorunlu olduğundan bu kural gereksiz — kaldırıldı.
       // NOT: `/:path*.html` -> `/:path*` kurali buradan KALDIRILDI. `.html` eki
       // middleware'de (src/middleware-utils/index.ts, adim 0) locale ve
       // trailing-slash ile AYNI adimda temizlenir; ayri bir kural kalmasi

@@ -158,9 +158,10 @@ export async function GET(req: NextRequest) {
             required: ["pages (1–20 page payloads; each page uses the Page schema)"],
           },
           Redirect: {
-            required: ["sourcePath (ör. /eski-sayfa)", "targetPath (ör. /yeni-sayfa veya https://...)"],
+            required: ["sourcePath (ör. /eski-sayfa)"],
             optional: [
-              "statusCode (301 | 302 | 307 | 308; varsayılan 301)",
+              "targetPath (410 dışındaki tüm kodlarda zorunlu; /yeni-sayfa veya https://...)",
+              "statusCode (301 | 302 | 307 | 308 | 410; varsayılan 301)",
               "isActive (boolean; varsayılan true)",
               "aliaslar: source/from, target/to, status",
             ],

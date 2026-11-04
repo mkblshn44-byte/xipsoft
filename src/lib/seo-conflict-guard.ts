@@ -4,7 +4,7 @@
  * Çakışma iki yönde de doğabilir ve ikisinde de sonuç aynıdır: bir adres ya
  * canlı bir sayfadır ya da bir yönlendirmedir; ikisi aynı anda olamaz.
  *
- *   YÖN 1 (yayın kazanır): admin `/forum/x/y.html` gibi bir adresi yayına
+ *   YÖN 1 (yayın kazanır): admin `/forum/x/y` gibi bir adresi yayına
  *     aldığında, o adrese işaret eden (eski WP devrinden kalan) aktif redirect
  *     satırları `is_active = FALSE` yapılır. Satır SİLİNMEZ — GSC/rapor
  *     geçmişi ve geri alma imkânı korunur. Pasif satır middleware'in

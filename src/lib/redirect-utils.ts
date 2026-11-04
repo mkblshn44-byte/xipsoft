@@ -30,7 +30,19 @@ export function normalizeRedirectTarget(path: string): string | null {
   }
 }
 
-/** Desteklenen HTTP yönlendirme durum kodları. */
-export function isRedirectStatus(status: number): status is 301 | 302 | 307 | 308 {
-  return [301, 302, 307, 308].includes(status);
+/**
+ * Desteklenen HTTP yönlendirme durum kodları.
+ *
+ * 410 (Gone) bir hedefe YÖNLENDİRMEZ: içerik kaldırıldı sinyalini arama
+ * motoruna doğrudan verir ve hedef alanı NULL kalır.
+ */
+export type RedirectStatus = 301 | 302 | 307 | 308 | 410;
+
+export function isRedirectStatus(status: number): status is RedirectStatus {
+  return [301, 302, 307, 308, 410].includes(status);
+}
+
+/** 410 hariç tüm kodlar hedef yolu zorunlu kılar. */
+export function requiresRedirectTarget(status: RedirectStatus): boolean {
+  return status !== 410;
 }

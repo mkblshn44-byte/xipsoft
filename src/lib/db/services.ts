@@ -141,7 +141,9 @@ export async function queryServiceFromDB(slug: string): Promise<ServicePageData 
   try {
     const { rows } = await pool.query(
       `SELECT * FROM services
-        WHERE slug = $1 AND row_type = 'main' AND is_active = true LIMIT 1`,
+        WHERE slug = $1 AND row_type = 'main'
+          AND is_active = TRUE AND is_deleted = FALSE
+        LIMIT 1`,
       [slug]
     );
     if (rows[0]) return mapServiceRowToPageData(rows[0]);
@@ -211,7 +213,9 @@ async function queryAllActiveServices(): Promise<ServicePageData[]> {
 
   try {
     const { rows } = await pool.query(
-      `SELECT * FROM services WHERE is_active = true AND row_type = 'main' ORDER BY sort_order ASC, id ASC`
+      `SELECT * FROM services
+        WHERE is_active = TRUE AND is_deleted = FALSE AND row_type = 'main'
+        ORDER BY sort_order ASC, id ASC`
     );
     return rows.map(mapServiceRowToPageData);
   } catch (error) {
@@ -239,7 +243,9 @@ async function queryAllServiceSlugs(): Promise<string[]> {
 
   try {
     const { rows } = await pool.query(
-      `SELECT slug FROM services WHERE is_active = true AND row_type = 'main' ORDER BY sort_order ASC`
+      `SELECT slug FROM services
+        WHERE is_active = TRUE AND is_deleted = FALSE AND row_type = 'main'
+        ORDER BY sort_order ASC`
     );
     return rows.map((r) => r.slug);
   } catch (error) {

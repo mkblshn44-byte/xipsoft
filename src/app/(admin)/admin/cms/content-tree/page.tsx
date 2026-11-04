@@ -23,7 +23,7 @@ export default async function ContentTreePage() {
         <p className="text-xs text-gray-500">
           12 ana hizmet, yerel il/ilçe sayfaları ve tüm kurumsal CMS içeriğini hiyerarşik olarak buradan yönetebilirsiniz.
           Blog yazıları ise <span className="font-medium text-amber-700">/admin/blog</span> panelinden bağımsız yönetilir.
-          Kanonik adresler <span className="font-mono">.html</span> ile biter.
+          Kanonik adreslerde dosya uzantısı kullanılmaz.
         </p>
       </div>
 

@@ -12,6 +12,7 @@ import {
   isIndexableLocation,
   isKeepableLocation,
 } from "@/config/priority-locations";
+import { canonicalLocationSlug } from "@/lib/content-path";
 
 async function queryPublishedPageBySlug(
   normalizedPath: string,
@@ -142,7 +143,12 @@ function mapDistrictSlugRows(
   return rows.flatMap(({ slug, updated_at, source_type, location_type, location_slug, parent_slug }) => {
     const parts = slug.split("/");
     if (parts.length !== 2) return [];
-    const [servicePart, sehirPart] = parts;
+    const [servicePart, locationPart] = parts;
+    const sehirPart = canonicalLocationSlug(
+      location_slug ?? locationPart,
+      location_type,
+      parent_slug,
+    );
     if (!servicePart || !sehirPart) return [];
 
     const decision = {
@@ -242,10 +248,10 @@ export function getPublishedDistrictPageSlugs(): Promise<
   // her çalıştığında Neon'a düşmemesi için cache'lenir; admin panelinden
   // güncellemede revalidateTag("local-pages"/"sitemap") ile temizlenir.
   // Redis katmanı `sitemap:` alanında tutulur → invalidateSitemapCache() yeter.
-  return withPageCache(pageCacheKey("sitemap", "district-slugs"), () =>
+  return withPageCache(pageCacheKey("sitemap", "district-slugs-v3"), () =>
     unstable_cache(
       queryPublishedDistrictPageSlugs,
-      ["published-district-page-slugs-v2"],
+      ["published-district-page-slugs-v3"],
       { revalidate: 3600, tags: ["local-pages", "sitemap"] },
     )(),
   );}

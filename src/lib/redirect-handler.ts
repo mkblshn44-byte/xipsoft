@@ -8,8 +8,9 @@ import {
   type ExtensionlessPolicy,
 } from "@/lib/content-path";
 import { isPublishedTreePath } from "@/lib/content-tree-policy";
+import { buildGoneResponse } from "@/middleware-utils/seo-normalize";
 
-export type RedirectEntry = { target_path: string; status_code: number } | null;
+export type RedirectEntry = { target_path: string | null; status_code: number } | null;
 
 // ── In-memory snapshot ────────────────────────────────────────────────────────
 // Middleware her istekte çalışır; botlar/binlerce bilinmeyen yol için istek
@@ -32,7 +33,7 @@ async function loadRedirectSnapshot(
 ): Promise<Map<string, RedirectEntry>> {
   const { rows } = await database.query<{
     source_path: string;
-    target_path: string;
+    target_path: string | null;
     status_code: number;
   }>(
     `SELECT source_path, target_path, status_code
@@ -146,7 +147,8 @@ export async function upsertRedirect(
   db: { query: (text: string, values?: any[]) => Promise<{ rows: any[] }> },
   input: {
     sourcePath: string;
-    targetPath: string;
+    /** 410 için `null` geçilir — kaldırılan içeriğin gidecek adresi yoktur. */
+    targetPath: string | null;
     statusCode?: number;
     isActive?: boolean;
     createdBy?: string | null;
@@ -154,7 +156,7 @@ export async function upsertRedirect(
 ): Promise<{
   id: string;
   source_path: string;
-  target_path: string;
+  target_path: string | null;
   status_code: number;
   is_active: boolean;
   is_insert: boolean;
@@ -239,21 +241,15 @@ export async function recordSlugRedirect(
 export const upsertSlugRedirect = recordSlugRedirect;
 
 /**
- * `seo_redirects.target_path` değerini ağacın `.html` kanoniğine indirger.
+ * `seo_redirects.target_path` değerini uzantısız kanoniğe indirger.
  *
  * Neden okuma tarafında: tablodaki 116 satır (`web-yazilim-tasarim/…` →
- * `…1/…`) uzantısız hedef yazıldığında üretilmişti; hedef ayrıca 308 ile
- * `.html`'e döndüğü için botlar iki yönlendirme hop'u görüyordu. Burada
+ * `…1/…`) uzantısız hedef yazıldığında üretilmişti. Burada
  * `contentCanonicalPath` çağrılmak üzere hedef tek adımda kanoniğe çözülür —
  * DB'de geri sayım/düzeltme yazımı gerektirmez ve sonraki kayıtlar da kapsanır.
  *
- * Kanonik uzantı kararı VERİDEN gelebildiği için (`kind='custom'` düğümü
- * `.html`, eski hizmet/konum satırları uzantısız) sahiplik bilgisi policy olarak
- * VERİLMEK zorunda; verilmezse legacy liste kazanır ve yayınlanmış bir düğüme
- * giden hedef uzantısız kalıp ikinci hop'u geri getirir.
- *
- * Uzantısız kanonik rotalar (`/blog/…`, `/hizmetler` hub'ı) ve kök dışı/
- * sorgulu hedefler olduğu gibi geçer.
+ * All targets use extensionless canonical URLs; the optional policy argument
+ * remains for compatibility with callers.
  */
 export function canonicalizeTargetPath(
   targetPath: string,
@@ -267,9 +263,8 @@ export function canonicalizeTargetPath(
 
 /**
  * Hedefin ağaç sahipliğini ÖNCEDEN çözer ve sync kanonik üreticisine verilebilir
- * policy'ye çevirir. Yalnızca kararın veriden değişebildiği yollarda sorgu
- * atılır (`isDataDependentExtensionless`) — EXACT kod rotaları ve `.html`
- * kanonik hedefler DB'ye dokunmaz.
+ * policy'ye çevirir. Global extension normalization no longer requires a
+ * tree ownership lookup.
  */
 export async function targetPathPolicy(
   targetPath: string,
@@ -296,6 +291,13 @@ export function createRedirectResponse(
 ): NextResponse | null {
   if (!entry) return null;
 
+  // 410: hedef yoktur, içerik kaldırıldı yanıtı doğrudan üretilir
+  // (X-Robots-Tag: noindex, follow + indekslenmeyen gövde).
+  if (entry.status_code === 410) {
+    return buildGoneResponse(req.nextUrl.pathname) as unknown as NextResponse;
+  }
+
+  if (!entry.target_path) return null;
   const target = new URL(canonicalizeTargetPath(entry.target_path, policy), req.url);
   const allowedStatuses = [301, 302, 307, 308];
   if (target.href === req.url || !allowedStatuses.includes(entry.status_code)) return null;
@@ -316,7 +318,9 @@ export async function handleRedirect(
   try {
     const entry = await lookup(req.nextUrl.pathname);
     if (!entry) return null;
-    const policy = await targetPathPolicy(entry.target_path, treeLookup);
+    const policy = entry.target_path
+      ? await targetPathPolicy(entry.target_path, treeLookup)
+      : undefined;
     return createRedirectResponse(req, entry, policy);
   } catch (error) {
     console.error("[RedirectHandler] Failed to check redirect:", error);

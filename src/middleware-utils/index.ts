@@ -22,7 +22,7 @@ import {
   guardAdminApi,
 } from "./admin-access";
 import { blockCountryIfNecessary } from "./country-blocklist";
-import { DELETED_PATH_SET, normalizeTrailingSlash, stripLocalePrefix, buildGoneResponse, stripHtmlExtension, shouldStripHtmlExtension } from "./seo-normalize";
+import { normalizeTrailingSlash, stripLocalePrefix, buildGoneResponse, isGonePath, stripHtmlExtension, shouldStripHtmlExtension } from "./seo-normalize";
 import { handleLegacyForum, handleLegacyWpPaths } from "./legacy-forum";
 import { handleRedirect } from "@/lib/redirect-handler";
 import { xipGuardCheck } from "@/lib/security/xip-guard";
@@ -102,13 +102,8 @@ export default async function middleware(
   //   /tr/hakkimizda/  -> 301 /hakkimizda   (zincir yok, tek hop)
   //   /tr              -> 301 /
   //
-  // `.html` POLİTİKASI (Aşama 6 + veri odaklı karar): İçerik ağacı düğümlerinin
-  // kanonik adresi `.html` ile biter → bu uzantı KORUNUR. Yalnızca uzantısız
-  // kanoniğe sahip kod/legacy rotalarda (`/hizmetler`, `/blog`, statik
-  // sayfalar…) eski WordPress `.html` bağlantılarını tek adımda temizlemek için
-  // sökülür. Legacy bir kökün (`/forum`, `/news`, `/urunler`…) altında
-  // yayınlanmış bir ağaç sayfası varsa kararı VERİ verir: `.html` kanonik
-  // kalır ve istek rotaya ulaşır. Ağaç kararı yoksa elle liste geçerlidir.
+  // `.html` artık hiçbir sayfada kanonik değildir. Eski uzantılı adresler,
+  // içerik türünden bağımsız olarak tek adımda uzantısız URL'e yönlendirilir.
   const htmlStripped = stripHtmlExtension(pathname);
   const hasHtmlExtension = htmlStripped !== pathname;
   const basePath =
@@ -125,11 +120,6 @@ export default async function middleware(
 
 
 
-  // 0b. Bilinen silinmiÅŸ URL kalÄ±plarÄ± â†’ 410 Gone (crawl budget tasarrufu, Madde 26)
-  if (DELETED_PATH_SET.has(normalized)) {
-    return buildGoneResponse(normalized) as unknown as NextResponse;
-  }
-
   // 0c. Eski WordPress forum URL'leri (forum bölümü kaldırıldı) -> taşınmışsa
   //     301 /blog/<slug>, aksi halde 301 /blog (GSC'de "Yonlendirmeli sayfa").
   //     YAYIN decision istisnası: yolu kök catch-all'un çözdüğü bir ağaç
@@ -140,6 +130,12 @@ export default async function middleware(
   const legacyPathname = localePrefix
     ? normalized.slice(localePrefix.length + 1) || "/"
     : normalized;
+
+  // 0b. Kaldırılmış içerik → 410 Gone (crawl budget tasarrufu, Madde 26).
+  // Locale öneki sökülmüş yolda aranır: /en/blog/x ile /blog/x aynı kararı verir.
+  if (await isGonePath(legacyPathname)) {
+    return buildGoneResponse(legacyPathname) as unknown as NextResponse;
+  }
 
   // Eski blog query URL'lerini temiz, path tabanlı blog URL'lerine taşı.
   // Slug tek bir URL segmentine kodlanır; sorgu parametreleri hedefe taşınmaz.

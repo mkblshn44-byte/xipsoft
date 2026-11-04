@@ -12,11 +12,11 @@ import { useRef } from "react";
  * kendi sayfalarından ve "Tüm Hizmetler" girişinden erişilebilir kalır.
  */
 const SERVICE_LINKS = [
-  ["Web Yazılım", "/hizmetler/web-yazilim-tasarim1.html"],
-  ["Mobil Uygulama", "/hizmetler/mobil-uygulama.html"],
-  ["Yapay Zeka", "/hizmetler/yapay-zeka-ml.html"],
-  ["Siber Güvenlik", "/hizmetler/siber-guvenlik.html"],
-  ["SEO & Pazarlama", "/hizmetler/seo-dijital-pazarlama.html"],
+  ["Web Yazılım", "/hizmetler/web-yazilim-tasarim"],
+  ["Mobil Uygulama", "/hizmetler/mobil-uygulama"],
+  ["Yapay Zeka", "/hizmetler/yapay-zeka-ml"],
+  ["Siber Güvenlik", "/hizmetler/siber-guvenlik"],
+  ["SEO & Pazarlama", "/hizmetler/seo-dijital-pazarlama"],
   ["Tüm Hizmetler", "/hizmetler"],
 ] as const;
 
@@ -110,7 +110,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/contact-us"
+                  href="/teklif"
                   className="text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                 >
                   Teklif Al

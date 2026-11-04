@@ -2,10 +2,8 @@
  * SEO Normalizasyon Yardımcıları
  *
  * - Trailing slash tek biçime indirgemek (tek canonical URL, Madde 23)
- * - Bilinen kalıcı olarak silinen içerikler için 410 Gone listesi (Madde 26)
- *
- * Build zamanı statik tutulduğu için middleware'in hızına etkisi sıfırdır.
- * `syncDeletedPathsFromDb()` ile DB'den güncel liste çekilebilir.
+ * - Kalıcı olarak silinen içerik için 410 Gone (Madde 26) — `isGonePath()`
+ *   DB'den 60 sn TTL'li snapshot üretir; `DELETED_PATHS` yalnızca manuel ekleri taşır.
  */
 
 import pool from "@/lib/db/pool";
@@ -52,9 +50,9 @@ export function stripLocalePrefix(pathname: string, locale: string): string {
 }
 
 /**
- * Kalıcı olarak silinen (geriye dönüşsüz) URL'ler.
- * Middleware statik set üzerinden 410 Gone döner.
- * DB'den güncellemek için `syncDeletedPathsFromDb()` çalıştır.
+ * Manuel olarak 410 Gone edilmesi bilinen yollar. DB'den türeyen liste
+ * `isGonePath()` snapshot'ına eklenir; burası yalnızca elle tutulan istisnalar
+ * (dışarıdan gelen, DB'de satırı olmayan eski adresler) içindir.
  *
  * ── Manuel ekleme örnekleri ──────────────────────────────────────────
  *   "/eski-urun",
@@ -64,26 +62,15 @@ export const DELETED_PATHS: Array<string> = [
   // ← Manually-added paths above this line →
 ];
 
-export const DELETED_PATH_SET: ReadonlySet<string> = new Set(DELETED_PATHS);
-
 /**
- * Kanonik biçimi UZANTISIZ olan rotalar — TEK KAYNAK `@/lib/content-path`.
- *
- * İçerik ağacının (Aşama 6) kanonik adresi `.html` ile biter; bu yüzden
- * `.html` yalnızca aşağıdaki kod/legacy rotalarda sökülür. Liste burada
- * tutulmaz, `content-path.ts`'ten İTHAL edilir: middleware uzantıyı sökerken
- * rota/JSON-LD/sitemap geri eklerse tek adımlık yönlendirme döngüsü doğar.
- *
- * `/hizmetler` yalnızca EXACT listededir → hub uzantısız kalır, altındaki
- * hizmet/konum adresleri `/hizmetler/<slug>.html` olarak `.html` kanonik alır.
+ * All routes use extensionless canonical URLs. `.html` is accepted only as a
+ * legacy request and redirected once before routing.
  */
 import {
   EXTENSIONLESS_ROUTE_EXACT,
   EXTENSIONLESS_ROUTE_PREFIXES,
   isExtensionlessRoute,
-  toRouteKey,
 } from "@/lib/content-path";
-import { isPublishedTreePath } from "@/lib/content-tree-policy";
 
 export { EXTENSIONLESS_ROUTE_EXACT, EXTENSIONLESS_ROUTE_PREFIXES };
 
@@ -93,63 +80,91 @@ export function stripHtmlExtension(pathname: string): string {
 }
 
 /**
- * Verilen (uzantısı sökülmüş) yol, uzantısız kanoniğe sahip bir kod/legacy
- * rota mı? Öyleyse `.html` ekli istekler uzantısız adrese yönlendirilir.
- *
- * SENKRON sürüm yalnızca elle tutulan listeye bakar; DB gerçeği (yayınlanmış
- * ağaç düğümü) için `shouldStripHtmlExtension` kullanın.
+ * All routes have extensionless canonical URLs.
  */
 export function isExtensionlessCanonicalPath(pathname: string): boolean {
   return isExtensionlessRoute(pathname);
 }
 
 /**
- * MIDDLEWARE KARARI (veri odaklı): `.html` ekli bir istek uzantısız adrese mi
- * taşınmalı, yoksa uzantı KANONİK olarak mı kalmalı?
- *
- *   1. Liste "koru" derse (`/hizmetler/<slug>.html`, ağaç alt yolları) → DB'ye
- *      hiç gidilmez; istek olduğu gibi rotaya düşer.
- *   2. Liste "sök" derse ve yol bir KOD rotasıysa (`/`, `/hizmetler` hub'ı,
- *      `/blog` listesi, politika sayfaları) → sök. Bu kökler admin
- *      doğrulamasında da ayrılmıştır; ağaç sahiplenemez.
- *   3. Liste "sök" derse ama kök YALNIZCA legacy bir adrsa (`/forum`, `/news`,
- *      `/urunler`…) → o yolu yayına alınmış bir ağaç düğümü sahipleniyorsa
- *      `.html` KANONİK kalır ve istek rotaya ulaşır. Sahiplenmiyorsa eski
- *      davranış aynen devam eder (tek adımda uzantısız legacy adres).
- *
- * 3. şık olmasaydı, admin panelden `/forum/...` altında yayınlanan bir sayfa
- * middleware tarafından hiç rotaya bırakılmazdı.
+ * Database ownership is no longer relevant to URL extension normalization.
  */
-export async function shouldStripHtmlExtension(pathnameWithoutExtension: string): Promise<boolean> {
-  if (!isExtensionlessRoute(pathnameWithoutExtension)) return false;
-  if (EXTENSIONLESS_ROUTE_EXACT.includes(toRouteKey(pathnameWithoutExtension))) return true;
-  return !(await isPublishedTreePath(pathnameWithoutExtension));
+export async function shouldStripHtmlExtension(_pathnameWithoutExtension: string): Promise<boolean> {
+  return true;
 }
 
 /**
- * DB'den silinen slug'ları çeker ve döner (Node.js runtime, edge DEGIL).
- * Kullanım: Build öncesi script veya admin panelinden triggerlanır.
- * Döndüğü array'i DELETED_PATHS'e ekle veya ayrı dosyaya yaz.
+ * DB'den silinmiş içerik yollarını çeken 410 snapshot'ı (Node runtime, edge DEGİL).
+ *
+ * YOL KAYNAĞI `full_path`, `slug` DEĞİL: ağaç satırının `slug`'ı tek segmenttir
+ * (`web-yazilim`), sunulan yolu ise `hizmetler/web-yazilim`. Yanlış kolondan
+ * üretilen bir 410 listesi canlı URL'leri keser.
+ *
+ * Aynı yolu canlı bir satır sahipleniyorsa (soft-delete sonrası full_path yeniden
+ * kullanılmış olabilir) satır listeye girmez; restore edilen sayfa snapshot
+ * süresi dolunca kendiliğinden tekrar sunulur.
  */
-export async function syncDeletedPathsFromDb(): Promise<string[]> {
-  const results: string[] = [];
-  try {
-    const pagesRes = await pool.query<{ slug: string }>(
-      `SELECT slug FROM pages WHERE is_deleted = TRUE AND slug IS NOT NULL`
-    );
-    for (const r of pagesRes.rows) results.push(r.slug.startsWith("/") ? r.slug : `/${r.slug}`);
+const GONE_SNAPSHOT_TTL_MS = 60_000;
+const GONE_SNAPSHOT_LIMIT = 5_000;
 
-    const blogRes = await pool.query<{ slug: string }>(
-      `SELECT slug FROM Blog_posts WHERE deleted_at IS NOT NULL AND slug IS NOT NULL`
-    );
-    for (const r of blogRes.rows) {
-      const p = r.slug.startsWith("/") ? r.slug : `/blog/${r.slug}`;
-      if (!results.includes(p)) results.push(p);
-    }
-  } catch (err) {
-    console.warn("[seo-normalize] DB sync failed, continuing with static list:", err);
+let goneSnapshot: ReadonlySet<string> = new Set(DELETED_PATHS);
+let goneSnapshotExpiresAt = 0;
+let goneSnapshotRequest: Promise<ReadonlySet<string>> | null = null;
+
+async function loadGonePaths(): Promise<ReadonlySet<string>> {
+  const { rows } = await pool.query<{ path: string }>(
+    `SELECT p.full_path AS path
+       FROM pages p
+      WHERE p.is_deleted = TRUE
+        AND p.full_path IS NOT NULL AND p.full_path <> ''
+        AND NOT EXISTS (
+          SELECT 1 FROM pages live
+           WHERE live.is_deleted = FALSE AND live.full_path = p.full_path)
+     UNION ALL
+     SELECT 'blog/' || b.slug AS path
+       FROM Blog_posts b
+      WHERE b.deleted_at IS NOT NULL
+        AND b.slug IS NOT NULL AND b.slug <> ''
+        AND NOT EXISTS (
+          SELECT 1 FROM Blog_posts live
+           WHERE live.slug = b.slug AND live.deleted_at IS NULL)
+     LIMIT ${GONE_SNAPSHOT_LIMIT}`,
+  );
+  return new Set<string>([
+    ...DELETED_PATHS,
+    ...rows.map((row) => `/${String(row.path ?? "").replace(/^\/+/, "")}`),
+  ]);
+}
+
+/** Yol kaldırılmış içerik mi? DB yoksa yalnızca manuel `DELETED_PATHS` geçerli. */
+export async function isGonePath(pathname: string): Promise<boolean> {
+  if (!process.env.DATABASE_URL) return goneSnapshot.has(pathname);
+
+  if (Date.now() >= goneSnapshotExpiresAt && !goneSnapshotRequest) {
+    goneSnapshotRequest = loadGonePaths()
+      .then((snapshot) => {
+        goneSnapshot = snapshot;
+        goneSnapshotExpiresAt = Date.now() + GONE_SNAPSHOT_TTL_MS;
+        return snapshot;
+      })
+      .catch((error) => {
+        // Fail-open: eski snapshot ile devam, sonraki istekte yeniden dene.
+        console.warn("[seo-normalize] Gone path snapshot failed:", error);
+        goneSnapshotExpiresAt = Date.now() + GONE_SNAPSHOT_TTL_MS;
+        return goneSnapshot;
+      })
+      .finally(() => {
+        goneSnapshotRequest = null;
+      });
   }
-  return Array.from(new Set([...DELETED_PATHS, ...results]));
+
+  if (goneSnapshotRequest) await goneSnapshotRequest;
+  return goneSnapshot.has(pathname);
+}
+
+/** Admin değişikliğinden sonra snapshot'ı bekletmeden tazelet. */
+export function invalidateGonePathSnapshot(): void {
+  goneSnapshotExpiresAt = 0;
 }
 
 /**

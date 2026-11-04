@@ -66,8 +66,44 @@ export async function queryDynamicContentFaq(
 
 /** Bir sayfa kategorisinin SSS'lerini DB'den döndürür (Redis L1 → unstable_cache L2, 1 saat). */
 export async function getPageFaqs(category: string): Promise<PageFaqItem[]> {
+  const fullPath = PAGE_META_PATHS[category];
+  if (fullPath !== undefined) {
+    try {
+      const { rows } = await pool.query<{ content_i18n: Record<string, unknown> | null }>(
+        `SELECT content_i18n
+           FROM pages
+          WHERE full_path = $1
+            AND kind IN ('page', 'category')
+            AND status = 'published'
+            AND is_deleted = FALSE
+          LIMIT 1`,
+        [fullPath],
+      );
+      const trContent = rows[0]?.content_i18n?.tr;
+      if (trContent && typeof trContent === "object" && !Array.isArray(trContent)) {
+        const faqs = (trContent as Record<string, unknown>).faqs;
+        if (Array.isArray(faqs)) {
+          return faqs.filter(
+            (item): item is PageFaqItem =>
+              !!item &&
+              typeof item === "object" &&
+              typeof (item as PageFaqItem).question === "string" &&
+              typeof (item as PageFaqItem).answer === "string",
+          );
+        }
+      }
+      return [];
+    } catch (error) {
+      console.warn(
+        "[PageContent] Published page FAQ lookup unavailable:",
+        error instanceof Error ? error.message : error,
+      );
+      return [];
+    }
+  }
+
   const redis = getRedisClient();
-  const cacheKey = `page:faq:${category}`;
+  const cacheKey = `page:faq:v3:${category}`;
 
   // L1: Redis
   if (redis) {
@@ -80,7 +116,7 @@ export async function getPageFaqs(category: string): Promise<PageFaqItem[]> {
   // L2: Next.js unstable_cache → DB
   const result = await unstable_cache(
     () => queryPageFaqs(category),
-    ["page-faq", category],
+    ["page-faq-v3", category],
     { revalidate: PAGE_CONTENT_REDIS_TTL, tags: ["page-content", `page-faq:${category}`] },
   )();
 
@@ -115,8 +151,81 @@ export interface PageMeta {
   sections?: Record<string, unknown>;
 }
 
+const PAGE_META_PATHS: Readonly<Record<string, string>> = {
+  home: "anasayfa",
+  hizmetler: "hizmetler",
+  hakkimizda: "hakkimizda",
+  contact: "contact-us",
+  references: "references",
+  "privacy-policy": "privacy-policy",
+  "terms-of-service": "terms-of-service",
+  "cookie-policy": "cookie-policy",
+  "istanbul-yazilim-sirketi": "istanbul-yazilim-sirketi",
+};
+
+async function queryPageMetaFromPages(key: string): Promise<PageMeta | null> {
+  const fullPath = PAGE_META_PATHS[key];
+  if (fullPath === undefined) return null;
+
+  const { rows } = await pool.query<{
+    title: string;
+    meta_title: string | null;
+    meta_description: string | null;
+    keywords: string[] | null;
+    og_title: string | null;
+    og_description: string | null;
+    schema_markup: unknown;
+    content_i18n: Record<string, unknown> | null;
+  }>(
+    `SELECT title, meta_title, meta_description, keywords, og_title, og_description,
+            schema_markup, content_i18n
+       FROM pages
+      WHERE full_path = $1
+        AND kind IN ('page', 'category')
+        AND status = 'published'
+        AND is_deleted = FALSE
+      LIMIT 1`,
+    [fullPath],
+  );
+  const row = rows[0];
+  if (!row) return null;
+
+  const content = row.content_i18n?.tr;
+  const localized = content && typeof content === "object" && !Array.isArray(content)
+    ? content as Record<string, unknown>
+    : {};
+  const schemas = Array.isArray(row.schema_markup)
+    ? row.schema_markup
+    : typeof row.schema_markup === "string"
+      ? JSON.parse(row.schema_markup) as unknown
+      : [];
+  const firstSchema = Array.isArray(schemas) && schemas[0] &&
+    typeof schemas[0] === "object" && !Array.isArray(schemas[0])
+    ? schemas[0] as Record<string, string>
+    : undefined;
+
+  return {
+    title: row.meta_title?.trim() || row.title,
+    description: row.meta_description ?? "",
+    keywords: row.keywords ?? [],
+    ogTitle: row.og_title ?? undefined,
+    ogDescription: row.og_description ?? undefined,
+    jsonLd: firstSchema ?? (localized.jsonLd as Record<string, string> | undefined),
+    hero: localized.hero && typeof localized.hero === "object"
+      ? localized.hero as Partial<HomeHeroCopy>
+      : undefined,
+    sections: localized.sections && typeof localized.sections === "object"
+      ? localized.sections as Record<string, unknown>
+      : undefined,
+  };
+}
+
 async function queryPageMeta(key: string): Promise<PageMeta | null> {
   try {
+    if (PAGE_META_PATHS[key] !== undefined) {
+      return await queryPageMetaFromPages(key);
+    }
+
     const { rows } = await pool.query<{ title: string | null; metadata: Record<string, unknown> | null }>(
       `SELECT title, metadata
          FROM xip_dynamic_content
@@ -170,7 +279,7 @@ async function queryPageMeta(key: string): Promise<PageMeta | null> {
  */
 export async function getPageMeta(key: string): Promise<PageMeta | null> {
   const redis = getRedisClient();
-  const cacheKey = `page:meta:${key}`;
+  const cacheKey = `page:meta:v3:${key}`;
 
   // L1: Redis
   if (redis) {
@@ -186,7 +295,7 @@ export async function getPageMeta(key: string): Promise<PageMeta | null> {
   // L2: unstable_cache → DB
   const result = await unstable_cache(
     () => queryPageMeta(key),
-    ["page-meta", key],
+    ["page-meta-v3", key],
     { revalidate: PAGE_CONTENT_REDIS_TTL, tags: ["page-content", `page-meta:${key}`] },
   )();
 
@@ -199,4 +308,3 @@ export async function getPageMeta(key: string): Promise<PageMeta | null> {
 
   return result;
 }
-

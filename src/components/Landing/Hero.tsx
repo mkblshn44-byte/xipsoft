@@ -57,7 +57,7 @@ export interface HeroContent extends Partial<HomeHeroCopy> {
   title?: string;
   /** Birincil CTA hedefi (`onCtaPrimary` yoksa kullanılır). */
   ctaPrimaryHref?: string;
-  /** İkincil CTA hedefi (varsayılan alt sayfa: `/hizmetler/web-yazilim-tasarim1.html`). */
+  /** İkincil CTA hedefi (varsayılan alt sayfa: `/hizmetler/web-yazilim-tasarim`). */
   ctaSecondaryHref?: string;
   /** İstatistik şeridi (alt sayfa hero'sunda gösterilir). */
   stats?: HeroStat[];
@@ -108,7 +108,7 @@ export default function Hero({
   const ctaPrimaryHref = copy?.ctaPrimaryHref ?? (isHome ? "/teklif" : undefined);
   const ctaSecondaryHref =
     copy?.ctaSecondaryHref ??
-    (isHome ? DEFAULTS.ctaSecondaryHref : "/hizmetler/web-yazilim-tasarim1.html");
+    (isHome ? DEFAULTS.ctaSecondaryHref : "/hizmetler/web-yazilim-tasarim");
   const stats = copy?.stats ?? [];
 
   // Animasyon gecikmeleri: anasayfa sinematik, alt sayfalar daha hızlı.

@@ -20,7 +20,7 @@ const services: CarouselCard[] = [
     description:
       "AWS, Azure ve GCP ile ölçeklenebilir bulut altyapısı kurulumu, göç ve yönetimi. Maliyetlerinizi %40'a kadar düşürün.",
     icon: <XipIcon name="cloud" glow="strong" className="h-10 w-10" style={{ color: C }} />,
-    href: "/hizmetler/bulut-bilisim.html",
+    href: "/hizmetler/bulut-bilisim",
     accentColor: C,
   },
   {
@@ -29,7 +29,7 @@ const services: CarouselCard[] = [
     description:
       "Akıllı sözleşme geliştirme, DApp, NFT platformları ve DeFi protokolleri. Merkeziyetsiz geleceği birlikte inşa edin.",
     icon: <XipIcon name="link2" glow="strong" className="h-10 w-10" style={{ color: V }} />,
-    href: "/hizmetler/blockchain-web3.html",
+    href: "/hizmetler/blockchain-web3",
     accentColor: V,
   },
   {
@@ -38,7 +38,7 @@ const services: CarouselCard[] = [
     description:
       "Penetrasyon testi, güvenlik denetimi ve 7/24 izleme. KVKK/GDPR uyum danışmanlığıyla dijital varlıklarınızı koruyun.",
     icon: <XipIcon name="shield-check" glow="strong" className="h-10 w-10" style={{ color: C }} />,
-    href: "/hizmetler/siber-guvenlik.html",
+    href: "/hizmetler/siber-guvenlik",
     accentColor: C,
   },
   {
@@ -47,7 +47,7 @@ const services: CarouselCard[] = [
     description:
       "LLM entegrasyonu, chatbot geliştirme, veri analizi ve otomasyon. İş süreçlerinizi yapay zeka ile dönüştürün.",
     icon: <XipIcon name="cpu" glow="strong" className="h-10 w-10" style={{ color: V }} />,
-    href: "/hizmetler/yapay-zeka-ml.html",
+    href: "/hizmetler/yapay-zeka-ml",
     accentColor: V,
   },
   {
@@ -56,7 +56,7 @@ const services: CarouselCard[] = [
     description:
       "Özel e-ticaret platformları, mobil ticaret ve SEO optimizasyonu. Online satışlarınızı %35'e kadar artırın.",
     icon: <XipIcon name="globe" glow="strong" className="h-10 w-10" style={{ color: C }} />,
-    href: "/hizmetler/e-ticaret-platformlari.html",
+    href: "/hizmetler/e-ticaret-platformlari",
     accentColor: C,
   },
   {
@@ -65,7 +65,7 @@ const services: CarouselCard[] = [
     description:
       "CI/CD pipeline, Kubernetes, Terraform ile altyapı otomasyonu. Deploy hızınızı 10 kata çıkarın.",
     icon: <XipIcon name="code2" glow="strong" className="h-10 w-10" style={{ color: V }} />,
-    href: "/hizmetler/devops-sre.html",
+    href: "/hizmetler/devops-sre",
     accentColor: V,
   },
 ];

@@ -33,16 +33,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // tek sefer yüklenip yeniden yazılır).
   await invalidateAllPageCaches();
 
-  // Bileşen/rota seviyesinde cache (tek catch-all şablon: hizmet detay + konum).
-  revalidatePath("/hizmetler/[...slug]", "page");
+  // Ağaç okuması tag'le önbelleklenir (`content-tree` + `content-path:<yol>`).
+  // Hizmetlerin ikiz rotası (`hizmetler/[...slug]`) silindi — artık o deseni
+  // taşıyan bir route yok, `revalidatePath` sessizce hiçbir şeyi bulamaz.
+  // Tag'i düşürmek tek catch-all'ın (`[locale]/[...slug]`) tüm hizmet/konum
+  // çıktılarını tazeler.
+  revalidateTag("content-tree");
   revalidatePath("/hizmetler");
   revalidatePath("/sitemap.xml");
 
   return NextResponse.json({
     success: true,
     revalidated: {
-      tags: ["local-pages", "sitemap", "locations"],
-      paths: ["/hizmetler/[...slug]", "/hizmetler", "/sitemap.xml"],
+      tags: ["local-pages", "sitemap", "locations", "content-tree"],
+      paths: ["/hizmetler", "/sitemap.xml"],
     },
     now: Date.now(),
   });

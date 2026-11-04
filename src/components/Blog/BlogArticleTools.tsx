@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Link2, Printer, MessageCircle } from "lucide-react";
 
 type BlogArticleToolsProps = {
@@ -22,18 +22,25 @@ export default function BlogArticleTools({
   const shareText = encodeURIComponent(`${title} ${url}`);
   const encodedUrl = encodeURIComponent(url);
 
+  // Font scale değişince blog içeriğine CSS custom property olarak uygula
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>(".blog-content-body");
+    if (el) el.style.fontSize = `${fontScale}%`;
+  }, [fontScale]);
+
   async function copyLink() {
     if (!navigator.clipboard?.writeText) {
       setCopyStatus("Bağlantı kopyalama bu tarayıcıda desteklenmiyor.");
       return;
     }
-
     try {
       await navigator.clipboard.writeText(url);
       setCopyStatus("Bağlantı kopyalandı.");
+      setTimeout(() => setCopyStatus(""), 2500);
     } catch (error) {
       console.error("Blog bağlantısı panoya kopyalanamadı.", error);
-      setCopyStatus("Bağlantı kopyalanamadı. Tarayıcı iznini kontrol edin.");
+      setCopyStatus("Bağlantı kopyalanamadı.");
+      setTimeout(() => setCopyStatus(""), 2500);
     }
   }
 
@@ -53,27 +60,31 @@ export default function BlogArticleTools({
         aria-label="Yazı araçları ve paylaşım"
         className="fixed bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-xl border border-white/15 bg-zinc-950/75 p-1.5 shadow-xl shadow-black/30 backdrop-blur-xl xl:bottom-auto xl:left-6 xl:top-1/2 xl:-translate-y-1/2 xl:translate-x-0 xl:flex-col"
       >
+        {/* Yazı Boyutu */}
         <button
           type="button"
           aria-label="Yazı boyutunu artır"
           title="Yazı boyutunu artır"
           disabled={fontScale >= 140}
-          onClick={() => setFontScale((size) => Math.min(140, size + 10))}
+          onClick={() => setFontScale((s) => Math.min(140, s + 10))}
           className={`${toolButtonClass} disabled:cursor-not-allowed disabled:opacity-40`}
         >
-          <span className="text-sm font-semibold">A+</span>
+          <span className="text-sm font-semibold select-none">A+</span>
         </button>
         <button
           type="button"
           aria-label="Yazı boyutunu azalt"
           title="Yazı boyutunu azalt"
           disabled={fontScale <= 80}
-          onClick={() => setFontScale((size) => Math.max(80, size - 10))}
+          onClick={() => setFontScale((s) => Math.max(80, s - 10))}
           className={`${toolButtonClass} disabled:cursor-not-allowed disabled:opacity-40`}
         >
-          <span className="text-sm font-semibold">A−</span>
+          <span className="text-sm font-semibold select-none">A−</span>
         </button>
+
         <span aria-hidden="true" className="mx-0.5 h-6 w-px bg-white/10 xl:my-1 xl:mx-0 xl:h-px xl:w-7" />
+
+        {/* Kopyala & Yazdır */}
         <button
           type="button"
           aria-label="Yazı bağlantısını kopyala"
@@ -92,7 +103,10 @@ export default function BlogArticleTools({
         >
           <Printer size={19} aria-hidden="true" />
         </button>
+
         <span aria-hidden="true" className="mx-0.5 h-6 w-px bg-white/10 xl:my-1 xl:mx-0 xl:h-px xl:w-7" />
+
+        {/* Paylaşım */}
         <a
           href={`https://wa.me/?text=${shareText}`}
           target="_blank"
@@ -133,6 +147,8 @@ export default function BlogArticleTools({
         >
           𝕏
         </a>
+
+        {/* Kopyalama bildirimi */}
         {copyStatus && (
           <span
             className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg border border-white/10 bg-zinc-950/90 px-3 py-2 text-xs text-zinc-200 shadow-lg"
@@ -143,12 +159,9 @@ export default function BlogArticleTools({
           </span>
         )}
       </aside>
-      <div
-        className="blog-article-print-area"
-        style={{ fontSize: `${fontScale}%` }}
-      >
-        {children}
-      </div>
+
+      {/* İçerik — font scale doğrudan .blog-content-body'e uygulanır */}
+      {children}
     </div>
   );
 }

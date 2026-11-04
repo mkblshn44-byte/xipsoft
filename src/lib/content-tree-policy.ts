@@ -1,11 +1,10 @@
 /**
  * content-tree-policy.ts — "Bu yolu içerik ağacı sahipleniyor mu?" (DB önbelleği).
  *
- * NEDEN GEREKLİ? `.html` kanoni ve eski WordPress yönlendirmeleri elle tutulan
- * listelerde (`EXTENSIONLESS_ROUTE_PREFIXES`, `RESERVED_ROOT_SEGMENTS`) karar
- * veriyordu. Admin yeni bir `/forum/...` ya da `/haberler/...` sayfası
- * yayınladığında liste hâlâ "bu kök legacy, .html'i sök / blog'a 301" der ve
- * yayınlanan sayfa hiç açılamazdı. Karar artık VERİDEN gelir:
+ * NEDEN GEREKLİ? Eski WordPress yönlendirmeleri elle tutulan listelerde
+ * (`RESERVED_ROOT_SEGMENTS`) karar veriyordu. Admin yeni bir `/forum/...` ya da
+ * `/haberler/...` sayfası yayınladığında liste hâlâ "bu kök legacy, blog'a 301"
+ * der ve yayınlanan sayfa hiç açılamazdı. Yol sahipliği artık VERİDEN gelir:
  *
  *   1. KÖK FİLTRESİ  — tek `GROUP BY` sorgusuyla yayınlanmış `kind='custom'`
  *      düğümlerinin İLK segmentleri belleğe alınır. Kök listede yoksa DB'ye
@@ -31,6 +30,7 @@
  */
 import pool from "@/lib/db/pool";
 import {
+  CONTENT_PAGE_KIND_SQL,
   MAX_CONTENT_SEGMENTS,
   normalizeContentPath,
   normalizeContentSlug,
@@ -50,6 +50,19 @@ export async function ensureContentTreeSchema(): Promise<void> {
   if (!schemaPromise) {
     schemaPromise = (async () => {
       await pool.query("ALTER TABLE pages ADD COLUMN IF NOT EXISTS full_path TEXT");
+      await pool.query("ALTER TABLE pages ADD COLUMN IF NOT EXISTS parent_id UUID");
+      await pool.query(
+        "ALTER TABLE pages ADD COLUMN IF NOT EXISTS node_type TEXT NOT NULL DEFAULT 'page'",
+      );
+      await pool.query(
+        "ALTER TABLE pages ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0",
+      );
+      await pool.query("ALTER TABLE pages ADD COLUMN IF NOT EXISTS schema_markup JSONB");
+      // Ağaç okuyucusu bu iki kolonu SELECT listesinde taşır (`content-tree.ts`):
+      // çok dilli örtüşme haritası ve mutlak `<title>` kararı. Kod DB'den önce
+      // yayınlanırsa ilk istek kolonları ekler, aksine okuma null'a düşer.
+      await pool.query("ALTER TABLE pages ADD COLUMN IF NOT EXISTS content_i18n JSONB");
+      await pool.query("ALTER TABLE pages ADD COLUMN IF NOT EXISTS title_absolute BOOLEAN");
       await pool.query(
         `CREATE UNIQUE INDEX IF NOT EXISTS pages_full_path_uq
            ON pages (full_path)
@@ -68,22 +81,19 @@ export async function ensureContentTreeSchema(): Promise<void> {
 }
 
 /**
- * YAYIN SAHİPLENME koşulu — `.html` kanonisi ve middleware kararı bunu kullanır.
- * Yalnız admin'in ağaçtan yarattığı `kind='custom'` düğümleri `.html` alır.
- * Eski hizmet/konum satırları (`service`/`location`) CANLIDA uzantısız
- * kanonik olduğu için burada kasıtlı olarak dışarıda tutulur.
+ * Published custom page paths used by content-tree lookup and legacy redirect
+ * conflict checks. URL extension normalization is global and separate.
  */
 export const PUBLISHED_TREE_SQL_FILTER =
-  "kind = 'custom' AND is_deleted = FALSE AND status = 'published' AND full_path IS NOT NULL AND full_path <> ''";
+  `kind IN (${CONTENT_PAGE_KIND_SQL}) AND is_deleted = FALSE AND status = 'published' AND full_path IS NOT NULL AND full_path <> ''`;
 
 /**
  * SUNULABİLİR düğüm koşulu — ağaç çözümleyicisinin (`resolveContentPath`)
  * okuyabileceği satırlar. Konsolidasyon hedefi tek motor olduğundan hizmet ve
- * konum satırları da ağaçtan adreslenebilir; ancak `.html` sahiplenme kararı
- * onlara uygulanmaz (bkz. `PUBLISHED_TREE_SQL_FILTER`).
+ * konum satırları da ağaçtan adreslenebilir.
  */
 export const TREE_SERVABLE_SQL_FILTER =
-  "kind IN ('custom', 'service', 'location') AND is_deleted = FALSE AND status = 'published' AND full_path IS NOT NULL AND full_path <> ''";
+  `kind IN (${CONTENT_PAGE_KIND_SQL}, 'service', 'location') AND is_deleted = FALSE AND status = 'published' AND full_path IS NOT NULL AND full_path <> ''`;
 
 let treeRoots: Set<string> | null = null;
 let treeRootsExpiresAt = 0;

@@ -153,7 +153,7 @@ function readEnumDirective(
 export interface PageMetadataInput {
   title: string;
   description: string;
-  /** Site köküne göre kanonik yol (ör. `/hizmetler/web-yazilim-tasarim1.html`). */
+  /** Site köküne göre kanonik yol (ör. `/hizmetler/web-yazilim-tasarim`). */
   canonicalPath: string;
   keywords?: string[];
   /**

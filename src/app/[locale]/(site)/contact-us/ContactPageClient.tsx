@@ -208,6 +208,10 @@ function IletisimFormu({ isInView }: { isInView: boolean }) {
   );
 }
 
+export function ContactLeadForm() {
+  return <IletisimFormu isInView />;
+}
+
 // ══ Ana bileşen ════════════════════════════════════════════════════════════
 
 export default function ContactPageClient() {

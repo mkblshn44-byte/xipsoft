@@ -5,12 +5,10 @@
  *
  * Sitedeki tüm "Teklif Al" CTA'ları `/teklif`'e link verir. Bu rota daha önce
  * tanımlı olmadığı için 404 dönüyordu (hem kullanıcı hem tarama bütçesi sorunu).
- * Sayfa artık gerçek içerik gösterir ve JS varsa teklif formunu (modal)
- * otomatik açar; JS yoksa ziyaretçi için okunabilir içerik + iletişim yolları
- * kalır. Böylece "boş ama 200" (soft 404) bir sayfa oluşmaz.
+ * Sayfa gerçek içerik gösterir; teklif formu yalnızca ziyaretçi açma
+ * düğmesine bastığında gösterilir.
  */
 
-import { useEffect } from "react";
 import Link from "next/link";
 import XipIcon from "@/components/Ui/Icon";
 import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
@@ -25,11 +23,6 @@ const GUARANTEES = [
 export default function TeklifLandingClient() {
   const ACCENT = BRAND_COLORS.primary;
   const SECONDARY = BRAND_COLORS.secondary;
-
-  useEffect(() => {
-    // Doğrudan /teklif'e gelen kullanıcı için formu hemen aç.
-    teklifModal.open();
-  }, []);
 
   return (
     <section

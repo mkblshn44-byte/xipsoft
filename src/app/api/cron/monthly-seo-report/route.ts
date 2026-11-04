@@ -25,9 +25,9 @@ const CRITICAL_PATHS = [
   "/",
   "/blog",
   "/hizmetler",
-  "/hizmetler/web-yazilim-tasarim1.html",
-  "/hizmetler/mobil-uygulama.html",
-  "/hizmetler/seo-dijital-pazarlama.html",
+  "/hizmetler/web-yazilim-tasarim",
+  "/hizmetler/mobil-uygulama",
+  "/hizmetler/seo-dijital-pazarlama",
   "/contact-us",
   "/hakkimizda",
 ];

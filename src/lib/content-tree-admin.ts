@@ -12,6 +12,7 @@
 import pool from "@/lib/db/pool";
 import { slugify } from "@/utils/slugify";
 import {
+  CONTENT_PAGE_KIND_SQL,
   EXTENSIONLESS_ROUTE_EXACT,
   stripContentExtension,
   TREE_STATUSES,
@@ -21,6 +22,7 @@ import {
 
 export { TREE_STATUSES };
 export type { TreeStatus, TreeNodeType };
+export type { ContentPageKind } from "@/lib/content-path";
 
 /** Yeni düğümlerin kaynak türü. */
 export const TREE_KIND = "custom";
@@ -34,9 +36,9 @@ export const TREE_KIND = "custom";
  * VERİ ODAKLI KARAR (Kırık Link → Sayfa Aç): eski WordPress kökleri
  * (`forum`, `news`, `posts`, `article`, `products`, `services`) artık
  * LİSTEDE DEĞİL — diskte karşılık gelen bir kod rotası yok, yalnızca
- * middleware'te legacy yönlendirme/`.html` sökme kuralı var. Admin bu adların
- * altında sayfa yayınladığında kararı DB verir: middleware sahipliği görür,
- * 301'i atlar ve isteği kök catch-all'a bırakır.
+ * middleware'te legacy yönlendirme var. Admin bu adların altında sayfa
+ * yayınladığında middleware sahipliği görür, 301'i atlar ve isteği kök
+ * catch-all'a bırakır.
  *
  * Kod rotası olan legacy kökler (`urunler`, `blog`) ve `EXTENSIONLESS_ROUTE_EXACT`
  * tam eşleşmeleri (aşağıdaki kontrol) ayrılmış kalmaya devam eder.
@@ -56,13 +58,6 @@ const RESERVED_ROOT_SEGMENTS: ReadonlySet<string> = new Set([
   "s",
   "blog",
   "urunler",
-  "references",
-  "hakkimizda",
-  "contact-us",
-  "privacy-policy",
-  "terms-of-service",
-  "cookie-policy",
-  "istanbul-yazilim-sirketi",
   "sitemap",
   "sitemap.xml",
   "robots.txt",
@@ -233,10 +228,9 @@ export function validateFullPath(fullPath: string): string | null {
   if (RESERVED_ROOT_SEGMENTS.has(segments[0])) {
     return `"${segments[0]}" ayrılmış bir kök yol; bu ad altında içerik oluşturulamaz.`;
   }
-  // Kanonik adresi UZANTISIZ olan kod rotaları (kök, `/hizmetler` hub'ı,
-  // `/blog` listesi, politika sayfaları) ağaç tarafından alınamaz: `content-path`
-  // bu yollar için `.html` EKLEMEZ, dolayısıyla düğümün kanoniği kod rotasıyla
-  // çakışır ve sayfa hiç açılmaz. Alt yollar (`hizmetler/<slug>`) serbesttir.
+  // Kod rotalarının tam yolları ağaç tarafından alınamaz; bunlar Next.js
+  // routing'de daha yüksek önceliklidir ve aynı URL iki içerik kaynağına ait
+  // olamaz. Alt yollar (`hizmetler/<slug>`) serbesttir.
   const asRoute = `/${segments.join("/")}`;
   if (EXTENSIONLESS_ROUTE_EXACT.includes(asRoute)) {
     return `"${asRoute}" kanonik adresi uzantısız bir kod rotası; bu yolda içerik yayınlanamaz.`;
@@ -259,7 +253,7 @@ export async function listTreeNodesForAdmin(): Promise<AdminTreeNode[]> {
   const { rows } = await pool.query<RawAdminNode>(
     `SELECT ${ADMIN_LIST_COLUMNS}
        FROM pages
-      WHERE kind IN ('custom', 'service')
+      WHERE kind IN (${CONTENT_PAGE_KIND_SQL}, 'service')
          OR (kind = 'location' AND is_deleted = FALSE)
       ORDER BY full_path NULLS LAST, sort_order, title`,
   );
@@ -271,10 +265,9 @@ export async function listTreeNodes(includeDeleted = false): Promise<AdminTreeNo
   const { rows } = await pool.query<RawAdminNode>(
     `SELECT ${ADMIN_COLUMNS}
        FROM pages
-      WHERE (kind = $1 OR kind = 'service')
+      WHERE kind IN (${CONTENT_PAGE_KIND_SQL}, 'service')
         ${includeDeleted ? "" : "AND is_deleted = FALSE"}
       ORDER BY full_path NULLS LAST, sort_order, title`,
-    [TREE_KIND],
   );
   return rows.map(mapNode);
 }
@@ -300,10 +293,10 @@ export async function getTreeNode(id: string): Promise<AdminTreeNode | null> {
               micro_services, micro_title, micro_desc, faq_title, faq_items, guide,
               metadata, is_active, sort_order
          FROM services
-        WHERE (id = $1::int OR slug = $2 OR source_page_id = $3::uuid)
+        WHERE (id = $1::int OR slug = $2)
           AND row_type = 'main'
         LIMIT 1`,
-      [node.serviceId || 0, node.slug, node.id],
+      [node.serviceId || 0, node.slug],
     );
     if (svcResult.rows[0]) {
       node.serviceData = svcResult.rows[0];
@@ -325,7 +318,7 @@ export async function listCategoryOptions(excludeId?: string): Promise<TreeParen
   const { rows } = await pool.query<{ id: string; full_path: string; title: string }>(
     `SELECT id::text, full_path, title
        FROM pages
-      WHERE kind IN ('custom', 'service')
+       WHERE kind IN (${CONTENT_PAGE_KIND_SQL}, 'service')
         AND node_type = 'category'
         AND is_deleted = FALSE
         ${excludeId ? "AND id <> $1::uuid" : ""}
@@ -393,14 +386,14 @@ export async function isFullPathTaken(
 }
 
 /** Sibling'ler arasında yeni sort_order (max+1). */
-export async function nextSortOrder(parentId: string | null): Promise<number> {
+export async function nextSortOrder(parentId: string | null, kind = TREE_KIND): Promise<number> {
   const { rows } = await pool.query<{ next: number }>(
     `SELECT COALESCE(MAX(sort_order), -1) + 1 AS next
        FROM pages
       WHERE kind = $1
         AND is_deleted = FALSE
         AND ${parentId ? "parent_id = $2::uuid" : "parent_id IS NULL"}`,
-    parentId ? [TREE_KIND, parentId] : [TREE_KIND],
+    parentId ? [kind, parentId] : [kind],
   );
   return rows[0]?.next ?? 0;
 }

@@ -434,7 +434,7 @@ export default function ContentTreeClient({ nodes }: { nodes: AdminTreeNode[] })
           <div className="flex-1">
             <p className="text-sm font-semibold text-gray-900">İçerik Ağacı</p>
             <p className="text-[11px] text-gray-500">
-              Kanonik adresler <span className="font-mono">.html</span> ile biter. 12 ana hizmet, yerel sayfalar ve tüm CMS içeriğini tek noktadan yönetebilirsiniz.
+              Kanonik adreslerde dosya uzantısı kullanılmaz. 12 ana hizmet, yerel sayfalar ve tüm CMS içeriğini tek noktadan yönetebilirsiniz.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

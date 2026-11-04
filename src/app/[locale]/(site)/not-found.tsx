@@ -6,10 +6,10 @@ import XipIcon from "@/components/Ui/Icon";
 import { BRAND_COLORS } from "@/config/brand.config";
 
 const QUICK_LINKS = [
-  { label: "Hizmetler",  href: "/hizmetler/web-yazilim-tasarim1.html", color: BRAND_COLORS.secondary, icon: "globe" },
+  { label: "Hizmetler",  href: "/hizmetler/web-yazilim-tasarim", color: BRAND_COLORS.secondary, icon: "globe" },
   { label: "Blog",       href: "/blog",                          color: BRAND_COLORS.primary,   icon: "code2" },
-  { label: "Güvenlik",   href: "/hizmetler/siber-guvenlik.html",      color: "#ddd6fe",              icon: "shield-check" },
-  { label: "Mobil",      href: "/hizmetler/mobil-uygulama.html",      color: BRAND_COLORS.accent,    icon: "smartphone" },
+  { label: "Güvenlik",   href: "/hizmetler/siber-guvenlik",      color: "#ddd6fe",              icon: "shield-check" },
+  { label: "Mobil",      href: "/hizmetler/mobil-uygulama",      color: BRAND_COLORS.accent,    icon: "smartphone" },
 ];
 
 export default function NotFound() {

@@ -20,6 +20,7 @@ import { slugify } from "@/utils/slugify";
 import {
   stripContentExtension,
   treeNodeCanonicalPath,
+  type ContentPageKind,
   type TreeStatus,
   type TreeNodeType,
 } from "@/lib/content-path";
@@ -64,12 +65,18 @@ export default function ContentNodeForm({ parents, node, defaultParentId, defaul
   const [error, setError] = useState("");
 
   const isServiceNode = node?.kind === "service" || Boolean(node?.serviceId) || Boolean(node?.serviceData);
+  const isManagedNode = isServiceNode || node?.kind === "location";
   const initialService = node?.serviceData;
 
   const [activeTab, setActiveTab] = useState<string>("general");
 
   const [form, setForm] = useState({
     nodeType: (node?.nodeType ?? defaultType ?? "page") as TreeNodeType,
+    kind: (["category", "topic", "sayfakonu", "page"].includes(node?.kind ?? "")
+      ? node?.kind
+      : node?.nodeType === "category" || defaultType === "category"
+        ? "category"
+        : "page") as ContentPageKind,
     parentId: node?.parentId ?? defaultParentId ?? "",
     slug: node?.slug ?? "",
     title: node?.title ?? "",
@@ -173,7 +180,8 @@ export default function ContentNodeForm({ parents, node, defaultParentId, defaul
 
     const payload = {
       parentId: form.parentId || null,
-      nodeType: form.nodeType,
+      nodeType: isManagedNode ? form.nodeType : form.kind === "page" ? "page" as const : "category" as const,
+      kind: isManagedNode ? undefined : form.kind,
       slug: effectiveSlug,
       title: form.title,
       h1Title: form.h1Title,
@@ -299,12 +307,27 @@ export default function ContentNodeForm({ parents, node, defaultParentId, defaul
             <label className="text-xs font-medium text-gray-700">
               Tür
               <select
-                value={form.nodeType}
-                onChange={(event) => update("nodeType", event.target.value as TreeNodeType)}
+                value={isManagedNode ? node?.kind ?? "service" : form.kind}
+                disabled={isManagedNode}
+                onChange={(event) => {
+                  const kind = event.target.value as ContentPageKind;
+                  update("kind", kind);
+                  update("nodeType", kind === "page" ? "page" : "category");
+                }}
                 className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-xs"
               >
-                <option value="category">Kategori</option>
-                <option value="page">İçerik sayfası</option>
+                {isManagedNode ? (
+                  <option value={node?.kind ?? "service"}>
+                    {node?.kind === "location" ? "Yerel SEO (mevcut)" : "Hizmet (mevcut)"}
+                  </option>
+                ) : (
+                  <>
+                    <option value="category">Kategori</option>
+                    <option value="topic">Alt konu</option>
+                    <option value="sayfakonu">Sayfa konusu</option>
+                    <option value="page">Statik sayfa</option>
+                  </>
+                )}
               </select>
             </label>
             <label className="text-xs font-medium text-gray-700">

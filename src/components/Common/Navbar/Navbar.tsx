@@ -55,11 +55,11 @@ const linkKeys = [
 
 // Mega menü öğeleri — `icon` doğrudan XipIcon adıdır (özel ikon seti).
 const megaMenuItems = [
-  { icon: "code2",      color: PALETTE.neon[500], labelKey: "web"      as const, descKey: "webDesc"      as const, longKey: "webLong"      as const, service: "Web Yazılım & Tasarım",  href: "/hizmetler/web-yazilim-tasarim1.html" },
-  { icon: "smartphone", color: PALETTE.accent.cyan, labelKey: "mobile"   as const, descKey: "mobileDesc"   as const, longKey: "mobileLong"   as const, service: "Mobil Uygulama",          href: "/hizmetler/mobil-uygulama.html" },
-  { icon: "monitor",    color: PALETTE.neon[500], labelKey: "desktop"  as const, descKey: "desktopDesc"  as const, longKey: "desktopLong"  as const, service: "Masaüstü Yazılım",        href: "/hizmetler/masaustu-yazilim.html" },
-  { icon: "shield-check", color: PALETTE.accent.cyan, labelKey: "security" as const, descKey: "securityDesc" as const, longKey: "securityLong" as const, service: "Siber Güvenlik",          href: "/hizmetler/siber-guvenlik.html" },
-  { icon: "bar-chart2", color: PALETTE.neon[500], labelKey: "seo"      as const, descKey: "seoDesc"      as const, longKey: "seoLong"      as const, service: "SEO & Dijital Pazarlama", href: "/hizmetler/seo-dijital-pazarlama.html" },
+  { icon: "code2",      color: PALETTE.neon[500], labelKey: "web"      as const, descKey: "webDesc"      as const, longKey: "webLong"      as const, service: "Web Yazılım & Tasarım",  href: "/hizmetler/web-yazilim-tasarim" },
+  { icon: "smartphone", color: PALETTE.accent.cyan, labelKey: "mobile"   as const, descKey: "mobileDesc"   as const, longKey: "mobileLong"   as const, service: "Mobil Uygulama",          href: "/hizmetler/mobil-uygulama" },
+  { icon: "monitor",    color: PALETTE.neon[500], labelKey: "desktop"  as const, descKey: "desktopDesc"  as const, longKey: "desktopLong"  as const, service: "Masaüstü Yazılım",        href: "/hizmetler/masaustu-yazilim" },
+  { icon: "shield-check", color: PALETTE.accent.cyan, labelKey: "security" as const, descKey: "securityDesc" as const, longKey: "securityLong" as const, service: "Siber Güvenlik",          href: "/hizmetler/siber-guvenlik" },
+  { icon: "bar-chart2", color: PALETTE.neon[500], labelKey: "seo"      as const, descKey: "seoDesc"      as const, longKey: "seoLong"      as const, service: "SEO & Dijital Pazarlama", href: "/hizmetler/seo-dijital-pazarlama" },
 ] as const;
 
 // ── Ortak odak halkası (klavye erişilebilirliği) ───────────────────────────

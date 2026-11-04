@@ -8,12 +8,13 @@ import {
   listRedirects,
   updateRedirect,
 } from "@/app/_actions/admin-redirect-actions";
+import type { RedirectStatus } from "@/lib/redirect-utils";
 
 type RedirectRecord = {
   id: string;
   source_path: string;
-  target_path: string;
-  status_code: 301 | 302 | 307 | 308;
+  target_path: string | null;
+  status_code: RedirectStatus;
   is_active: boolean;
   created_at: string;
 };
@@ -21,8 +22,11 @@ type RedirectRecord = {
 const EMPTY_FORM: {
   sourcePath: string;
   targetPath: string;
-  statusCode: 301 | 302 | 307 | 308;
+  statusCode: RedirectStatus;
 } = { sourcePath: "", targetPath: "", statusCode: 301 };
+
+/** 410 (Gone) kaldırılmış içeriktir; hedef adresi olmaz. */
+const isGoneStatus = (status: RedirectStatus) => status === 410;
 
 export default function RedirectsClient() {
   const [redirects, setRedirects] = useState<RedirectRecord[]>([]);
@@ -53,9 +57,13 @@ export default function RedirectsClient() {
     setSaving(true);
     setError(null);
     setNotice(null);
+    const payload = {
+      ...form,
+      targetPath: isGoneStatus(form.statusCode) ? "" : form.targetPath,
+    };
     const result = editingId
-      ? await updateRedirect(editingId, form)
-      : await createRedirect(form);
+      ? await updateRedirect(editingId, payload)
+      : await createRedirect(payload);
     if (!result.success) {
       setError(result.error ?? "Yönlendirme kaydedilemedi");
     } else {
@@ -70,7 +78,7 @@ export default function RedirectsClient() {
     setEditingId(record.id);
     setForm({
       sourcePath: record.source_path,
-      targetPath: record.target_path,
+      targetPath: record.target_path ?? "",
       statusCode: record.status_code,
     });
     setError(null);
@@ -135,24 +143,26 @@ export default function RedirectsClient() {
           <label className="block text-xs font-medium text-gray-700">
             Hedef URL
             <input
-              required
-              value={form.targetPath}
+              required={!isGoneStatus(form.statusCode)}
+              disabled={isGoneStatus(form.statusCode)}
+              value={isGoneStatus(form.statusCode) ? "" : form.targetPath}
               onChange={(event) => setForm({ ...form, targetPath: event.target.value })}
-              placeholder="/yeni-adres"
-              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-xs outline-none focus:border-gray-500"
+              placeholder={isGoneStatus(form.statusCode) ? "410 için hedef gerekmez" : "/yeni-adres"}
+              className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 font-mono text-xs outline-none focus:border-gray-500 disabled:bg-gray-50 disabled:text-gray-400"
             />
           </label>
           <label className="block text-xs font-medium text-gray-700">
             HTTP durumu
             <select
               value={form.statusCode}
-              onChange={(event) => setForm({ ...form, statusCode: Number(event.target.value) as 301 | 302 | 307 | 308 })}
+              onChange={(event) => setForm({ ...form, statusCode: Number(event.target.value) as RedirectStatus })}
               className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-xs"
             >
               <option value={301}>301 Kalıcı</option>
               <option value={302}>302 Geçici</option>
               <option value={307}>307 Geçici</option>
               <option value={308}>308 Kalıcı</option>
+              <option value={410}>410 Kaldırıldı (Gone)</option>
             </select>
           </label>
           <div className="flex gap-2">
@@ -191,7 +201,7 @@ export default function RedirectsClient() {
               ) : redirects.map((record) => (
                 <tr key={record.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-mono text-gray-800">{record.source_path}</td>
-                  <td className="px-4 py-3 font-mono text-gray-600">{record.target_path}</td>
+                  <td className="px-4 py-3 font-mono text-gray-600">{record.target_path ?? "—"}</td>
                   <td className="px-4 py-3 text-gray-600">{record.status_code}</td>
                   <td className="px-4 py-3">
                     <button

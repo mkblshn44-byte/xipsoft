@@ -9,8 +9,8 @@
  * eski URL'ler için kalıcı yönlendirme (301) üretilir ve ilgili önbellekler
  * (`content-tree`, `sitemap`) geçersiz kılınır.
  *
- * KANONİK URL: `<full_path>.html`. Uzantısız ve `.html` eski adresler için
- * ayrı ayrı 301 kaydı oluşturulur.
+ * KANONİK URL: uzantısız `<full_path>`. Eski `.html` istekleri middleware
+ * tarafından tek adımda uzantısız adrese yönlendirilir.
  */
 import { revalidatePath, revalidateTag } from "next/cache";
 import type { PoolClient } from "pg";
@@ -22,6 +22,7 @@ import { treeNodeCanonicalPath, canonicalPathForNode } from "@/lib/content-tree"
 import { hashPageContent } from "@/lib/pages/hash";
 import { parseSchemaMarkupInput } from "@/lib/schema-markup";
 import { invalidateRedirectCache, upsertSlugRedirect } from "@/lib/redirect-handler";
+import { invalidateGonePathSnapshot } from "@/middleware-utils/seo-normalize";
 import { deactivateRedirectsForPublishedPaths } from "@/lib/seo-conflict-guard";
 import {
   TREE_KIND,
@@ -32,6 +33,7 @@ import {
   type AdminServiceData,
   type TreeParentOption,
   normalizeSlugInput,
+  type ContentPageKind,
   validateFullPath,
   buildFullPath,
   listTreeNodes,
@@ -81,6 +83,7 @@ export async function listParentOptions(excludeId?: string): Promise<{ options: 
 // ── Girdi tipleri ────────────────────────────────────────────────────────────
 
 export interface ContentNodeInput {
+  kind?: ContentPageKind;
   parentId?: string | null;
   nodeType?: TreeNodeType;
   slug?: string;
@@ -128,7 +131,9 @@ async function resolveParent(
   const { rows } = await db.query<{ id: string; full_path: string | null; node_type: string }>(
     `SELECT id::text, full_path, node_type
        FROM pages
-      WHERE id = $1::uuid AND (kind = 'custom' OR kind = 'service') AND is_deleted = FALSE
+      WHERE id = $1::uuid
+        AND kind IN ('custom', 'category', 'topic', 'sayfakonu', 'page', 'service')
+        AND is_deleted = FALSE
       LIMIT 1`,
     [parentId],
   );
@@ -143,12 +148,8 @@ async function resolveParent(
 /**
  * Bir yol değişimini kalıcı yönlendirmeye bağlar.
  *
- * `kind` ŞART: kanonik uzantı türden türe değişir (`custom` → `.html`,
- * `service`/`location` → uzantısız). Eskiden hedef daima `.html` üretiliyordu;
- * bir hizmet/konum düğümü taşındığında yönlendirme hedefi ile sayfanın kendi
- * kanoniği ayrışıyordu — middleware uzantısız listede olduğu için `.html`i
- * söker, rota geri ekler → bot iki hop görür, canonical ile 301 hedefi
- * birbirinden farklı olurdu.
+ * The node kind is passed to the shared canonical path helper; all current
+ * content types use the same extensionless URL policy.
  */
 async function recordPathChange(
   client: PoolClient,
@@ -189,6 +190,9 @@ async function revalidateTreePaths(paths: Array<string | null | undefined>): Pro
   // Çakışma koruması: yayındaki yolun eski WordPress redirect'i gölge olmasın +
   // middleware'in ağaç sahipliği snapshot'ı TTL beklemeden tazelensin.
   await deactivateRedirectsForPublishedPaths(paths);
+  // Soft-delete/restore middleware'in 410 snapshot'ını da değiştirir: TTL
+  // beklenmez, aksi halde geri alınan sayfa 60 sn boyunca Gone döner.
+  invalidateGonePathSnapshot();
 }
 
 // ── Oluşturma ────────────────────────────────────────────────────────────────
@@ -201,6 +205,10 @@ export async function createContentNode(input: ContentNodeInput): Promise<Action
     if (!title) return { success: false, error: "Başlık zorunludur." };
 
     const nodeType: TreeNodeType = input.nodeType === "category" ? "category" : "page";
+    const kind = input.kind ?? TREE_KIND;
+    if (!["custom", "category", "topic", "sayfakonu", "page"].includes(kind)) {
+      throw new Error("Geçersiz içerik türü.");
+    }
     const slug = normalizeSlugInput(input.slug || title);
     if (!slug) return { success: false, error: "Geçerli bir slug üretilemedi." };
 
@@ -223,7 +231,7 @@ export async function createContentNode(input: ContentNodeInput): Promise<Action
       const status = input.status ? assertStatus(input.status) : "draft";
       const sortOrder = Number.isFinite(input.sortOrder)
         ? Number(input.sortOrder)
-        : await nextSortOrder(parent.id);
+        : await nextSortOrder(parent.id, kind);
       const isIndexable = input.isIndexable ?? nodeType === "category";
       const markdown = input.markdownContent ?? null;
       const renderedHtml = input.renderedHtml ?? null;
@@ -240,7 +248,7 @@ export async function createContentNode(input: ContentNodeInput): Promise<Action
                  $18, $19, $20::jsonb)
          RETURNING id::text`,
         [
-          parent.id, TREE_KIND, nodeType, slug, fullPath, title,
+          parent.id, kind, nodeType, slug, fullPath, title,
           cleanText(input.h1Title, 300), cleanText(input.metaTitle, 320), cleanText(input.metaDescription, 500),
           markdown, renderedHtml, cleanText(input.ogImageUrl, 1000), cleanText(input.robots, 100),
           isIndexable, `${SITE_URL}${treeNodeCanonicalPath(fullPath)}`, status, sortOrder,
@@ -300,8 +308,14 @@ export async function updateContentNode(
       if (!current) throw new Error("Düğüm bulunamadı.");
 
       const oldFullPath = current.full_path ?? current.slug;
+      const kind = input.kind ?? current.kind;
+      if (input.kind && !["category", "topic", "sayfakonu", "page"].includes(input.kind)) {
+        throw new Error("Geçersiz içerik türü.");
+      }
       const nodeType: TreeNodeType = input.nodeType
         ? input.nodeType === "category" ? "category" : "page"
+        : input.kind
+          ? input.kind === "page" ? "page" : "category"
         : current.node_type;
 
       const nextParentId = input.parentId === undefined ? current.parent_id : input.parentId;
@@ -345,36 +359,37 @@ export async function updateContentNode(
       await client.query(
         `UPDATE pages
             SET parent_id = $2::uuid,
-                node_type = $3,
-                page_type = $3,
-                slug = $4,
-                full_path = $5,
-                title = COALESCE($6, title),
-                h1_title = $7,
-                meta_title = $8,
-                meta_description = $9,
-                markdown_content = $10,
-                rendered_html = $11,
-                og_image_url = $12,
-                robots = $13,
-                is_indexable = COALESCE($14, is_indexable),
-                sort_order = COALESCE($15, sort_order),
-                canonical_url = $16,
-                status = $17,
-                content_hash = CASE WHEN $10 IS NULL THEN content_hash ELSE $18 END,
-                schema_markup = $19::jsonb,
-                published_at = CASE WHEN $17 = 'published' AND published_at IS NULL THEN NOW() ELSE published_at END,
+                kind = $3,
+                node_type = $4,
+                page_type = $4,
+                slug = $5,
+                full_path = $6,
+                title = COALESCE($7, title),
+                h1_title = $8,
+                meta_title = $9,
+                meta_description = $10,
+                markdown_content = $11,
+                rendered_html = $12,
+                og_image_url = $13,
+                robots = $14,
+                is_indexable = COALESCE($15, is_indexable),
+                sort_order = COALESCE($16, sort_order),
+                canonical_url = $17,
+                status = $18,
+                content_hash = CASE WHEN $11 IS NULL THEN content_hash ELSE $19 END,
+                schema_markup = $20::jsonb,
+                published_at = CASE WHEN $18 = 'published' AND published_at IS NULL THEN NOW() ELSE published_at END,
                 updated_at = NOW()
           WHERE id = $1::uuid`,
         [
-          id, parent.id, nodeType, slug, newFullPath,
+          id, parent.id, kind, nodeType, slug, newFullPath,
           title, cleanText(input.h1Title, 300), cleanText(input.metaTitle, 320), cleanText(input.metaDescription, 500),
           markdown ?? null, renderedHtml ?? null,
           input.ogImageUrl === undefined ? null : cleanText(input.ogImageUrl, 1000),
           input.robots === undefined ? null : cleanText(input.robots, 100),
           input.isIndexable === undefined ? null : input.isIndexable,
           Number.isFinite(input.sortOrder) ? Number(input.sortOrder) : null,
-          `${SITE_URL}${canonicalPathForNode({ fullPath: newFullPath, kind: current.kind })}`,
+          `${SITE_URL}${canonicalPathForNode({ fullPath: newFullPath, kind })}`,
           status,
           markdown ? hashPageContent(markdown) : null,
           // Alan formda hiç gönderilmediyse (NULL değil `undefined`) mevcut değer korunur.
@@ -385,7 +400,7 @@ export async function updateContentNode(
       );
 
       // Torun yollarını yeni önekle güncelle + eski→yeni 301 üret.
-      await recordPathChange(client, oldFullPath, newFullPath, current.kind);
+      await recordPathChange(client, oldFullPath, newFullPath, kind);
       for (const descendant of descendants) {
         if (!descendant.fullPath.startsWith(`${oldFullPath}/`)) continue;
         const updatedPath = `${newFullPath}${descendant.fullPath.slice(oldFullPath.length)}`;

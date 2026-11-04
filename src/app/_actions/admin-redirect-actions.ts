@@ -8,24 +8,35 @@ import {
   normalizeRedirectSource,
   normalizeRedirectTarget,
   isRedirectStatus,
+  requiresRedirectTarget,
+  type RedirectStatus,
 } from '@/lib/redirect-utils';
 
 export async function createRedirect(input: {
   sourcePath: string;
-  targetPath: string;
-  statusCode?: 301 | 302 | 307 | 308;
+  /** 410 için boş bırakılabilir. */
+  targetPath?: string;
+  statusCode?: RedirectStatus;
 }) {
   try {
     const ctx = await requireAdminAction();
-    const { sourcePath, targetPath, statusCode = 301 } = input;
+    const { sourcePath, statusCode = 301 } = input;
 
-    if (!sourcePath.trim() || !targetPath.trim()) {
-      return { success: false, error: "Kaynak ve hedef yol zorunludur" };
+    if (!sourcePath.trim()) {
+      return { success: false, error: "Kaynak yol zorunludur" };
+    }
+    if (!isRedirectStatus(statusCode)) {
+      return { success: false, error: "Desteklenmeyen HTTP durum kodu" };
     }
 
     const normalizedSource = normalizeRedirectSource(sourcePath);
-    const normalizedTarget = normalizeRedirectTarget(targetPath);
-    if (!normalizedSource || !normalizedTarget || normalizedSource === normalizedTarget || !isRedirectStatus(statusCode)) {
+    const trimmedTarget = input.targetPath?.trim() ?? "";
+    const normalizedTarget = trimmedTarget ? normalizeRedirectTarget(trimmedTarget) : null;
+
+    if (requiresRedirectTarget(statusCode) && !normalizedTarget) {
+      return { success: false, error: "Hedef yol zorunludur" };
+    }
+    if (!normalizedSource || (normalizedTarget && normalizedSource === normalizedTarget)) {
       return { success: false, error: "Geçerli ve farklı kaynak/hedef adresleri girin" };
     }
 
@@ -73,13 +84,13 @@ export async function listRedirects() {
 export async function updateRedirect(id: string, input: {
   sourcePath?: string;
   targetPath?: string;
-  statusCode?: 301 | 302 | 307 | 308;
+  statusCode?: RedirectStatus;
   isActive?: boolean;
 }) {
   try {
     await requireAdminAction();
-    const currentResult = await pool.query<{ source_path: string; target_path: string }>(
-      `SELECT source_path, target_path FROM seo_redirects WHERE id = $1::uuid LIMIT 1`,
+    const currentResult = await pool.query<{ source_path: string; target_path: string | null; status_code: number }>(
+      `SELECT source_path, target_path, status_code FROM seo_redirects WHERE id = $1::uuid LIMIT 1`,
       [id],
     );
     const current = currentResult.rows[0];
@@ -87,14 +98,21 @@ export async function updateRedirect(id: string, input: {
     const nextSource = input.sourcePath === undefined
       ? current.source_path
       : normalizeRedirectSource(input.sourcePath);
-    const nextTarget = input.targetPath === undefined
-      ? current.target_path
-      : normalizeRedirectTarget(input.targetPath);
-    if (!nextSource || !nextTarget || nextSource === nextTarget) {
-      return { success: false, error: "Geçerli ve farklı kaynak/hedef adresleri girin" };
-    }
-    if (input.statusCode !== undefined && !isRedirectStatus(input.statusCode)) {
+    const nextStatus = input.statusCode ?? (current.status_code as RedirectStatus);
+    if (!isRedirectStatus(nextStatus)) {
       return { success: false, error: "Desteklenmeyen HTTP durum kodu" };
+    }
+    // 410'da hedef anlamsızdır: alan her zaman NULL yazılır.
+    const nextTarget = nextStatus === 410
+      ? null
+      : input.targetPath === undefined
+        ? current.target_path
+        : normalizeRedirectTarget(input.targetPath);
+    if (!nextSource || (requiresRedirectTarget(nextStatus) && !nextTarget)) {
+      return { success: false, error: requiresRedirectTarget(nextStatus) ? "Hedef yol zorunludur" : "Geçerli bir kaynak adresi girin" };
+    }
+    if (nextTarget && nextSource === nextTarget) {
+      return { success: false, error: "Geçerli ve farklı kaynak/hedef adresleri girin" };
     }
 
     const updates: string[] = [];
@@ -107,11 +125,9 @@ export async function updateRedirect(id: string, input: {
       updates.push(`source_path = $${paramIndex++}`);
       values.push(normalized);
     }
-    if (input.targetPath !== undefined) {
-      const normalized = normalizeRedirectTarget(input.targetPath);
-      if (!normalized) return { success: false, error: "Geçerli bir hedef adresi girin" };
+    if (input.targetPath !== undefined || nextStatus === 410) {
       updates.push(`target_path = $${paramIndex++}`);
-      values.push(normalized);
+      values.push(nextTarget);
     }
     if (input.statusCode !== undefined) {
       updates.push(`status_code = $${paramIndex++}`);

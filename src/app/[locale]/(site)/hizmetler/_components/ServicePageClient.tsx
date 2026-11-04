@@ -2,8 +2,8 @@
 /**
  * ServicePageClient — Hizmet detay + Hizmet×Konum (il/ilçe) için TEK şablon.
  *
- * - `district` yok  → hizmet detay sayfası (/hizmetler/[slug].html)
- * - `district` var  → yerel SEO sayfası (/hizmetler/[slug]/[sehir].html)
+ * - `district` yok  → hizmet detay sayfası (/hizmetler/[slug])
+ * - `district` var  → yerel SEO sayfası (/hizmetler/[slug]/[sehir])
  *
  * Mimari: MIMARI.md §3 (şablon–içerik ayrımı) ve "sıfır kod tekrarı" ilkesi.
  * Daha önce `ServicePageClient` + `ServiceDistrictPageClient` ~%90 kopyaydı;

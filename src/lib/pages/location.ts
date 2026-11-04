@@ -68,7 +68,7 @@ export function getCentralLocationBySlug(
  * `CentralLocation` bilgisini çözer.
  *
  * Neden gerekli: URL'deki ilçe kısmı parent il slug'ını da içerir
- * (ör. `/hizmetler/web-yazilim-tasarim1/elazig-palu.html` → locations.slug = "palu").
+ * (ör. `/hizmetler/web-yazilim-tasarim1/elazig-palu` → locations.slug = "palu").
  * `getCentralLocationBySlug` bu durumda eşleşmez; sayfanın `location_id`'si
  * doğru satıra işaret ettiği için ID tabanlı çözüm her durumda çalışır.
  */

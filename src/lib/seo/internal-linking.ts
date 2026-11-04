@@ -30,18 +30,18 @@ export const INTERNAL_KEYWORD_MAP: KeywordLinkItem[] = [
   // artık yok; bunlar 1.607 yayında noindex iskelet/404 hedefi üretiyordu.
   {
     keyword: "özel web yazılım",
-    url: servicePath("web-yazilim-tasarim1"),
+    url: servicePath("web-yazilim-tasarim"),
     category: "service",
     description: "Özel Web Yazılım & Tasarım Hizmetleri",
   },
   {
     keyword: "kurumsal web tasarım",
-    url: servicePath("web-yazilim-tasarim1"),
+    url: servicePath("web-yazilim-tasarim"),
     category: "service",
   },
   {
     keyword: "web yazılım",
-    url: servicePath("web-yazilim-tasarim1"),
+    url: servicePath("web-yazilim-tasarim"),
     category: "service",
   },
   {

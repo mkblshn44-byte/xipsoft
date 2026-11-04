@@ -6,27 +6,20 @@
  *   /haberler/gundem.html               → category → alt sayfa listesi
  *   /haberler/gundem/aksamcilar-nerde.html → page  → içerik
  *
- * KANONİK URL: `kind`'e göre ikiye ayrılır (`canonicalPathForNode`):
- *   - `kind='custom'` (admin'in ağaçtan yarattığı içerik) → `.html`; uzantısız
- *     adresler tek adımda 308 ile kanoniğe yönlendirilir.
- *   - `kind='service' | 'location'` (konsolide hizmet/konum satırları) →
- *     UZANTISIZ; canlıda ölçülen kanonik biçim budur.
+ * KANONİK URL: tüm içerik türleri için uzantısızdır; eski `.html` adresleri
+ * middleware katmanında kalıcı olarak kanonik adrese yönlendirilir.
  *
- * ÖNCELİK: Next.js statik/daha spesifik segmentleri DAİMA öne alır. Bu yüzden
- * `/hizmetler/...`, `/blog/...`, `/urunler/...`, `/hakkimizda` vb. mevcut
- * rotalar buraya DÜŞMEZ; bu rota yalnızca hiçbir özel rotaya uymayan yolları
- * karşılar. Eşleşme yoksa 404 (önceki davranış korunur).
+ * ÖNCELİK: Next.js statik/daha spesifik segmentleri DAİMA öne alır. Bu nedenle
+ * bu rota yalnızca eşleşen özel rotası olmayan yolları karşılar. Hizmet ve
+ * konum sayfaları da artık bu rotadan sunulur; hizmetlere özel ikinci bir
+ * catch-all yoktur. Eşleşme yoksa 404 döner.
  *
- * HİZMET/KONUM DELEGASYONU: `hizmetler/[...slug]` var olduğu sürece bu rotaya
- * hiç `/hizmetler/...` isteği gelmez; ancak `kind='service' | 'location'`
- * düğümleri YİNE o modüle (`ServiceContentPage`) devredilir. Böylece özel rota
- * silindiğinde (MIMARI.md §11 B8) hizmet/konum sayfaları ServicePageClient /
- * PageTemplate + JSON-LD zincirini kaybetmeden burada açılır — iki rota
- * arasında davranış farkı üretmek yapısal olarak imkânsızdır.
+ * HİZMET/KONUM DELEGASYONU: `pages.kind='service' | 'location'` düğümleri
+ * ServiceContentPage'e devredilir. Böylece sayfa, metadata ve canonical URL
+ * için tek route ve tek render akışı kullanılır.
  *
- * MİMARİ NOT: Görünüm ve metadata `@/components/ContentTree/ContentTreeViews`
- * içindedir — `/hizmetler/[...slug]` fallback'i de AYNI bileşenleri kullanır,
- * böylece aynı DB satırı iki rotada farklı SEO çıktısı üretemez.
+ * MİMARİ NOT: İçerik ağacının görünüm ve metadata'sı
+ * `@/components/ContentTree/ContentTreeViews` içindedir.
  *
  * İçerik `pages` (kind='custom' | 'service' | 'location') tablosundan gelir;
  * kodda sabit içerik yok.
@@ -72,9 +65,9 @@ function isCanonicalRequest(raw: string[], node: ContentTreeNode): boolean {
 }
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const raw = slug ?? [];
-  const result = await resolveContentPath(raw);
+  const result = await resolveContentPath(raw, locale);
   if (!result) return { robots: NOINDEX_NOFOLLOW };
 
   const metadata = isServiceContentNode(result.node, raw)
@@ -89,17 +82,16 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 }
 
 export default async function ContentTreePage({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const raw = slug ?? [];
-  const result: ContentTreeResult | null = await resolveContentPath(raw);
+  const result: ContentTreeResult | null = await resolveContentPath(raw, locale);
   if (!result) notFound();
 
   if (isServiceContentNode(result.node, raw)) {
     return renderServiceContent(serviceContentRequestFromTreePath(raw, result));
   }
 
-  // Kanonik biçim: `custom` düğümlerinde `.html` ile biter. Uzantısız/eski
-  // adres → 308 kalıcı yönlendirme.
+  // Kanonik biçim tüm düğümlerde uzantısızdır.
   if (!isCanonicalRequest(raw, result.node)) {
     permanentRedirect(canonicalPathForNode(result.node));
   }
