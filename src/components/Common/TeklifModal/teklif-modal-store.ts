@@ -25,7 +25,12 @@ export const teklifModal = {
     trackTeklifOpen(service);
   },
   close: () => {
-    globalState = { open: false };
+    globalState = { open: false, service: undefined };
+    notify();
+  },
+  /** Sayfa geçişlerinde state'i tamamen sıfırlar (router change hook'larından çağrılır). */
+  reset: () => {
+    globalState = initialState;
     notify();
   },
 };

@@ -1,15 +1,23 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Navbar from "@/components/Common/Navbar/Navbar";
 import Footer from "@/components/Common/Footer/Footer";
+import { teklifModal } from "@/components/Common/TeklifModal/teklif-modal-store";
 
 const AuctionBanner = dynamic(() => import("@/components/Common/AuctionBanner/AuctionBanner").then(m => m.AuctionBanner));
 const Homebar = dynamic(() => import("@/components/Common/Homebar/Homebar"));
 
 export default function SiteLayoutGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  // Sayfa değişince modal'ı kapat — önceki sayfada açık kalan modal
+  // yeni sayfada da açık görünmesin.
+  useEffect(() => {
+    teklifModal.reset();
+  }, [pathname]);
   const normalizedPathname = pathname.replace(/^\/(tr|en)(?=\/|$)/, "");
   const isMaintenance = normalizedPathname === "/maintenance" || normalizedPathname.startsWith("/maintenance/");
   const isAuthPage = normalizedPathname === "/login" || normalizedPathname === "/register";
