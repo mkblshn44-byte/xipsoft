@@ -16,6 +16,9 @@ import {
   updateTeklif,
 } from "@/lib/db/teklif";
 import type { Teklif, TeklifEvent, TeklifStatus } from "@/lib/teklif-shared";
+import { formatTry, teklifItemsTotal } from "@/lib/teklif-shared";
+import { sendCustomTelegramMessage } from "@/lib/telegram";
+import { SITE_URL } from "@/lib/site-url";
 
 const STATUS_VALUES = [
   "pending",
@@ -118,6 +121,53 @@ export async function saveTeklifAction(
     );
 
     if (!updated) return { success: false, error: "Teklif güncellenemedi" };
+
+    // Durum "quoted" olarak değiştiyse bildirimler gönder.
+    if (statusChanged && input.status === "quoted") {
+      const totalAmount = input.price
+        ? formatTry(input.price)
+        : formatTry(teklifItemsTotal(input.items.map((i) => ({
+            title: i.title,
+            description: i.description || undefined,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+          }))));
+
+      const teklifUrl = `${SITE_URL}/teklif/${current.token}`;
+      const phone = current.phone ? current.phone.replace(/\D/g, "") : null;
+
+      // 1) Admin'e Telegram: teklif detayı + tek tıkla WA linki
+      const waLine = phone
+        ? `\n\n📱 <b>Müşteriye WhatsApp:</b>\nhttps://wa.me/${phone}?text=${encodeURIComponent(`Merhaba ${current.name}, ${current.service} için hazırladığımız teklifiniz hazır: ${teklifUrl}`)}`
+        : "";
+
+      await sendCustomTelegramMessage(
+        [
+          `<b>📋 Teklif Gönderildi</b>`,
+          ``,
+          `<b>Müşteri:</b> ${current.name}`,
+          `<b>E-posta:</b> ${current.email}`,
+          current.phone ? `<b>Telefon:</b> ${current.phone}` : null,
+          `<b>Hizmet:</b> ${current.service}`,
+          `<b>Tutar:</b> ${totalAmount}`,
+          ``,
+          `👉 ${teklifUrl}`,
+          waLine,
+        ].filter((l) => l !== null).join("\n"),
+        process.env.TELEGRAM_ADMIN_CHAT_ID,
+      ).catch(() => null);
+
+      // 2) Müşteriye e-posta (SMTP env ayarlıysa)
+      const { sendMail, buildTeklifReadyEmail } = await import("@/lib/mailer");
+      const mailOpts = buildTeklifReadyEmail({
+        name: current.name,
+        service: current.service,
+        amount: totalAmount,
+        teklifUrl,
+      });
+      await sendMail({ ...mailOpts, to: current.email }).catch(() => null);
+    }
+
     return { success: true };
   } catch (err) {
     return { success: false, error: errorMessage(err) };
