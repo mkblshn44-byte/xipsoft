@@ -3,7 +3,7 @@
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { createTeklif } from "@/lib/db/teklif";
-import { sendCustomTelegramMessage } from "@/lib/telegram";
+import { sendAdminTelegramMessage } from "@/lib/telegram";
 
 // ── Runtime dogrulama semasi (Zod v4) ────────────────────────────────────────
 
@@ -122,8 +122,11 @@ async function notifyTeklifToAdmin(data: {
     .filter(Boolean)
     .join("\n");
 
-  // Tek merkezi Telegram gönderimi (@/lib/telegram) — ikinci bir fetch kopyası tutulmaz.
-  return sendCustomTelegramMessage(text, process.env.TELEGRAM_ADMIN_CHAT_ID);
+  const results = await sendAdminTelegramMessage(text);
+  const failures = results.filter((result) => !result.ok);
+  return failures.length > 0
+    ? { ok: false, error: failures.map((result) => result.error).join("; ") }
+    : { ok: true };
 }
 
 export async function submitTeklifAction(

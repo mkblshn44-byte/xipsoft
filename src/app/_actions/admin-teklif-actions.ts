@@ -17,7 +17,7 @@ import {
 } from "@/lib/db/teklif";
 import type { Teklif, TeklifEvent, TeklifStatus } from "@/lib/teklif-shared";
 import { formatTry, teklifItemsTotal } from "@/lib/teklif-shared";
-import { sendCustomTelegramMessage } from "@/lib/telegram";
+import { sendAdminTelegramMessage } from "@/lib/telegram";
 import { SITE_URL } from "@/lib/site-url";
 
 const STATUS_VALUES = [
@@ -141,7 +141,7 @@ export async function saveTeklifAction(
         ? `\n\n📱 <b>Müşteriye WhatsApp:</b>\nhttps://wa.me/${phone}?text=${encodeURIComponent(`Merhaba ${current.name}, ${current.service} için hazırladığımız teklifiniz hazır: ${teklifUrl}`)}`
         : "";
 
-      await sendCustomTelegramMessage(
+      const telegramResults = await sendAdminTelegramMessage(
         [
           `<b>📋 Teklif Gönderildi</b>`,
           ``,
@@ -154,8 +154,14 @@ export async function saveTeklifAction(
           `👉 ${teklifUrl}`,
           waLine,
         ].filter((l) => l !== null).join("\n"),
-        process.env.TELEGRAM_ADMIN_CHAT_ID,
-      ).catch(() => null);
+      );
+      const telegramFailures = telegramResults.filter((result) => !result.ok);
+      if (telegramFailures.length > 0) {
+        console.error(
+          "[Teklif] Telegram admin bildirimi bir veya daha fazla chat'e gönderilemedi:",
+          telegramFailures.map((result) => result.error).join("; "),
+        );
+      }
 
       // 2) Müşteriye e-posta (SMTP env ayarlıysa)
       const { sendMail, buildTeklifReadyEmail } = await import("@/lib/mailer");

@@ -3,6 +3,8 @@
  *
  * Env degiskenleri:
  *   TELEGRAM_BOT_TOKEN  — BotFather'dan alınan token
+ *   TELEGRAM_ADMIN_CHAT_ID — Admin bildirimleri ve 2FA için birincil chat ID'si
+ *   TELEGRAM_ADMIN_CHAT_ID_2 — Admin bildirimleri ve 2FA için isteğe bağlı ikinci chat ID'si
  *   TELEGRAM_GROUP_ID   — Grup ID'si (-100xxx), yoksa CHANNEL_ID fallback edilir
  *   TELEGRAM_CHANNEL_ID — Kanal username (@xipsoft) veya sayısal ID (-100xxx)
  */
@@ -44,6 +46,27 @@ async function sendCustomTelegramMessage(
   const targetChatId = chatId || process.env.TELEGRAM_GROUP_ID || process.env.TELEGRAM_CHANNEL_ID;
   if (!targetChatId) return { ok: false, error: "Chat ID bulunamadı" };
   return sendTelegramMessage(targetChatId, text);
+}
+
+function getAdminTelegramChatIds(): string[] {
+  const chatIds = [
+    process.env.TELEGRAM_ADMIN_CHAT_ID?.trim(),
+    process.env.TELEGRAM_ADMIN_CHAT_ID_2?.trim(),
+  ];
+  return chatIds.filter(
+    (chatId, index): chatId is string => Boolean(chatId) && chatIds.indexOf(chatId) === index
+  );
+}
+
+async function sendAdminTelegramMessage(
+  text: string
+): Promise<Array<{ ok: boolean; error?: string }>> {
+  const chatIds = getAdminTelegramChatIds();
+  if (chatIds.length === 0) {
+    return [{ ok: false, error: "TELEGRAM_ADMIN_CHAT_ID eksik" }];
+  }
+
+  return Promise.all(chatIds.map((chatId) => sendTelegramMessage(chatId, text)));
 }
 
 function buildBlogShareText(post: {
@@ -114,6 +137,8 @@ async function shareBlogToTelegramAll(post: {
 export {
   sendTelegramMessage,
   sendCustomTelegramMessage,
+  getAdminTelegramChatIds,
+  sendAdminTelegramMessage,
   shareBlogToTelegram,
   shareBlogToTelegramAll,
   escapeHtml,

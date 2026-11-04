@@ -1,7 +1,10 @@
+import { getAdminTelegramChatIds } from "@/lib/telegram";
+
 /**
  * Admin Telegram 2FA — Ortam Konfigürasyonu (tek kaynak)
  *
- * Admin paneli 2FA'sı yalnızca bu üç değişkenin TAMAMI tanımlı olduğunda çalışır.
+ * Admin paneli 2FA'sı ADMIN_EMAIL, TELEGRAM_BOT_TOKEN ve birincil
+ * TELEGRAM_ADMIN_CHAT_ID tanımlı olduğunda çalışır. İkinci chat ID isteğe bağlıdır.
  * Eksik olduğunda:
  *   - Normal kullanıcı girişi ETKİLENMEZ (login bu modüle bağımlı değildir).
  *   - Genel site ETKİLENMEZ.
@@ -9,11 +12,11 @@
  *     ve admin erişimi fail-closed olarak kapalı kalır.
  *
  * Bu okumalar middleware (Node runtime), server action'lar ve server component'ler
- * tarafından paylaşılır — env değişken adları başka yerde tekrar yazılmaz.
+ * tarafından paylaşılır.
  */
 
 export interface Admin2faConfig {
-  /** Üç değişken de tanımlıysa true. */
+  /** Gerekli admin 2FA değişkenleri tanımlıysa true. */
   ready: boolean;
   /** Eksik değişken adları (uyarı metni için). */
   missing: string[];
@@ -21,11 +24,14 @@ export interface Admin2faConfig {
   authorizedEmail: string | null;
   /** Admin Telegram chat ID veya null. */
   chatId: string | null;
+  /** Admin 2FA kodunun gönderileceği tüm chat ID'leri. */
+  chatIds: string[];
 }
 
 export function getAdmin2faConfig(): Admin2faConfig {
   const authorizedEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase() || null;
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim() || null;
+  const chatIds = getAdminTelegramChatIds();
+  const chatId = chatIds[0] || null;
   const botToken = process.env.TELEGRAM_BOT_TOKEN?.trim() || null;
 
   const missing: string[] = [];
@@ -38,6 +44,7 @@ export function getAdmin2faConfig(): Admin2faConfig {
     missing,
     authorizedEmail,
     chatId,
+    chatIds,
   };
 }
 

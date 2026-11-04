@@ -23,6 +23,7 @@ import { queryOne } from "@/lib/db/pool";
 import { storeAdmin2faOtp, verifyAdmin2faOtp } from "@/lib/db/admin-2fa";
 import { createSessionCookie, SECURE_COOKIE_OPTIONS, verifySessionCookie } from "@/lib/security";
 import { getAdmin2faConfig } from "@/lib/admin-2fa-config";
+import { sendTelegramMessage } from "@/lib/telegram";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -36,7 +37,7 @@ interface AdminUser {
 }
 
 type PendingAdmin =
-  | { ok: true; user: AdminUser; chatId: string }
+  | { ok: true; user: AdminUser; chatId: string; chatIds: string[] }
   | { ok: false; error: string };
 
 function generateOtp(): string {
@@ -45,10 +46,8 @@ function generateOtp(): string {
 
 async function sendTelegramAdmin2faOtp(
   chatId: string,
+  chatIds: string[],
 ): Promise<{ success: boolean; error?: string }> {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN;
-  if (!botToken) return { success: false, error: "TELEGRAM_BOT_TOKEN eksik" };
-
   const otp = generateOtp();
   try {
     await storeAdmin2faOtp(chatId, otp);
@@ -69,23 +68,23 @@ async function sendTelegramAdmin2faOtp(
     "<i>Bu kodu kimseyle paylasmayın.</i>",
   ].join("\n");
 
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-    });
-    const result = await response.json();
-    if (!result.ok) {
-      return { success: false, error: result.description ?? "Telegram hatası" };
-    }
-    return { success: true };
-  } catch (error: unknown) {
+  const results = await Promise.all(
+    chatIds.map((targetChatId) => sendTelegramMessage(targetChatId, text))
+  );
+  const failures = results.filter((result) => !result.ok);
+  if (failures.length === results.length) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Telegram baglantı hatası",
+      error: failures.map((result) => result.error).join("; ") || "Telegram hatası",
     };
   }
+  if (failures.length > 0) {
+    console.error(
+      "[Admin 2FA] OTP bazı Telegram chat'lerine gönderilemedi:",
+      failures.map((result) => result.error).join("; "),
+    );
+  }
+  return { success: true };
 }
 
 async function verifyTelegramAdmin2faOtp(
@@ -156,7 +155,7 @@ async function getPendingAdmin(): Promise<PendingAdmin> {
     return { ok: false, error: "Admin hesabı bulunamadı." };
   }
 
-  return { ok: true, user, chatId: config.chatId as string };
+  return { ok: true, user, chatId: config.chatId as string, chatIds: config.chatIds };
 }
 
 /**
@@ -167,7 +166,7 @@ export async function sendAdmin2faOtpAction(): Promise<ActionResult> {
   try {
     const pending = await getPendingAdmin();
     if (!pending.ok) return { success: false, error: pending.error };
-    return sendTelegramAdmin2faOtp(pending.chatId);
+    return sendTelegramAdmin2faOtp(pending.chatId, pending.chatIds);
   } catch (error) {
     console.error("[Admin 2FA] OTP send action failed:", error);
     return {

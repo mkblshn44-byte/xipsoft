@@ -37,6 +37,10 @@ const GROUPS = [
     items: [
       { label: "Bot Token", value: process.env.TELEGRAM_BOT_TOKEN ? "Tanımlı" : "Eksik" },
       { label: "Admin Chat", value: process.env.TELEGRAM_ADMIN_CHAT_ID ? "Tanımlı" : "Eksik" },
+      {
+        label: "İkinci Admin Chat",
+        value: process.env.TELEGRAM_ADMIN_CHAT_ID_2 ? "Tanımlı" : "Yapılandırılmadı (isteğe bağlı)",
+      },
     ],
   },
   {
