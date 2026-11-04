@@ -1,6 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import XipIcon from "@/components/Ui/Icon";
 import { cn } from "@/utils";
 import { useTranslations } from "next-intl";
@@ -50,6 +51,7 @@ function normalizeTeklifServiceValue(value?: string) {
 export default function TeklifModal() {
   const { open, service: preService } = useTeklifModalState();
   const t = useTranslations("teklif");
+  const router = useRouter();
 
   const [step, setStep] = useState<Step>("form");
   const [loading, setLoading] = useState(false);
@@ -90,8 +92,9 @@ export default function TeklifModal() {
       
       if (result.success && result.token) {
         setQuoteToken(result.token);
-        setStep("done");
         trackTeklifSubmit(form.service);
+        teklifModal.close();
+        router.push(`/teklif/${result.token}`);
       } else if (result.success) {
         setStep("done");
         trackTeklifSubmit(form.service);
