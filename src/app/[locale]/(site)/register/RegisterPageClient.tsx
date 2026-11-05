@@ -11,6 +11,8 @@ import { registerAction } from "@/app/_actions/auth/register";
 
 const IS_LOCAL_DEV = process.env.NODE_ENV === "development";
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+// Turnstile aktif: sadece production'da VE site key tanımlıysa göster
+const TURNSTILE_ENABLED = !IS_LOCAL_DEV && SITE_KEY.length > 0;
 
 export default function RegisterPageClient() {
   const router = useRouter();
@@ -34,7 +36,7 @@ export default function RegisterPageClient() {
       return;
     }
 
-    if (!IS_LOCAL_DEV && !turnstileToken) {
+    if (TURNSTILE_ENABLED && !turnstileToken) {
       setError("Lütfen bot doğrulamasını tamamlayın");
       return;
     }
@@ -49,7 +51,13 @@ export default function RegisterPageClient() {
         return;
       }
       router.push("/login?registered=1");
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Server Action") || msg.includes("server action")) {
+        setError("Site güncellendi, sayfa yenileniyor...");
+        window.setTimeout(() => window.location.reload(), 1200);
+        return;
+      }
       setError("Bir hata oluştu");
       turnstileRef.current?.reset();
       setTurnstileToken("");
@@ -204,7 +212,7 @@ export default function RegisterPageClient() {
                 </div>
               </div>
 
-              {!IS_LOCAL_DEV && (
+              {TURNSTILE_ENABLED && (
                 <div className="flex justify-center">
                   <div className="cf-turnstile" data-action="turnstile-register">
                     <Turnstile
@@ -212,7 +220,10 @@ export default function RegisterPageClient() {
                       siteKey={SITE_KEY}
                       onSuccess={setTurnstileToken}
                       onExpire={() => setTurnstileToken("")}
-                      onError={() => setTurnstileToken("")}
+                      onError={() => {
+                        setTurnstileToken("");
+                        setError("Bot doğrulaması yüklenemedi, sayfayı yenileyin");
+                      }}
                       options={{ theme: "dark", action: "turnstile-register" }}
                     />
                   </div>
@@ -222,7 +233,7 @@ export default function RegisterPageClient() {
               {/* Kayıt butonu */}
               <button
                 type="submit"
-                disabled={loading || (!IS_LOCAL_DEV && !turnstileToken)}
+                disabled={loading || (TURNSTILE_ENABLED && !turnstileToken)}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-space-950 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-900/30"
               >
                 {loading ? (

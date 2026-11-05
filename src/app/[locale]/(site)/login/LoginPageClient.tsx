@@ -11,6 +11,8 @@ import { loginAction } from "@/app/_actions/auth/login";
 
 const IS_LOCAL_DEV = process.env.NODE_ENV === "development";
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+// Turnstile aktif: sadece production'da VE site key tanımlıysa göster
+const TURNSTILE_ENABLED = !IS_LOCAL_DEV && SITE_KEY.length > 0;
 
 export default function LoginPageClient() {
   const router = useRouter();
@@ -53,7 +55,7 @@ export default function LoginPageClient() {
     e.preventDefault();
     setError("");
 
-    if (!IS_LOCAL_DEV && !turnstileToken) {
+    if (TURNSTILE_ENABLED && !turnstileToken) {
       setError("Lütfen bot doğrulamasını tamamlayın");
       return;
     }
@@ -71,7 +73,16 @@ export default function LoginPageClient() {
       // Tüm roller aynı akıştan geçer. Admin paneline erişimde Telegram 2FA
       // ayrıca tetiklenir (/admin → /admin/verify-2fa).
       redirectAfterLogin();
-    } catch {
+    } catch (err) {
+      // Yeni deploy sonrası açık kalan eski sayfa, artık var olmayan server
+      // action ID'sini çağırır ("Failed to find Server Action"). Kullanıcıya
+      // anlamsız hata göstermek yerine sayfayı taze build ile yenile.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Server Action") || msg.includes("server action")) {
+        setError("Site güncellendi, sayfa yenileniyor...");
+        window.setTimeout(() => window.location.reload(), 1200);
+        return;
+      }
       setError("Bir hata oluştu");
       turnstileRef.current?.reset();
       setTurnstileToken("");
@@ -96,14 +107,14 @@ export default function LoginPageClient() {
       </div>
 
       {/* ── Sağ: Form ── */}
-      <div className="relative flex flex-col w-full lg:w-1/2 xl:w-2/5 bg-zinc-950 overflow-y-auto">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(156,124,34,0.12)_0%,_transparent_60%)] pointer-events-none" />
+      <div className="relative flex flex-col w-full lg:w-1/2 xl:w-2/5 bg-space-950 overflow-y-auto">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(167,139,250,0.10)_0%,_transparent_60%)] pointer-events-none" />
 
         <div className="flex flex-1 items-center justify-center px-6 py-12 z-10">
           <div className="w-full max-w-sm">
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-white mb-1">Tekrar hoş geldiniz</h1>
-              <p className="text-sm text-zinc-400">Hesabınıza giriş yapın</p>
+              <p className="text-sm text-titanium-400">Hesabınıza giriş yapın</p>
             </div>
 
             <form onSubmit={handleCredentials} className="space-y-5">
@@ -121,9 +132,9 @@ export default function LoginPageClient() {
               )}
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>
+                <label className="block text-xs font-medium text-titanium-400 uppercase tracking-wider">Email</label>
                 <div className="relative">
-                  <XipIcon name="mail" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="mail" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-titanium-500" />
                   <input
                     type="email"
                     value={email}
@@ -131,15 +142,15 @@ export default function LoginPageClient() {
                     required
                     autoComplete="email"
                     placeholder="ornek@email.com"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/8 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-titanium-700 focus:outline-none focus:border-neon-600/60 focus:bg-white/8 transition-all"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wider">Şifre</label>
+                <label className="block text-xs font-medium text-titanium-400 uppercase tracking-wider">Şifre</label>
                 <div className="relative">
-                  <XipIcon name="lock" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <XipIcon name="lock" className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-titanium-500" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
@@ -147,12 +158,12 @@ export default function LoginPageClient() {
                     required
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-white/5 border border-white/8 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all"
+                    className="w-full pl-10 pr-11 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder:text-titanium-700 focus:outline-none focus:border-neon-600/60 focus:bg-white/8 transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-titanium-500 hover:text-titanium-300 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <XipIcon name="eye-off" className="w-4 h-4" /> : <XipIcon name="eye" className="w-4 h-4" />}
@@ -160,7 +171,7 @@ export default function LoginPageClient() {
                 </div>
               </div>
 
-              {!IS_LOCAL_DEV && (
+              {TURNSTILE_ENABLED && (
                 <div className="flex justify-center">
                   <div className="cf-turnstile" data-action="turnstile-spin-v2">
                     <Turnstile
@@ -168,7 +179,10 @@ export default function LoginPageClient() {
                       siteKey={SITE_KEY}
                       onSuccess={setTurnstileToken}
                       onExpire={() => setTurnstileToken("")}
-                      onError={() => setTurnstileToken("")}
+                      onError={() => {
+                        setTurnstileToken("");
+                        setError("Bot doğrulaması yüklenemedi, sayfayı yenileyin");
+                      }}
                       options={{ theme: "dark", action: "turnstile-spin-v2" }}
                     />
                   </div>
@@ -177,7 +191,7 @@ export default function LoginPageClient() {
 
               <button
                 type="submit"
-                disabled={loading || (!IS_LOCAL_DEV && !turnstileToken)}
+                disabled={loading || (TURNSTILE_ENABLED && !turnstileToken)}
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-space-950 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-900/30"
               >
                 {loading ? (
@@ -189,9 +203,9 @@ export default function LoginPageClient() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-zinc-500">
+            <p className="mt-6 text-center text-sm text-titanium-500">
               Hesabınız yok mu?{" "}
-              <Link href="/register" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
+              <Link href="/register" className="text-neon-400 hover:text-neon-300 font-medium transition-colors">
                 Kayıt olun
               </Link>
             </p>
@@ -199,7 +213,7 @@ export default function LoginPageClient() {
         </div>
 
         <div className="px-8 pb-6 text-center z-10">
-          <p className="text-xs text-zinc-600">© {new Date().getFullYear()} XipSoft. Tüm hakları saklıdır.</p>
+          <p className="text-xs text-titanium-700">© {new Date().getFullYear()} XipSoft. Tüm hakları saklıdır.</p>
         </div>
       </div>
     </div>
